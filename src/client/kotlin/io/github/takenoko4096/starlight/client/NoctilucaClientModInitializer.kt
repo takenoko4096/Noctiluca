@@ -74,7 +74,9 @@ abstract class NoctilucaClientModInitializer(private val mod: NoctilucaModInitia
         }
     }
 
-    open fun onInitialize() {}
+    open fun onInitialize() {
+
+    }
 
     open fun onClientStart(client: Minecraft) {}
 }

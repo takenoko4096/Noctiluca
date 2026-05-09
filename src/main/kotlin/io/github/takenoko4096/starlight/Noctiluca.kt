@@ -2,6 +2,7 @@ package io.github.takenoko4096.starlight
 
 import io.github.takenoko4096.starlight.text.RgbColor
 import net.minecraft.resources.Identifier
+import net.minecraft.world.inventory.AbstractContainerMenu
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     override fun onInitialize() {
@@ -45,7 +46,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             "debugger" {
                 "debugger_name"(debuggerNameArgumentType) {
                     executes {
-                        "debugger_name"<Debugger>().debugger(this)
+                        "debugger_name"<Debugger>().call(this)
                     }
                 }
             }

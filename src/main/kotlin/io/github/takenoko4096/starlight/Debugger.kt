@@ -5,8 +5,12 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.resources.Identifier
 import net.minecraft.util.StringRepresentable
 
-class Debugger private constructor(val identifier: Identifier, val debugger: DebuggerCallable) : StringRepresentable {
+class Debugger private constructor(val identifier: Identifier, private val debugger: DebuggerCallable) : StringRepresentable {
     override fun getSerializedName(): String = identifier.toString()
+
+    fun call(execution: AssignableCommandExecution<CommandSourceStack>) {
+        debugger(execution)
+    }
 
     companion object {
         private val debuggers = mutableMapOf<Identifier, DebuggerCallable>()
