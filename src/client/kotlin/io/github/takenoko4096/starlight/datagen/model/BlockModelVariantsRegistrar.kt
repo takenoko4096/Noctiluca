@@ -103,10 +103,10 @@ class BlockModelVariantsRegistrar internal constructor(
                 }
                 else {
                     blockModelGenerators.family(block).generateFor(family)
-                    return
+                    return // not to duplication
                 }
             }
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException("NEVER HAPPENS")
         }
 
         blockModelGenerators.blockStateOutput.accept(generator)

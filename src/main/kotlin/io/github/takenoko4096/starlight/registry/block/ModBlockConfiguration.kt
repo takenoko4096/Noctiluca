@@ -11,6 +11,7 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.data.BlockFamily
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
+import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.Level
@@ -127,7 +128,7 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
             throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': 'rendering.models' is unset despite there are no withXX()")
         }
         else if (fullBlock && renderingConfig.modelConfig?.blockModelConfig != null) {
-            throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': do not set 'rendering.models.block' while using withXX(): these options require parent block is a cubeAll() block")
+            throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': do not set 'rendering.models.block' while using withXX(): these options require parent block is a 'cube all' block")
         }
 
         val block = customBehaviourCreator(boundBlockProperties)
@@ -139,61 +140,86 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         }
 
         if (withSlab) {
-            registerFamilyMember(block, "slab", BlockFamily.Builder::slab, itemProperties!!) { a, b ->
+            val entry = registerFamilyMember(block, "slab", BlockFamily.Builder::slab) { a, b ->
                 SlabBlock(b)
+            }
+
+            registry.mod.tagRegistry.registerOfBlock(BlockTags.SLABS) {
+                entry(entry)
+                replace = false
             }
         }
 
         if (withStairs) {
-            registerFamilyMember(block, "stairs", BlockFamily.Builder::stairs, itemProperties!!) { a, b ->
+            val entry = registerFamilyMember(block, "stairs", BlockFamily.Builder::stairs) { a, b ->
                 StairBlock(a.defaultBlockState(), b)
+            }
+
+            registry.mod.tagRegistry.registerOfBlock(BlockTags.STAIRS) {
+                entry(entry)
+                replace = false
             }
         }
 
         if (withWall) {
-            registerFamilyMember(block, "wall", BlockFamily.Builder::wall, itemProperties!!) { a, b ->
+            val entry = registerFamilyMember(block, "wall", BlockFamily.Builder::wall) { a, b ->
                 WallBlock(b)
+            }
+
+            registry.mod.tagRegistry.registerOfBlock(BlockTags.WALLS) {
+                entry(entry)
+                replace = false
             }
         }
 
         if (withFence) {
-            registerFamilyMember(block, "fence", BlockFamily.Builder::fence, itemProperties!!) { a, b ->
+            val entry = registerFamilyMember(block, "fence", BlockFamily.Builder::fence) { a, b ->
                 FenceBlock(b)
+            }
+
+            registry.mod.tagRegistry.registerOfBlock(BlockTags.FENCES) {
+                entry(entry)
+                replace = false
             }
         }
 
         if (withFenceGate != null) {
-            registerFamilyMember(block, "fence_gate", BlockFamily.Builder::fenceGate, itemProperties!!) { a, b ->
+            val entry = registerFamilyMember(block, "fence_gate", BlockFamily.Builder::fenceGate) { a, b ->
                 val woodType = withFenceGate!!
                 FenceGateBlock(woodType, b)
+            }
+
+            registry.mod.tagRegistry.registerOfBlock(BlockTags.FENCE_GATES) {
+                entry(entry)
+                replace = false
             }
         }
 
         return block
     }
 
-    private fun <T : Block> registerFamilyMember(parent: Block, suffix: String, familyAppender: BlockFamily.Builder.(T) -> BlockFamily.Builder, itemProperties: Item.Properties, constructor: (Block, BlockBehaviour.Properties) -> T): T {
+    private fun <T : Block> registerFamilyMember(parent: Block, suffix: String, familyAppender: BlockFamily.Builder.(T) -> BlockFamily.Builder, constructor: (Block, BlockBehaviour.Properties) -> T): T {
         val identifier = registry.mod.identifierOf(blockResourceKey.identifier().path + '_' + suffix)
         val blockKey = ResourceKey.create(Registries.BLOCK, identifier)
         val itemKey = ResourceKey.create(Registries.ITEM, identifier)
 
-        val member = constructor(parent, BlockBehaviour.Properties.ofFullCopy(parent).setId(blockKey))
-        Registry.register(BuiltInRegistries.BLOCK, blockKey, member)
+        val block = constructor(parent, BlockBehaviour.Properties.ofFullCopy(parent).setId(blockKey))
+        Registry.register(BuiltInRegistries.BLOCK, blockKey, block)
 
         val translationKey = "block.${registry.mod.identifier}.${identifier.path}"
         registry.mod.translationRegistry.register(translationKey) {
-            enUs = this@ModBlockConfiguration.translation.enUs + ' ' + if (suffix.length <= 1) suffix.uppercase() else suffix[0].uppercase() + suffix.slice(1..<suffix.length)
+            enUs = identifier.path
+                .replace("_([a-z])".toRegex()) { ' ' + it.groupValues[1].uppercase() }
+                .replace("^([a-z])".toRegex()) { it.groupValues[1].uppercase() }
         }
 
-        Registry.register(
-            BuiltInRegistries.ITEM, itemKey,
-            BlockItem(member, itemProperties.overrideDescription(translationKey))
-        )
+        val blockItem = BlockItem(block, Item.Properties().setId(itemKey).overrideDescription(translationKey))
+        Registry.register(BuiltInRegistries.ITEM, itemKey, blockItem)
 
         if (familyBuilder == null) familyBuilder = BlockFamily.Builder(parent)
-        familyBuilder!!.familyAppender(member)
-        registry.blocks[blockKey] = member
-        return member
+        familyBuilder!!.familyAppender(block)
+        registry.blocks[blockKey] = block
+        return block
     }
 
     class AccessorForClient internal constructor(private val configuration: ModBlockConfiguration) {

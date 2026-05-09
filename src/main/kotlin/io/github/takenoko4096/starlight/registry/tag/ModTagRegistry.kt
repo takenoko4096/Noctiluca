@@ -19,25 +19,101 @@ class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : Starli
     fun registerOfItem(tag: TagKey<Item>, configuration: ModTagConfiguration<Item>.() -> Unit) {
         val configuration = ModTagConfiguration(Registries.ITEM, tag, configuration)
         configurations.add(configuration)
-        tags[tag] = configuration.build()
+
+        val built = configuration.build()
+
+        if (tag in tags) {
+            val previous = tags[tag] as Tag<Item>
+
+            if (previous.replace != built.replace) {
+                throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
+            }
+
+            tags[tag] = Tag(
+                Registries.ITEM,
+                tag,
+                previous.entries + built.entries,
+                replace = false
+            )
+        }
+        else {
+            tags[tag] = built
+        }
     }
 
     fun registerOfBlock(tag: TagKey<Block>, configuration: ModTagConfiguration<Block>.() -> Unit) {
         val configuration = ModTagConfiguration(Registries.BLOCK, tag, configuration)
         configurations.add(configuration)
-        tags[tag] = configuration.build()
+
+        val built = configuration.build()
+
+        if (tag in tags) {
+            val previous = tags[tag] as Tag<Block>
+
+            if (previous.replace != built.replace) {
+                throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
+            }
+
+            tags[tag] = Tag(
+                Registries.BLOCK,
+                tag,
+                previous.entries + built.entries,
+                replace = false
+            )
+        }
+        else {
+            tags[tag] = built
+        }
     }
 
     fun registerOfEntityType(tag: TagKey<EntityType<*>>, configuration: ModTagConfiguration<EntityType<*>>.() -> Unit) {
         val configuration = ModTagConfiguration(Registries.ENTITY_TYPE, tag, configuration)
         configurations.add(configuration)
-        tags[tag] = configuration.build()
+
+        val built = configuration.build()
+
+        if (tag in tags) {
+            val previous = tags[tag] as Tag<EntityType<*>>
+
+            if (previous.replace != built.replace) {
+                throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
+            }
+
+            tags[tag] = Tag(
+                Registries.ENTITY_TYPE,
+                tag,
+                previous.entries + built.entries,
+                replace = false
+            )
+        }
+        else {
+            tags[tag] = built
+        }
     }
 
     fun registerOfBlockEntityType(tag: TagKey<BlockEntityType<*>>, configuration: ModTagConfiguration<BlockEntityType<*>>.() -> Unit) {
         val configuration = ModTagConfiguration(Registries.BLOCK_ENTITY_TYPE, tag, configuration)
         configurations.add(configuration)
-        tags[tag] = configuration.build()
+
+        val built = configuration.build()
+
+        if (tag in tags) {
+            val previous = tags[tag] as Tag<BlockEntityType<*>>
+
+            if (previous.replace != built.replace) {
+                throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
+            }
+
+            tags[tag] = Tag(
+                Registries.BLOCK_ENTITY_TYPE,
+                tag,
+                previous.entries + built.entries,
+                replace = false
+            )
+        }
+        else {
+            tags[tag] = built
+        }
     }
 
     fun <T : Any> getConfigurations(target: ResourceKey<Registry<T>>): Set<ModTagConfiguration<T>> {
