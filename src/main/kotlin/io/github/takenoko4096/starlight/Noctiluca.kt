@@ -3,10 +3,12 @@ package io.github.takenoko4096.starlight
 import io.github.takenoko4096.starlight.item.ItemStackBuilder
 import io.github.takenoko4096.starlight.text.RgbColor
 import io.github.takenoko4096.starlight.text.component
-import io.github.takenoko4096.starlight.ui.container.CustomContainerMenuBuilder
-import io.github.takenoko4096.starlight.ui.container.CustomContainerMenuProvider
+import io.github.takenoko4096.starlight.container.CustomContainerMenuBuilder
+import io.github.takenoko4096.starlight.ui.container.ContainerInteraction
+import io.github.takenoko4096.starlight.ui.container.ItemButton
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.enchantment.Enchantments
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     override fun onInitialize() {
@@ -51,6 +53,12 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 "debugger_name"(debuggerNameArgumentType) {
                     executes {
                         "debugger_name"<Debugger>().call(this)
+                    }
+
+                    catches {
+                        val name = "debugger_name"<Debugger>()
+
+                        logger.error("error on debugger: ${name.identifier}", error)
                     }
                 }
             }
@@ -156,7 +164,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     setItem(4, item)
                 }
 
-                onClick { player, i, i1, input ->
+                onClick { player, i, i1, input, slots ->
                     context.source.sendSystemMessage(component {
                         text("player=${player.name.string}")
                         linebreak()
@@ -187,7 +195,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     setItem(4, item)
                 }
 
-                onClick { player, i, i1, input ->
+                onClick { player, i, i1, input, slots ->
                     context.source.sendSystemMessage(component {
                         text("player=${player.name.string}")
                         linebreak()
@@ -218,7 +226,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     setItem(4, item)
                 }
 
-                onClick { player, i, i1, input ->
+                onClick { player, i, i1, input, slots ->
                     context.source.sendSystemMessage(component {
                         text("player=${player.name.string}")
                         linebreak()
@@ -251,6 +259,52 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
 
             context.source.player?.openMenu(menu.build())
+        }
+
+        debugger("container_interaction") {
+            val interaction = ContainerInteraction.create {
+                title {
+                    text("container interaction test")
+                }
+
+                contents(6) {
+                    val button = ItemButton.of(Items.EMERALD) {
+                        components {
+                            itemName(component {
+                                text("button test 0 - 1")
+                            })
+
+                            enchantments {
+                                enchant(Enchantments.LUNGE, 1)
+                            }
+                        }
+
+                        onClick {
+                            player.sendSystemMessage(component {
+                                text("button 0 pressed!")
+                            })
+
+                            set(0, ItemButton.of(Items.DIAMOND) {
+                                components {
+                                    itemName(component {
+                                        text("button test 0 - 2")
+                                    })
+                                }
+
+                                onClick {
+                                    set(0, button)
+                                }
+                            })
+                        }
+                    }
+
+                    set(0, button)
+                }
+            }
+
+            context.source.player?.run {
+                interaction.open(this)
+            }
         }
     }
 }

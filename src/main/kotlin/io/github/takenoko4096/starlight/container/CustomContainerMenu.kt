@@ -1,6 +1,7 @@
-package io.github.takenoko4096.starlight.ui.container
+package io.github.takenoko4096.starlight.container
 
 import io.github.takenoko4096.starlight.Noctiluca
+import net.minecraft.core.NonNullList
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
@@ -14,7 +15,7 @@ import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 
-class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, val columnCount: Int, initializer: SimpleContainer.() -> Unit = {}, private val onClick: ((Player, Int, Int, ContainerInput) -> Unit)? = null) : AbstractContainerMenu(getOrCreateType(columnCount),id) {
+class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, val columnCount: Int, initializer: SimpleContainer.() -> Unit = {}, private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Unit)? = null) : AbstractContainerMenu(getOrCreateType(columnCount),id) {
     private val container = SimpleContainer(SLOTS_PER_ROW * columnCount)
 
     init {
@@ -100,7 +101,7 @@ class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, va
                 // swap(多分１とかFキー押してカーソル合わせたものと入れ替える操作のこと): 非コンテナではターゲットがコンテナ外のもののみ許可
                 // quick craft(試した限りではspreadのこと): 非コンテナではコンテナ外のもののみ許可
                 if (isContainerSlot(slotIndex)) {
-                    onClick(player, slotIndex, buttonNum, containerInput)
+                    onClick(player, slotIndex, buttonNum, containerInput, slots)
                 }
                 else {
                     super.clicked(slotIndex, buttonNum, containerInput, player)
@@ -108,13 +109,13 @@ class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, va
             }
             ContainerInput.QUICK_MOVE -> {
                 // quick move: 非コンテナでは常に禁止
-                onClick(player, slotIndex, buttonNum, containerInput)
+                onClick(player, slotIndex, buttonNum, containerInput, slots)
             }
             ContainerInput.PICKUP_ALL -> {
                 // pickup all(多分これは左クリック2回押しで同じアイテムをまとめる操作のこと): 非コンテナでは常に禁止、コンテナでは非コンテナのアイテムを取らないような改造(?)コードを実行
 
                 if (isContainerSlot(slotIndex)) {
-                    onClick(player, slotIndex, buttonNum, containerInput)
+                    onClick(player, slotIndex, buttonNum, containerInput, slots)
                 }
                 else {
                     val slot = slots[slotIndex] as Slot
@@ -178,7 +179,7 @@ class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, va
             if (columnCount !in types) {
                 val type = MenuType(
                     { id, inventory ->
-                        CustomContainerMenu(id, inventory, columnCount, {})
+                        CustomContainerMenu(id, inventory, columnCount)
                     },
                     FeatureFlagSet.of()
                 )

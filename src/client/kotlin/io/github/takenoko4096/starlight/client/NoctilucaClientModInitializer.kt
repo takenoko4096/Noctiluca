@@ -5,7 +5,7 @@ import io.github.takenoko4096.starlight.NoctilucaModInitializer
 import io.github.takenoko4096.starlight.client.ui.container.CustomContainerScreen
 import io.github.takenoko4096.starlight.registry.block.ModBlockConfiguration
 import io.github.takenoko4096.starlight.registry.command.node.ConfigurableCommandNode
-import io.github.takenoko4096.starlight.ui.container.CustomContainerMenu
+import io.github.takenoko4096.starlight.container.CustomContainerMenu
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource

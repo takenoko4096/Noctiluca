@@ -1,12 +1,14 @@
-package io.github.takenoko4096.starlight.ui.container
+package io.github.takenoko4096.starlight.container
 
 import io.github.takenoko4096.starlight.StarlightDSL
 import io.github.takenoko4096.starlight.text.SectionComponentBuilder
 import io.github.takenoko4096.starlight.text.component
+import net.minecraft.core.NonNullList
 import net.minecraft.network.chat.Component
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.inventory.Slot
 
 @StarlightDSL
 class CustomContainerMenuBuilder internal constructor(callback: CustomContainerMenuBuilder.() -> Unit) {
@@ -16,7 +18,7 @@ class CustomContainerMenuBuilder internal constructor(callback: CustomContainerM
 
     private var initializer: SimpleContainer.() -> Unit = {}
 
-    private var onClick: ((Player, Int, Int, ContainerInput) -> Unit)? = null
+    private var onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Unit)? = null
 
     init {
         callback()
@@ -31,7 +33,7 @@ class CustomContainerMenuBuilder internal constructor(callback: CustomContainerM
         this.initializer = initializer
     }
 
-    fun onClick(callback: (Player, Int, Int, ContainerInput) -> Unit) {
+    fun onClick(callback: (Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Unit) {
         onClick = callback
     }
 
