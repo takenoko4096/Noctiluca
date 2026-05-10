@@ -41,12 +41,12 @@ open class ItemComponents internal constructor(private val mod: NoctilucaModInit
     }
 
     fun <T : Any> negative(type: DataComponentType<T>) {
-        components.add(_root_ide_package_.io.github.takenoko4096.starlight.item.ItemComponent.negative(type))
+        components.add(ItemComponent.negative(type))
     }
 
-    fun attributeModifiers(callback: io.github.takenoko4096.starlight.item.components.AttributeModifiersConfiguration.() -> Unit) {
+    fun attributeModifiers(callback: AttributeModifiersConfiguration.() -> Unit) {
         components.add(
-            _root_ide_package_.io.github.takenoko4096.starlight.item.components.AttributeModifiersConfiguration(
+            AttributeModifiersConfiguration(
                 mod,
                 callback
             ).toComponent())

@@ -1,8 +1,12 @@
 package io.github.takenoko4096.starlight
 
+import io.github.takenoko4096.starlight.item.ItemStackBuilder
 import io.github.takenoko4096.starlight.text.RgbColor
+import io.github.takenoko4096.starlight.text.component
+import io.github.takenoko4096.starlight.ui.container.CustomContainerMenuBuilder
+import io.github.takenoko4096.starlight.ui.container.CustomContainerMenuProvider
 import net.minecraft.resources.Identifier
-import net.minecraft.world.inventory.AbstractContainerMenu
+import net.minecraft.world.item.Items
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     override fun onInitialize() {
@@ -135,6 +139,118 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     text("THIS IS A TEST MESSAGE FROM NOCTILUCA!")
                 }
             }
+        }
+
+        debugger("menu_1") {
+            val registryAccess = context.source.registryAccess()
+
+            val item = ItemStackBuilder(Items.DIAMOND).build(this@Noctiluca, registryAccess)
+            val context = context
+
+            val menu = CustomContainerMenuBuilder {
+                title {
+                    text("test menu of 1")
+                }
+
+                contents(1) {
+                    setItem(4, item)
+                }
+
+                onClick { player, i, i1, input ->
+                    context.source.sendSystemMessage(component {
+                        text("player=${player.name.string}")
+                        linebreak()
+                        text("slot=$i")
+                        linebreak()
+                        text("button=$i1")
+                        linebreak()
+                        text("input=${input.name}")
+                    })
+                }
+            }
+
+            context.source.player?.openMenu(menu.build())
+        }
+
+        debugger("menu_2") {
+            val registryAccess = context.source.registryAccess()
+
+            val item = ItemStackBuilder(Items.DIAMOND).build(this@Noctiluca, registryAccess)
+            val context = context
+
+            val menu = CustomContainerMenuBuilder {
+                title {
+                    text("test menu of 2")
+                }
+
+                contents(2) {
+                    setItem(4, item)
+                }
+
+                onClick { player, i, i1, input ->
+                    context.source.sendSystemMessage(component {
+                        text("player=${player.name.string}")
+                        linebreak()
+                        text("slot=$i")
+                        linebreak()
+                        text("button=$i1")
+                        linebreak()
+                        text("input=${input.name}")
+                    })
+                }
+            }
+
+            context.source.player?.openMenu(menu.build())
+        }
+
+        debugger("menu_3") {
+            val registryAccess = context.source.registryAccess()
+
+            val item = ItemStackBuilder(Items.DIAMOND).build(this@Noctiluca, registryAccess)
+            val context = context
+
+            val menu = CustomContainerMenuBuilder {
+                title {
+                    text("test menu of 3")
+                }
+
+                contents(3) {
+                    setItem(4, item)
+                }
+
+                onClick { player, i, i1, input ->
+                    context.source.sendSystemMessage(component {
+                        text("player=${player.name.string}")
+                        linebreak()
+                        text("slot=$i")
+                        linebreak()
+                        text("button=$i1")
+                        linebreak()
+                        text("input=${input.name}")
+                    })
+                }
+            }
+
+            context.source.player?.openMenu(menu.build())
+        }
+
+        debugger("menu_6_free") {
+            val registryAccess = context.source.registryAccess()
+
+            val item = ItemStackBuilder(Items.DIAMOND).build(this@Noctiluca, registryAccess)
+            val context = context
+
+            val menu = CustomContainerMenuBuilder {
+                title {
+                    text("test menu of 6")
+                }
+
+                contents(6) {
+                    setItem(4, item)
+                }
+            }
+
+            context.source.player?.openMenu(menu.build())
         }
     }
 }

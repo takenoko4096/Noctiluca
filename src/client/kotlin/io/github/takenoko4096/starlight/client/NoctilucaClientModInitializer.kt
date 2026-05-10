@@ -2,8 +2,10 @@ package io.github.takenoko4096.starlight.client
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import io.github.takenoko4096.starlight.NoctilucaModInitializer
+import io.github.takenoko4096.starlight.client.ui.container.CustomContainerScreen
 import io.github.takenoko4096.starlight.registry.block.ModBlockConfiguration
 import io.github.takenoko4096.starlight.registry.command.node.ConfigurableCommandNode
+import io.github.takenoko4096.starlight.ui.container.CustomContainerMenu
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
@@ -11,6 +13,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry
 import net.minecraft.client.Minecraft
 import net.minecraft.client.color.block.BlockTintSource
+import net.minecraft.client.gui.screens.MenuScreens
 import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.renderer.block.BlockAndTintGetter
 import net.minecraft.commands.CommandBuildContext
@@ -62,6 +65,13 @@ abstract class NoctilucaClientModInitializer(private val mod: NoctilucaModInitia
                 dispatcher.register(command)
             }
         }
+
+        MenuScreens.register(CustomContainerMenu.TYPE_1, ::CustomContainerScreen)
+        MenuScreens.register(CustomContainerMenu.TYPE_2, ::CustomContainerScreen)
+        MenuScreens.register(CustomContainerMenu.TYPE_3, ::CustomContainerScreen)
+        MenuScreens.register(CustomContainerMenu.TYPE_4, ::CustomContainerScreen)
+        MenuScreens.register(CustomContainerMenu.TYPE_5, ::CustomContainerScreen)
+        MenuScreens.register(CustomContainerMenu.TYPE_6, ::CustomContainerScreen)
 
         onInitialize()
 
