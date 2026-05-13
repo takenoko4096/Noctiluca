@@ -2,12 +2,13 @@ package io.github.takenoko4096.starlight.ui.container
 
 import io.github.takenoko4096.starlight.Noctiluca
 import io.github.takenoko4096.starlight.container.CustomContainerMenu
-import io.github.takenoko4096.starlight.container.CustomContainerMenuBuilder
 import io.github.takenoko4096.starlight.container.CustomContainerMenuProvider
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 
 open class ContainerInteraction internal constructor(var title: Component, private val contents: ContainerInteractionConfiguration.Contents) {
+    internal val children = mutableSetOf<CustomContainerMenu>()
+
     fun buttonAt(index: Int): ItemButton? {
         return contents.buttons[index]
     }
@@ -40,15 +41,18 @@ open class ContainerInteraction internal constructor(var title: Component, priva
     }
 
     fun open(player: Player) {
-        val provider = CustomContainerMenuProvider(title, contents.columns, contents.toContainerInitializer(Noctiluca, player.registryAccess())) { player, slot, button, input, slots ->
+        val server = player.level().server ?: throw IllegalStateException("Cannot get server instance from player when container interaction is activated")
+        val serverPlayers = server.playerList.players
+
+        // 誰も開けてないmenuを解放
+        children.removeIf { menu ->
+            serverPlayers.all { serverPlayer -> serverPlayer.containerMenu != menu }
+        }
+
+        val provider = CustomContainerMenuProvider(this, title, contents.columns, contents.toContainerInitializer(Noctiluca, player.registryAccess())) { player, slot, button, input, slots ->
             val button = buttonAt(slot) ?: return@CustomContainerMenuProvider
             button.click(ItemButton.ItemButtonClickEvent(
-                object : ContainerInteraction(title, contents) {
-                    override fun set(slot: Int, button: ItemButton) {
-                        super.set(slot, button)
-                        slots[slot].set(button.itemStack(Noctiluca, player.registryAccess()))
-                    }
-                },
+                this,
                 player,
                 button
             ))
