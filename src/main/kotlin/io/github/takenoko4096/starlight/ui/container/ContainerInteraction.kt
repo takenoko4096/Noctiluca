@@ -7,24 +7,30 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 
 open class ContainerInteraction internal constructor(var title: Component, private val contents: ContainerInteractionConfiguration.Contents) {
-    internal val children = mutableSetOf<CustomContainerMenu>()
+    internal val children = mutableSetOf<CustomContainerMenuProvider.ContainerUse>()
 
-    fun buttonAt(index: Int): ItemButton? {
+    operator fun get(index: Int): ItemButton? {
         return contents.buttons[index]
     }
 
-    open fun set(slot: Int, button: ItemButton) {
+    open operator fun set(slot: Int, button: ItemButton) {
         if (slot !in 0..<(CustomContainerMenu.SLOTS_PER_ROW * contents.columns)) {
             throw IllegalArgumentException("cannot set button to slot $slot: slot index is out of bounds")
         }
 
         contents.buttons[slot] = button
+        for ((player, menu) in children) {
+            menu.slots[slot].set(button.itemStack(Noctiluca, player.registryAccess()))
+        }
     }
 
     fun add(button: ItemButton) {
         for (i in 0..<(CustomContainerMenu.SLOTS_PER_ROW * contents.columns)) {
             if (i !in contents.buttons) {
                 set(i, button)
+                for ((player, menu) in children) {
+                    menu.slots[i].set(button.itemStack(Noctiluca, player.registryAccess()))
+                }
                 return
             }
         }
@@ -32,30 +38,13 @@ open class ContainerInteraction internal constructor(var title: Component, priva
         throw IllegalArgumentException("cannot add button: container is full")
     }
 
-    fun expand(newColumnCount: Int) {
-        if (newColumnCount !in 1..6) {
-            throw IllegalArgumentException("cannot expand columns: new count is out of bounds")
-        }
-
-        contents.columns = newColumnCount
-    }
-
     fun open(player: Player) {
-        val server = player.level().server ?: throw IllegalStateException("Cannot get server instance from player when container interaction is activated")
-        val serverPlayers = server.playerList.players
-
-        // 誰も開けてないmenuを解放
-        children.removeIf { menu ->
-            serverPlayers.all { serverPlayer -> serverPlayer.containerMenu != menu }
-        }
+        // もう使用されていないmenuを解放
+        children.removeIf { (player, menu) -> player.containerMenu != menu }
 
         val provider = CustomContainerMenuProvider(this, title, contents.columns, contents.toContainerInitializer(Noctiluca, player.registryAccess())) { player, slot, button, input, slots ->
-            val button = buttonAt(slot) ?: return@CustomContainerMenuProvider
-            button.click(ItemButton.ItemButtonClickEvent(
-                this,
-                player,
-                button
-            ))
+            val button = get(slot) ?: return@CustomContainerMenuProvider
+            button.click(ItemButton.ItemButtonClickEvent(this, player, button))
         }
 
         player.openMenu(provider)

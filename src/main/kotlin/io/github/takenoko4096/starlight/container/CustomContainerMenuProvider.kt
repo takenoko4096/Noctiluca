@@ -16,7 +16,9 @@ class CustomContainerMenuProvider(private val interaction: ContainerInteraction,
 
     override fun createMenu(containerId: Int, inventory: Inventory, player: Player): AbstractContainerMenu {
         val menu = CustomContainerMenu(containerId, inventory, columnCount, initializer, onClick)
-        interaction.children.add(menu)
+        interaction.children.add(ContainerUse(player, menu))
         return menu
     }
+
+    data class ContainerUse(internal val player: Player, internal val menu: CustomContainerMenu)
 }

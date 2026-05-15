@@ -4,11 +4,13 @@ import io.github.takenoko4096.mojangson.MojangsonPath
 import io.github.takenoko4096.mojangson.MojangsonValueTypes
 import io.github.takenoko4096.starlight.Noctiluca
 import io.github.takenoko4096.starlight.NoctilucaModInitializer
+import io.github.takenoko4096.starlight.StarlightDSL
 import io.github.takenoko4096.starlight.item.ItemComponents
 import io.github.takenoko4096.starlight.item.ItemStackBuilder
 import io.github.takenoko4096.starlight.nbt.toMojangsonCompound
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -22,10 +24,15 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
         event.onClick()
     }
 
-    class ItemButtonConfiguration internal constructor(private val item: Item, private val amount: Int = 1, callback: ItemButtonConfiguration.() -> Unit) {
+    @StarlightDSL
+    class ItemButtonConfiguration internal constructor(private val item: Item, private val amount: Int = 1, private val callback: ItemButtonConfiguration.() -> Unit) {
         private val id = itemButtonMaximumId++
 
-        private var itemStackBuilder: ItemStackBuilder = ItemStackBuilder(item, amount)
+        private var itemStackBuilder: ItemStackBuilder = ItemStackBuilder(item, amount) {
+            customData {
+                compound[ITEM_BUTTON_ID_PATH] = this@ItemButtonConfiguration.id
+            }
+        }
 
         private var onClick: ItemButtonClickEvent.() -> Unit = {}
 
@@ -33,13 +40,16 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
             callback()
         }
 
-        fun components(callback: ItemComponents.() -> Unit) {
+        fun cloner(): ItemButtonCloner {
+            return ItemButtonCloner(item, amount, callback)
+        }
+
+        fun components(components: ItemComponents.() -> Unit) {
             itemStackBuilder = ItemStackBuilder(item, amount) {
-                callback()
+                components()
 
                 customData {
-                    compound.set()
-                    compound[ITEM_BUTTON_ID_PATH] = id
+                    compound[ITEM_BUTTON_ID_PATH] = this@ItemButtonConfiguration.id
                 }
             }
         }
@@ -53,7 +63,23 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
         }
     }
 
-    class ItemButtonClickEvent internal constructor(val interaction: ContainerInteraction, val player: Player, val button: ItemButton)
+    class ItemButtonCloner internal constructor(private val item: Item, private val amount: Int, private val callback: ItemButtonConfiguration.() -> Unit) {
+        fun create(): ItemButton {
+            return ItemButtonConfiguration(item, amount, callback).build()
+        }
+    }
+
+    @StarlightDSL
+    class ItemButtonClickEvent internal constructor(val interaction: ContainerInteraction, val player: Player, val button: ItemButton) {
+        fun close() {
+            if (player is ServerPlayer) {
+                player.closeContainer()
+            }
+            else {
+                Noctiluca.logger.warn("event was called from client side; cannot close window")
+            }
+        }
+    }
 
     companion object {
         val ITEM_BUTTON_ID_PATH = MojangsonPath.of("${Noctiluca.identifier}.ui.container.button.id")

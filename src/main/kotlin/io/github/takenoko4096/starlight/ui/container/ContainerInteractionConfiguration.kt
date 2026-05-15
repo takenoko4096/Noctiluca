@@ -1,6 +1,7 @@
 package io.github.takenoko4096.starlight.ui.container
 
 import io.github.takenoko4096.starlight.NoctilucaModInitializer
+import io.github.takenoko4096.starlight.StarlightDSL
 import io.github.takenoko4096.starlight.container.CustomContainerMenu
 import io.github.takenoko4096.starlight.text.SectionComponentBuilder
 import io.github.takenoko4096.starlight.text.component
@@ -8,6 +9,7 @@ import net.minecraft.core.HolderLookup
 import net.minecraft.network.chat.Component
 import net.minecraft.world.SimpleContainer
 
+@StarlightDSL
 class ContainerInteractionConfiguration(callback: ContainerInteractionConfiguration.() -> Unit) {
     private var title: Component = Component.empty()
 
@@ -29,6 +31,7 @@ class ContainerInteractionConfiguration(callback: ContainerInteractionConfigurat
         return ContainerInteraction(title, contents)
     }
 
+    @StarlightDSL
     class Contents(internal var columns: Int, callback: Contents.() -> Unit) {
         internal val buttons = mutableMapOf<Int, ItemButton>()
 

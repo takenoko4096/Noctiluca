@@ -1,6 +1,5 @@
 package io.github.takenoko4096.starlight
 
-import io.github.takenoko4096.starlight.item.ItemStackBuilder
 import io.github.takenoko4096.starlight.text.RgbColor
 import io.github.takenoko4096.starlight.text.component
 import io.github.takenoko4096.starlight.ui.container.ContainerInteraction
@@ -155,7 +154,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 }
 
                 contents(6) {
-                    val button = ItemButton.of(Items.EMERALD) {
+                    val button1 = ItemButton.of(Items.EMERALD) {
                         components {
                             itemName(component {
                                 text("button test 0 - 1")
@@ -166,12 +165,14 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                             }
                         }
 
+                        val cloner = cloner()
+
                         onClick {
                             player.sendSystemMessage(component {
                                 text("button 0 pressed!")
                             })
 
-                            set(0, ItemButton.of(Items.DIAMOND) {
+                            interaction[0] = ItemButton.of(Items.DIAMOND) {
                                 components {
                                     itemName(component {
                                         text("button test 0 - 2")
@@ -179,13 +180,37 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                                 }
 
                                 onClick {
-                                    set(0, button)
+                                    interaction[0] = cloner.create()
                                 }
-                            })
+                            }
                         }
                     }
 
-                    set(0, button)
+                    set(0, button1)
+
+                    set(8, ItemButton.of(Items.BARRIER) {
+                        components {
+                            itemName(component {
+                                text("close")
+                            })
+                        }
+
+                        onClick {
+                            close()
+                        }
+                    })
+
+                    set(7, ItemButton.of(Items.PAPER) {
+                        components {
+                            itemName(component {
+                                text("reporting count of menu instances")
+                            })
+                        }
+
+                        onClick {
+                            logger.info("menu instances: "+ interaction.children.size)
+                        }
+                    })
                 }
             }
 

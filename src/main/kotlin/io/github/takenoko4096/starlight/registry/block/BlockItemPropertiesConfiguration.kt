@@ -37,7 +37,7 @@ class BlockItemPropertiesConfiguration internal constructor(private val configur
         properties.overrideDescription(translationKey!!)
 
         if (components != null) {
-            components!!.apply(properties)
+            components!!.applyToProperties(properties)
         }
 
         return properties

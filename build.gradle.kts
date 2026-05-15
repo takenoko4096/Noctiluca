@@ -69,7 +69,7 @@ dependencies {
 
     implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
 
-    include(api("io.github.takenoko4096:mojangson-bridge:0.1.1")!!)
+    include(api("io.github.takenoko4096:mojangson-bridge:0.1.2")!!)
 }
 
 buildConfig {

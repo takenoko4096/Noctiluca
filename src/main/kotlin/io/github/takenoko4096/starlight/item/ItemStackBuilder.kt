@@ -12,9 +12,8 @@ class ItemStackBuilder internal constructor(private val item: Item, private val 
         val template = ItemStackTemplate(item, amount)
 
         val components = ItemComponents(mod, dataSource, callback)
-        components.apply(template)
 
-        return template.create()
+        return components.createStack(template)
     }
 
     fun build(data: ServerContainer): ItemStack {

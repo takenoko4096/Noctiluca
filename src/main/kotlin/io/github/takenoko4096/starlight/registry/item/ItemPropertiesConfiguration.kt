@@ -38,7 +38,7 @@ class ItemPropertiesConfiguration internal constructor(private val configuration
 
         if (components == null) throw IllegalStateException("Cannot build item properties: item components is unset")
 
-        components!!.apply(properties)
+        components!!.applyToProperties(properties)
 
         return properties
     }

@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.Recipe
 
@@ -24,20 +25,20 @@ open class ItemComponents internal constructor(private val mod: NoctilucaModInit
         callback()
     }
 
-    internal fun apply(target: Item.Properties) {
+    internal fun applyToProperties(target: Item.Properties) {
         components.forEach {
             it.set(target)
         }
     }
 
-    internal fun apply(target: ItemStackTemplate) {
+    internal fun createStack(target: ItemStackTemplate): ItemStack {
         val builder = DataComponentPatch.builder()
 
         components.forEach {
             it.set(builder)
         }
 
-        target.apply(builder.build())
+        return target.apply(builder.build())
     }
 
     fun <T : Any> negative(type: DataComponentType<T>) {
