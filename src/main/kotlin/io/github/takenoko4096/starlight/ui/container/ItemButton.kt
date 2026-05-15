@@ -10,12 +10,10 @@ import io.github.takenoko4096.starlight.item.ItemStackBuilder
 import io.github.takenoko4096.starlight.nbt.toMojangsonCompound
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponents
-import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 
-class ItemButton private constructor(val id: Int, private val itemStackBuilder: ItemStackBuilder, private val onClick: ItemButtonClickEvent.() -> Unit) : ItemButtonProvider {
+class ItemButton private constructor(val id: Int, private val itemStackBuilder: ItemStackBuilder, private val onClick: ItemButtonClickEvent.() -> Unit) : ItemButtonProvider() {
     internal fun itemStack(mod: NoctilucaModInitializer, registryAccess: HolderLookup.Provider): ItemStack {
         return itemStackBuilder.build(mod, registryAccess)
     }
@@ -45,7 +43,7 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
         }
 
         fun clone(): ItemButtonProvider {
-            return object : ItemButtonProvider {
+            return object : ItemButtonProvider() {
                 override fun getButton(): ItemButton {
                     return ItemButtonConfiguration(item, amount, callback).build()
                 }
@@ -68,18 +66,6 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
 
         internal fun build(): ItemButton {
             return ItemButton(id, itemStackBuilder, onClick)
-        }
-    }
-
-    @StarlightDSL
-    class ItemButtonClickEvent internal constructor(val interaction: ContainerInteraction, val player: Player, val button: ItemButton) {
-        fun close() {
-            if (player is ServerPlayer) {
-                player.closeContainer()
-            }
-            else {
-                Noctiluca.logger.warn("event was called from client side; cannot close window")
-            }
         }
     }
 

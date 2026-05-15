@@ -3,6 +3,8 @@ package io.github.takenoko4096.starlight.item
 import io.github.takenoko4096.starlight.StarlightDSL
 import io.github.takenoko4096.starlight.NoctilucaModInitializer
 import io.github.takenoko4096.starlight.item.components.*
+import io.github.takenoko4096.starlight.text.SectionComponentBuilder
+import io.github.takenoko4096.starlight.text.component
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.component.DataComponentPatch
 import net.minecraft.core.component.DataComponentType
@@ -53,6 +55,14 @@ open class ItemComponents internal constructor(private val mod: NoctilucaModInit
             ).toComponent())
     }
 
+    fun customName(builder: SectionComponentBuilder.() -> Unit) {
+        customName(component(builder))
+    }
+
+    fun customName(component: Component) {
+        components.add(ItemComponent.valued(DataComponents.CUSTOM_NAME, component))
+    }
+
     fun damage(value: Int) {
         components.add(ItemComponent.valued(DataComponents.DAMAGE, value))
     }
@@ -87,6 +97,10 @@ open class ItemComponents internal constructor(private val mod: NoctilucaModInit
 
     fun itemModel(identifier: Identifier) {
         components.add(ItemComponent.valued(DataComponents.ITEM_MODEL, identifier))
+    }
+
+    fun itemName(builder: SectionComponentBuilder.() -> Unit) {
+        itemName(component(builder))
     }
 
     fun itemName(component: Component) {
@@ -131,6 +145,10 @@ open class ItemComponents internal constructor(private val mod: NoctilucaModInit
 
     fun tool(callback: ToolConfiguration.() -> Unit) {
         components.add(ToolConfiguration(mod, callback).toComponent())
+    }
+
+    fun tooltipDisplay(callback: TooltipDisplayConfiguration.() -> Unit) {
+        components.add(TooltipDisplayConfiguration(mod, callback).toComponent())
     }
 
     fun unbreakable() {

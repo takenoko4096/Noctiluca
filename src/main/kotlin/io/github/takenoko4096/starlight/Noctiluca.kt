@@ -1,13 +1,12 @@
 package io.github.takenoko4096.starlight
 
+import io.github.takenoko4096.starlight.container.CustomContainerMenu
 import io.github.takenoko4096.starlight.text.RgbColor
 import io.github.takenoko4096.starlight.text.component
 import io.github.takenoko4096.starlight.ui.container.ContainerInteraction
-import io.github.takenoko4096.starlight.ui.container.ContainerInteractionContents
 import io.github.takenoko4096.starlight.ui.container.ItemButton
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.enchantment.Enchantments
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     override fun onInitialize() {
@@ -148,73 +147,46 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        debugger("container_interaction") {
-            val interaction = ContainerInteraction {
-                title {
-                    text("container interaction test")
-                }
-
-                contents(6) {
-                    val button1 = ItemButton.of(Items.EMERALD) {
-                        components {
-                            itemName(component {
-                                text("button test 0 - 1")
-                            })
-
-                            enchantments {
-                                enchant(Enchantments.LUNGE, 1)
-                            }
-                        }
-
-                        val clonedButton = clone()
-
-                        onClick {
-                            player.sendSystemMessage(component {
-                                text("button 0 pressed!")
-                            })
-
-                            interaction[0] = ItemButton.of(Items.DIAMOND) {
-                                components {
-                                    itemName(component {
-                                        text("button test 0 - 2")
-                                    })
-                                }
-
-                                onClick {
-                                    interaction[0] = clonedButton
-                                }
-                            }
-                        }
-                    }
-
-                    set(0, button1)
-
-                    set(8, ItemButton.of(Items.BARRIER) {
-                        components {
-                            itemName(component {
-                                text("close")
-                            })
-                        }
-
-                        onClick {
-                            close()
-                        }
-                    })
-
-                    set(7, ItemButton.of(Items.PAPER) {
-                        components {
-                            itemName(component {
-                                text("reporting count of menu instances")
-                            })
-                        }
-
-                        onClick {
-                            logger.info("menu instances: "+ interaction.children.size)
-                        }
-                    })
-                }
+        val interaction = ContainerInteraction {
+            title {
+                text("container interaction test")
             }
 
+            contents(6) {
+                val decoration = ItemButton.of(Items.BLUE_STAINED_GLASS_PANE) {
+                    components {
+                        tooltipDisplay {
+                            hideTooltip = true
+                        }
+
+                        enchantmentGlintOverride(true)
+                    }
+                }
+
+                fillRow(0, decoration)
+                fillRow(5, decoration)
+                fillColumn(0, decoration)
+                fillColumn(8, decoration)
+
+                set(4 + CustomContainerMenu.SLOTS_PER_ROW, ItemButton.of(Items.BOOK) {
+                    components {
+                        itemName {
+                            text("test")
+                        }
+
+                        enchantmentGlintOverride(true)
+                    }
+
+                    onClick {
+                        player.sendSystemMessage(component {
+                            text("test message")
+                        })
+                    }
+                })
+            }
+        }
+
+        debugger("container_interaction") {
             context.source.player?.run {
                 interaction.open(this)
             }

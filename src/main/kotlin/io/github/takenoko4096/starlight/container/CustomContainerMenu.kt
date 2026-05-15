@@ -11,11 +11,12 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.flag.FeatureFlagSet
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ContainerInput
+import net.minecraft.world.inventory.ContainerListener
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 
-class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, val columnCount: Int, initializer: SimpleContainer.() -> Unit = {}, private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Unit)? = null) : AbstractContainerMenu(getOrCreateType(columnCount),id) {
+class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, val columnCount: Int, initializer: SimpleContainer.() -> Unit = {}, private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Boolean)? = null, private val onSlotChanged: ((Player, Int, ItemStack, NonNullList<Slot>) -> Unit)? = null) : AbstractContainerMenu(getOrCreateType(columnCount),id) {
     private val container = SimpleContainer(SLOTS_PER_ROW * columnCount)
 
     init {
@@ -54,6 +55,16 @@ class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, va
         }
 
         container.initializer()
+
+        addSlotListener(object : ContainerListener {
+            override fun slotChanged(menu: AbstractContainerMenu, slotIndex: Int, itemStack: ItemStack) {
+                onSlotChanged?.invoke(inventory.player, slotIndex, itemStack, slots)
+            }
+
+            override fun dataChanged(menu: AbstractContainerMenu, id: Int, value: Int) {
+                Noctiluca.logger.info("dataChanged: id=$id, value=$value")
+            }
+        })
     }
 
     override fun quickMoveStack(player: Player, slotIndex: Int): ItemStack {
@@ -101,7 +112,10 @@ class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, va
                 // swap(多分１とかFキー押してカーソル合わせたものと入れ替える操作のこと): 非コンテナではターゲットがコンテナ外のもののみ許可
                 // quick craft(試した限りではspreadのこと): 非コンテナではコンテナ外のもののみ許可
                 if (isContainerSlot(slotIndex)) {
-                    onClick(player, slotIndex, buttonNum, containerInput, slots)
+                    val doOperation = onClick(player, slotIndex, buttonNum, containerInput, slots)
+                    if (doOperation) {
+                        super.clicked(slotIndex, buttonNum, containerInput, player)
+                    }
                 }
                 else {
                     super.clicked(slotIndex, buttonNum, containerInput, player)
@@ -109,13 +123,19 @@ class CustomContainerMenu internal constructor(id: Int, inventory: Inventory, va
             }
             ContainerInput.QUICK_MOVE -> {
                 // quick move: 非コンテナでは常に禁止
-                onClick(player, slotIndex, buttonNum, containerInput, slots)
+                val doOperation = onClick(player, slotIndex, buttonNum, containerInput, slots)
+                if (doOperation) {
+                    super.clicked(slotIndex, buttonNum, containerInput, player)
+                }
             }
             ContainerInput.PICKUP_ALL -> {
                 // pickup all(多分これは左クリック2回押しで同じアイテムをまとめる操作のこと): 非コンテナでは常に禁止、コンテナでは非コンテナのアイテムを取らないような改造(?)コードを実行
 
                 if (isContainerSlot(slotIndex)) {
-                    onClick(player, slotIndex, buttonNum, containerInput, slots)
+                    val doOperation = onClick(player, slotIndex, buttonNum, containerInput, slots)
+                    if (doOperation) {
+                        super.clicked(slotIndex, buttonNum, containerInput, player)
+                    }
                 }
                 else {
                     val slot = slots[slotIndex] as Slot
