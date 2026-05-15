@@ -15,13 +15,17 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 
-class ItemButton private constructor(val id: Int, private val itemStackBuilder: ItemStackBuilder, private val onClick: ItemButtonClickEvent.() -> Unit) {
+class ItemButton private constructor(val id: Int, private val itemStackBuilder: ItemStackBuilder, private val onClick: ItemButtonClickEvent.() -> Unit) : ItemButtonProvider {
     internal fun itemStack(mod: NoctilucaModInitializer, registryAccess: HolderLookup.Provider): ItemStack {
         return itemStackBuilder.build(mod, registryAccess)
     }
 
     internal fun click(event: ItemButtonClickEvent) {
         event.onClick()
+    }
+
+    override fun getButton(): ItemButton {
+        return this
     }
 
     @StarlightDSL
@@ -40,8 +44,12 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
             callback()
         }
 
-        fun cloner(): ItemButtonCloner {
-            return ItemButtonCloner(item, amount, callback)
+        fun clone(): ItemButtonProvider {
+            return object : ItemButtonProvider {
+                override fun getButton(): ItemButton {
+                    return ItemButtonConfiguration(item, amount, callback).build()
+                }
+            }
         }
 
         fun components(components: ItemComponents.() -> Unit) {
@@ -60,12 +68,6 @@ class ItemButton private constructor(val id: Int, private val itemStackBuilder: 
 
         internal fun build(): ItemButton {
             return ItemButton(id, itemStackBuilder, onClick)
-        }
-    }
-
-    class ItemButtonCloner internal constructor(private val item: Item, private val amount: Int, private val callback: ItemButtonConfiguration.() -> Unit) {
-        fun create(): ItemButton {
-            return ItemButtonConfiguration(item, amount, callback).build()
         }
     }
 

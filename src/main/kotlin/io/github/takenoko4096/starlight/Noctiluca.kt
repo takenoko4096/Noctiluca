@@ -3,6 +3,7 @@ package io.github.takenoko4096.starlight
 import io.github.takenoko4096.starlight.text.RgbColor
 import io.github.takenoko4096.starlight.text.component
 import io.github.takenoko4096.starlight.ui.container.ContainerInteraction
+import io.github.takenoko4096.starlight.ui.container.ContainerInteractionContents
 import io.github.takenoko4096.starlight.ui.container.ItemButton
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.Items
@@ -148,7 +149,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         }
 
         debugger("container_interaction") {
-            val interaction = ContainerInteraction.create {
+            val interaction = ContainerInteraction {
                 title {
                     text("container interaction test")
                 }
@@ -165,7 +166,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                             }
                         }
 
-                        val cloner = cloner()
+                        val clonedButton = clone()
 
                         onClick {
                             player.sendSystemMessage(component {
@@ -180,7 +181,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                                 }
 
                                 onClick {
-                                    interaction[0] = cloner.create()
+                                    interaction[0] = clonedButton
                                 }
                             }
                         }
