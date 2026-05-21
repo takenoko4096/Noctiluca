@@ -22,14 +22,14 @@
         "main": [
             {
                 "adapter": "kotlin",
-                "value": "io.github.takenoko4096.starlight.Noctiluca"
+                "value": "io.github.takenoko4096.noctiluca.Noctiluca"
             }
         ]
     },
     "mixins": [
-        "starlight.mixins.json",
+        "noctiluca.mixins.json",
         {
-            "config": "starlight.client.mixins.json",
+            "config": "noctiluca.client.mixins.json",
             "environment": "client"
         }
     ],
