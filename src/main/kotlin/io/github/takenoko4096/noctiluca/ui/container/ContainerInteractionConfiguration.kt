@@ -4,12 +4,15 @@ import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.text.SectionComponentBuilder
 import io.github.takenoko4096.noctiluca.text.component
 import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.player.Player
 
 @NoctilucaDsl
 class ContainerInteractionConfiguration(callback: ContainerInteractionConfiguration.() -> Unit) {
     internal var title: Component = Component.empty()
 
     internal var contents: ContainerInteractiveContents = ContainerInteractiveContents(1) {}
+
+    internal var onCloseCallback: ContainerInteractionCloseEvent.() -> Unit = {}
 
     init {
         callback()
@@ -21,5 +24,9 @@ class ContainerInteractionConfiguration(callback: ContainerInteractionConfigurat
 
     fun contents(columns: Int, callback: ContainerInteractiveContents.() -> Unit) {
         contents = ContainerInteractiveContents(columns, callback)
+    }
+
+    fun onClose(callback: ContainerInteractionCloseEvent.() -> Unit) {
+        onCloseCallback = callback
     }
 }

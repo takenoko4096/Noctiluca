@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.color.block.BlockTintSource
 import net.minecraft.client.gui.screens.MenuScreens
 import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.renderer.block.BlockAndTintGetter
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.core.BlockPos

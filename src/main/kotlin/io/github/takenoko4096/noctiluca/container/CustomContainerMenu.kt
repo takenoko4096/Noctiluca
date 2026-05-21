@@ -22,7 +22,8 @@ class CustomContainerMenu internal constructor(
     val columnCount: Int,
     initializer: SimpleContainer.() -> Unit = {},
     private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Boolean)? = null,
-    private val onSlotChanged: ((Player, Int, ItemStack, NonNullList<Slot>) -> Unit)? = null
+    private val onSlotChanged: ((Player, Int, ItemStack, NonNullList<Slot>) -> Unit)? = null,
+    private val onClose: ((Player, NonNullList<Slot>) -> Unit)? = null
 ) : AbstractContainerMenu(getOrCreateType(columnCount),id) {
     private val container = SimpleContainer(SLOTS_PER_ROW * columnCount)
 
@@ -216,6 +217,10 @@ class CustomContainerMenu internal constructor(
             }
 
             return types[columnCount]!!
+        }
+
+        fun invokeOnClose(menu: CustomContainerMenu, player: Player) {
+            menu.onClose?.invoke(player, menu.slots)
         }
 
         val TYPE_1 = getOrCreateType(1)

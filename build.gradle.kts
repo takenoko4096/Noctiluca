@@ -45,6 +45,8 @@ loom {
             sourceSet("client")
         }
     }
+
+    accessWidenerPath = file("src/main/resources/noctiluca.classtweaker")
 }
 
 fabricApi {
@@ -75,7 +77,7 @@ dependencies {
 buildConfig {
     sourceSets {
         getByName("main") {
-            packageName("io.github.takenoko4096.starlight")
+            packageName("io.github.takenoko4096.noctiluca")
             buildConfigField(
                 "String",
                 "${modName.uppercase()}_VERSION",

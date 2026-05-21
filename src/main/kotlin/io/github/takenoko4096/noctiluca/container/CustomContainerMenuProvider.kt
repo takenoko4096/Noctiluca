@@ -10,11 +10,18 @@ import net.minecraft.world.inventory.ContainerInput
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 
-open class CustomContainerMenuProvider(private val title: Component, private val columnCount: Int, private val initializer: SimpleContainer.() -> Unit, private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Boolean)?, private val onSlotChanged: ((Player, Int, ItemStack, NonNullList<Slot>) -> Unit)? = null) : MenuProvider {
+open class CustomContainerMenuProvider(
+    private val title: Component,
+    val columnCount: Int,
+    private val initializer: SimpleContainer.() -> Unit,
+    private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Boolean)?,
+    private val onSlotChanged: ((Player, Int, ItemStack, NonNullList<Slot>) -> Unit)? = null,
+    private val onClose: ((Player, NonNullList<Slot>) -> Unit)? = null
+) : MenuProvider {
     override fun getDisplayName() = title
 
     override fun createMenu(containerId: Int, inventory: Inventory, player: Player): CustomContainerMenu {
-        val menu = CustomContainerMenu(containerId, inventory, columnCount, initializer, onClick, onSlotChanged)
+        val menu = CustomContainerMenu(containerId, inventory, columnCount, initializer, onClick, onSlotChanged, onClose)
         return menu
     }
 }

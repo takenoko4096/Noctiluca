@@ -12,10 +12,13 @@ open class ContainerInteraction(callback: ContainerInteractionConfiguration.() -
 
     internal val children = mutableSetOf<ContainerInteractionMenuProvider.Open>()
 
+    internal val onCloseCallback: ContainerInteractionCloseEvent.() -> Unit
+
     init {
         val configuration = ContainerInteractionConfiguration(callback)
         title = configuration.title
         contents = configuration.contents
+        onCloseCallback = configuration.onCloseCallback
     }
 
     operator fun get(index: Int): ItemButton? {
@@ -68,12 +71,16 @@ open class ContainerInteraction(callback: ContainerInteractionConfiguration.() -
             this,
             title,
             contents.columnCount,
-            contents.toInitializer(Noctiluca, player.registryAccess())
-        ) { player, slot, button, input, slots ->
-            val button = get(slot) ?: return@ContainerInteractionMenuProvider false
-            button.click(ItemButtonClickEvent(this, player, button, slots[slot].item.copy()))
-            return@ContainerInteractionMenuProvider false
-        }
+            initializer = contents.toInitializer(Noctiluca, player.registryAccess()),
+            onClick = { player, slot, _, _, slots ->
+                val button = get(slot) ?: return@ContainerInteractionMenuProvider false
+                button.click(ItemButtonClickEvent(this, player, button, slots[slot].item.copy()))
+                return@ContainerInteractionMenuProvider false
+            },
+            onClose = { player, _ ->
+                onCloseCallback(ContainerInteractionCloseEvent(this, player))
+            }
+        )
 
         player.openMenu(provider)
     }

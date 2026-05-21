@@ -151,6 +151,12 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 text("container interaction test")
             }
 
+            onClose {
+                player.sendSystemMessage(component {
+                    text("closed")
+                })
+            }
+
             contents(6) {
                 val decoration = ItemButton.of(Items.BLUE_STAINED_GLASS_PANE) {
                     components {
