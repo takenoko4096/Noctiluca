@@ -21,6 +21,7 @@ public abstract class LocalPlayerMixin extends Player {
 
     @Inject(method = "closeContainer()V", at = @At("HEAD"))
     public void injectCloseContainer(CallbackInfo info) {
+        // なんかうごかん？extends Player外したら動く？？？？
         if (containerMenu instanceof CustomContainerMenu customContainerMenu) {
             CustomContainerMenu.Companion.invokeOnClose(customContainerMenu, this);
         }
