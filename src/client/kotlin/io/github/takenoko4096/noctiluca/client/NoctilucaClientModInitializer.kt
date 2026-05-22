@@ -15,7 +15,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.color.block.BlockTintSource
 import net.minecraft.client.gui.screens.MenuScreens
 import net.minecraft.client.multiplayer.ClientLevel
-import net.minecraft.client.player.LocalPlayer
 import net.minecraft.client.renderer.block.BlockAndTintGetter
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.core.BlockPos
@@ -66,13 +65,6 @@ abstract class NoctilucaClientModInitializer(private val mod: NoctilucaModInitia
                 dispatcher.register(command)
             }
         }
-
-        MenuScreens.register(CustomContainerMenu.TYPE_1, ::CustomContainerScreen)
-        MenuScreens.register(CustomContainerMenu.TYPE_2, ::CustomContainerScreen)
-        MenuScreens.register(CustomContainerMenu.TYPE_3, ::CustomContainerScreen)
-        MenuScreens.register(CustomContainerMenu.TYPE_4, ::CustomContainerScreen)
-        MenuScreens.register(CustomContainerMenu.TYPE_5, ::CustomContainerScreen)
-        MenuScreens.register(CustomContainerMenu.TYPE_6, ::CustomContainerScreen)
 
         onInitialize()
 

@@ -18,7 +18,12 @@
     "environment": "*",
     "entrypoints": {
         "fabric-datagen": [],
-        "client": [],
+        "client": [
+            {
+                "adapter": "kotlin",
+                "value": "io.github.takenoko4096.noctiluca.client.NoctilucaClient"
+            }
+        ],
         "main": [
             {
                 "adapter": "kotlin",

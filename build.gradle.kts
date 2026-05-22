@@ -46,6 +46,8 @@ loom {
         }
     }
 
+    log4jConfigs.from("log4j-dev.xml")
+
     accessWidenerPath = file("src/main/resources/noctiluca.classtweaker")
 }
 

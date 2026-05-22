@@ -10,11 +10,11 @@ import net.minecraft.world.item.Items
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     override fun onInitialize() {
-        val debuggerNameArgumentType = commandRegistry.registerArgumentType<Debugger>("debugger") {
+        val debuggerArgumentType = commandRegistry.registerArgumentType<Debugger>("debugger") {
             parses {
                 val first = reader.readUnquotedString()
 
-                return@parses if (reader.canRead() && reader.peek() == ':') {
+                if (reader.canRead() && reader.peek() == ':') {
                     reader.skip()
                     Debugger.get(Identifier.fromNamespaceAndPath(first, reader.readUnquotedString()))
                         ?: throw exception("デバッガ '$identifier' は存在しません")
@@ -45,18 +45,59 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         }
                     }
                 }
+
+                "warn" {
+                    "message"(greedyString()) {
+                        executes {
+                            val message = "message"<String>()
+                            logger.warn(message)
+                            context.successful {
+                                text("ログに書き込みました: ")
+                                textColor(RgbColor.GOLD)
+                                text(message)
+                            }
+                        }
+                    }
+                }
+
+                "error" {
+                    "message"(greedyString()) {
+                        executes {
+                            val message = "message"<String>()
+                            logger.error(message)
+                            context.successful {
+                                text("ログに書き込みました: ")
+                                textColor(RgbColor.RED)
+                                text(message)
+                            }
+                        }
+                    }
+                }
+
+                "debug" {
+                    "message"(greedyString()) {
+                        executes {
+                            val message = "message"<String>()
+                            logger.debug(message)
+                            context.successful {
+                                text("ログに書き込みました: ")
+                                textColor(RgbColor.LIGHT_PURPLE)
+                                text(message)
+                            }
+                        }
+                    }
+                }
             }
 
             "debugger" {
-                "debugger_name"(debuggerNameArgumentType) {
+                "debugger"(debuggerArgumentType) {
                     executes {
-                        "debugger_name"<Debugger>().call(this)
+                        "debugger"<Debugger>().call(this)
                     }
 
                     catches {
-                        val name = "debugger_name"<Debugger>()
-
-                        logger.error("error on debugger: ${name.identifier}", error)
+                        val debugger = "debugger"<Debugger>()
+                        logger.error("Failed to execute debugger ${debugger.identifier}", error)
                     }
                 }
             }
