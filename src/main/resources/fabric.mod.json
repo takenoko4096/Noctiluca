@@ -17,7 +17,12 @@
     "icon": "assets/noctiluca/icon.png",
     "environment": "*",
     "entrypoints": {
-        "fabric-datagen": [],
+        "fabric-datagen": [
+            {
+                "adapter": "kotlin",
+                "value": "io.github.takenoko4096.noctiluca.datagen.NoctilucaDataGen"
+            }
+        ],
         "client": [
             {
                 "adapter": "kotlin",
