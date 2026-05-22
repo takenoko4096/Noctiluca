@@ -1,9 +1,15 @@
 package io.github.takenoko4096.noctiluca.container
 
+import com.mojang.serialization.RecordBuilder
+import io.github.takenoko4096.mojangson.values.MojangsonCompound
+import io.github.takenoko4096.mojangson.values.MojangsonList
 import io.github.takenoko4096.noctiluca.Noctiluca
+import io.github.takenoko4096.noctiluca.nbt.toMojangsonCompound
 import net.minecraft.core.NonNullList
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtOps
 import net.minecraft.resources.Identifier
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
@@ -182,6 +188,23 @@ class CustomContainerMenu internal constructor(
         }
     }
 
+    fun serializeContents(): MojangsonList {
+        return MojangsonList.valueOf(slots.map {
+            val itemStack = it.item
+            val result = ItemStack.MAP_CODEC.encoder().encodeStart(NbtOps.INSTANCE, itemStack)
+            if (result.isError) {
+                MojangsonCompound.valueOf(mapOf<String, Any>(
+                    "id" to "minecraft:air",
+                    "count" to 1,
+                    "Slot" to it.containerSlot.toByte()
+                ))
+            }
+            else {
+                (result.getOrThrow { throw RuntimeException("NEVER HAPPENS") } as CompoundTag).toMojangsonCompound()
+            }
+        })
+    }
+
     companion object {
         const val X_PADDING = 8
 
@@ -219,8 +242,16 @@ class CustomContainerMenu internal constructor(
             return types[columnCount]!!
         }
 
-        fun invokeOnClose(menu: CustomContainerMenu, player: Player) {
-            menu.onClose?.invoke(player, menu.slots)
+        internal val menuOpens = mutableSetOf<Open>()
+
+        fun invokeOnClose(clientMenu: CustomContainerMenu, clientPlayer: Player) {
+            for (open in menuOpens) {
+                if (open.menu.containerId == clientMenu.containerId && open.player.id == clientPlayer.id) {
+                    open.menu.onClose?.invoke(open.player, open.menu.slots)
+                }
+            }
+
+            menuOpens.removeIf { it.menu.containerId == clientMenu.containerId && it.player.id == clientPlayer.id }
         }
 
         val TYPE_1 = getOrCreateType(1)
@@ -230,4 +261,6 @@ class CustomContainerMenu internal constructor(
         val TYPE_5 = getOrCreateType(5)
         val TYPE_6 = getOrCreateType(6)
     }
+
+    class Open internal constructor(internal val player: Player, internal val menu: CustomContainerMenu)
 }

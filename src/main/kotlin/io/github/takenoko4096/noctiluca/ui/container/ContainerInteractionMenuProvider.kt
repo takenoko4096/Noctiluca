@@ -17,7 +17,7 @@ class ContainerInteractionMenuProvider(
     initializer: SimpleContainer.() -> Unit,
     onClick: (Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Boolean,
     onClose: (Player, NonNullList<Slot>) -> Unit
-) : CustomContainerMenuProvider(title, columnCount, initializer, onClick, onClose = onClose) {
+) : CustomContainerMenuProvider(title, columnCount, initializer, onClick = onClick, onSlotChanged = null, onClose = onClose) {
     override fun createMenu(containerId: Int, inventory: Inventory, player: Player): CustomContainerMenu {
         val menu = super.createMenu(containerId, inventory, player)
         interaction.children.add(Open(player, menu))

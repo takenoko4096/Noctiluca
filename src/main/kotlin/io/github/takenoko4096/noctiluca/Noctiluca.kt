@@ -1,5 +1,6 @@
 package io.github.takenoko4096.noctiluca
 
+import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -194,6 +195,12 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         debugger("container_interaction") {
             context.source.player?.run {
                 interaction.open(this)
+            }
+        }
+
+        debugger("custom_container_menu_count") {
+            context.successful {
+                text(CustomContainerMenu.menuOpens.size.toString())
             }
         }
     }

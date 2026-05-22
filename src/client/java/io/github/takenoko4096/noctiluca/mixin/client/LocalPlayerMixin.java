@@ -1,7 +1,6 @@
 package io.github.takenoko4096.noctiluca.mixin.client;
 
 import com.mojang.authlib.GameProfile;
-import io.github.takenoko4096.noctiluca.Noctiluca;
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -21,12 +20,8 @@ public abstract class LocalPlayerMixin extends Player {
 
     @Inject(method = "closeContainer()V", at = @At("HEAD"))
     public void injectCloseContainer(CallbackInfo info) {
-        // なんかうごかん？extends Player外したら動く？？？？
         if (containerMenu instanceof CustomContainerMenu customContainerMenu) {
             CustomContainerMenu.Companion.invokeOnClose(customContainerMenu, this);
-        }
-        else {
-            Noctiluca.INSTANCE.getLogger().info("close but not a custom");
         }
     }
 }

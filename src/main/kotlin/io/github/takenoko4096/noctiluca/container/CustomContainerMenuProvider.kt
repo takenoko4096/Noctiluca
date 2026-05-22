@@ -22,6 +22,7 @@ open class CustomContainerMenuProvider(
 
     override fun createMenu(containerId: Int, inventory: Inventory, player: Player): CustomContainerMenu {
         val menu = CustomContainerMenu(containerId, inventory, columnCount, initializer, onClick, onSlotChanged, onClose)
+        CustomContainerMenu.menuOpens.add(CustomContainerMenu.Open(player, menu))
         return menu
     }
 }
