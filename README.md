@@ -6,17 +6,20 @@ Fabric Modの分散する煩雑なコードをKotlin DSLで一箇所に記述す
 
 ### Features
 
-- 新規アイテムのDSLによる完全 `main` ソースセット内定義
-- 新規ブロックのDSLによる完全 `main` ソースセット内定義
-- 新規コマンドのDSLによる定義
-- 主にコンテンツ追加のケースにおけるクライアントコードの省略
-- アイテムスタックビルダー
-- テキストコンポーネントビルダー
-- 新規クリエイティブタブのDSLによる定義
-- NBT編集／コンポーネントへのシリアライザー
-- 汎用イベントディスパッチャー
-- `runDatagen` 実行によるアイテムモデル／ブロックモデル／翻訳ファイル／タグの自動定義
-- その他ユーティリティ等
+#### Registries (including automatic data generation)
+- `itemRegistry`
+- `blockRegistry`
+- `translationRegistry`
+- `commandRegistry`
+- `tagRegistry`
+- `creativeModeTabRegistry`
+
+#### Utilities
+- `component()`
+- `ItemStackBuilder`
+
+#### Interactions
+- `ContainerInteraction`
 
 ### Setup
 
