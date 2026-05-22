@@ -1,8 +1,6 @@
 # Noctiluca
 
-コンテンツ追加系はクライアント用コードもアセット生成コードも全部一箇所にまとめて書きたい！！！！！！
-
-<br>っていう人(我)のためのFabric Mod 用の API
+Fabric Modの分散する煩雑なコードをKotlin DSLで一箇所に記述することを目的としたライブラリMod
 
 ## Usage
 
@@ -24,7 +22,7 @@
 
 > [!WARNING]
 > - `fabric.mod.json` に `TestMod`, `TestClientMod`, `TestModDataGenerator` の3つすべてについて記述すること
-> - `build.gradle(.kts)` に `configureDataFeneration { client = true }` を記述すること
+> - `build.gradle(.kts)` の `fabircApi` に `configureDataGeneration { client = true }` を記述すること
 > - Noctiluca は MOD であり、 `mods` フォルダに配置する必要があります
 
 ```kotlin
