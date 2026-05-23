@@ -5,7 +5,11 @@ import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
+import net.minecraft.server.dialog.Dialog
+import net.minecraft.server.dialog.Dialogs
 import net.minecraft.world.item.Items
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -27,6 +31,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
             suggests {
                 strings(Debugger.keys().map(Identifier::toString))
+                strings(Debugger.keys().filter { it.namespace == identifier }.map(Identifier::toString))
             }
         }
 
@@ -236,6 +241,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         debugger("container_interaction") {
             context.source.player?.run {
                 interaction.open(this)
+                openDialog(registryAccess().lookupOrThrow(Registries.DIALOG).getOrThrow(Dialogs.SERVER_LINKS))
             }
         }
 

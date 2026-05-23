@@ -16,6 +16,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.Recipe
+import net.minecraft.world.item.enchantment.Enchantments
 
 @NoctilucaDsl
 open class ItemComponents internal constructor(private val mod: NoctilucaModInitializer, private val dataSource: HolderLookup.Provider?, callback: ItemComponents.() -> Unit) {

@@ -81,42 +81,15 @@ dependencies {
 buildConfig {
     sourceSets {
         getByName("main") {
-            packageName("io.github.takenoko4096.noctiluca")
-            buildConfigField(
-                "String",
-                "${modName.uppercase()}_VERSION",
-                "\"${project.version}\""
-            )
-            buildConfigField(
-                "String",
-                "MINECRAFT_VERSION",
-                "\"${project.property("minecraft_version")}\""
-            )
-            buildConfigField(
-                "String",
-                "FABRIC_LOADER_VERSION",
-                "\"${project.property("loader_version")}\""
-            )
-            buildConfigField(
-                "String",
-                "FABRIC_API_VERSION",
-                "\"${project.property("fabric_api_version")}\""
-            )
-            buildConfigField(
-                "String",
-                "KOTLIN_LOADER_VERSION",
-                "\"${project.property("kotlin_loader_version")}\""
-            )
-            buildConfigField(
-                "Int",
-                "JAVA_VERSION",
-                "$javaVersion"
-            )
-            buildConfigField(
-                "String",
-                "FABRIC_LOOM_VERSION",
-                 "\"${project.property("loom_version")}\""
-            )
+            packageName("${project.group}.${modName.lowercase()}")
+
+            buildConfigField("${modName.uppercase()}_VERSION", "${project.version}")
+            buildConfigField("MINECRAFT_VERSION", "${project.property("minecraft_version")}")
+            buildConfigField("FABRIC_LOADER_VERSION", "${project.property("loader_version")}")
+            buildConfigField("FABRIC_API_VERSION", "${project.property("fabric_api_version")}")
+            buildConfigField("KOTLIN_LOADER_VERSION", "${project.property("kotlin_loader_version")}")
+            buildConfigField("JAVA_VERSION", javaVersion)
+            buildConfigField("FABRIC_LOOM_VERSION", "${project.property("loom_version")}")
         }
     }
 }
