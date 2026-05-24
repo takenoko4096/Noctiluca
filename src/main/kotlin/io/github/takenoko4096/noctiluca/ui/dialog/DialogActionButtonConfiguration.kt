@@ -4,13 +4,11 @@ import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.text.SectionComponentBuilder
 import io.github.takenoko4096.noctiluca.text.component
-import net.minecraft.nbt.Tag
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.server.dialog.ActionButton
 import net.minecraft.server.dialog.CommonButtonData
 import net.minecraft.server.dialog.action.CustomAll
-import net.minecraft.world.entity.player.Player
 import java.util.Optional
 
 @NoctilucaDsl
@@ -19,7 +17,7 @@ class DialogActionButtonConfiguration internal constructor(callback: DialogActio
 
     private var tooltip: Component? = null
 
-    private var onClick: DialogCustomActionButtonClickEvent.() -> Unit = {}
+    private var onClick: DynamicDialogEvent.() -> Unit = {}
 
     var width: Int = 150
 
@@ -35,7 +33,7 @@ class DialogActionButtonConfiguration internal constructor(callback: DialogActio
         tooltip = component(callback)
     }
 
-    fun onClick(callback: DialogCustomActionButtonClickEvent.() -> Unit) {
+    fun onClick(callback: DynamicDialogEvent.() -> Unit) {
         this.onClick = callback
     }
 
@@ -47,7 +45,7 @@ class DialogActionButtonConfiguration internal constructor(callback: DialogActio
         )
     }
 
-    internal fun build(mod: NoctilucaModInitializer, map: MutableMap<Identifier, DialogCustomActionButtonClickEvent.() -> Unit>): ActionButton {
+    internal fun build(mod: NoctilucaModInitializer, map: MutableMap<Identifier, DynamicDialogEvent.() -> Unit>): ActionButton {
         val identifier = mod.identifierOf("custom_dialog_action_${maximumId++}")
 
         map[identifier] = onClick
@@ -62,12 +60,6 @@ class DialogActionButtonConfiguration internal constructor(callback: DialogActio
             )
         )
     }
-
-    class DialogCustomActionButtonClickEvent internal constructor(
-        val player: Player,
-        val identifier: Identifier,
-        val payload: Tag?
-    )
 
     companion object {
         private var maximumId: UInt = 0u

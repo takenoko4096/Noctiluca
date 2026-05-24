@@ -15,6 +15,10 @@ import java.util.Optional
 class DialogInputConfiguration(callback: DialogInputConfiguration.() -> Unit) {
     private val inputs = mutableListOf<Input>()
 
+    val labelTemplate = $$"%1$s"
+
+    val valueTemplate = $$"%2$s"
+
     init {
         callback()
     }

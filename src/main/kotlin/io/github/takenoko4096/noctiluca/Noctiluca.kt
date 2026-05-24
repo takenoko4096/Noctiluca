@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
+import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
@@ -8,13 +9,10 @@ import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
-import io.github.takenoko4096.noctiluca.ui.dialog.DialogHolder
-import io.github.takenoko4096.noctiluca.ui.dialog.type.ConfirmationDialogConfiguration
-import io.github.takenoko4096.noctiluca.ui.dialog.type.NoticeDialogConfiguration
+import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -272,7 +270,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val d = ConfirmationDialogConfiguration {
+        val c = DynamicDialogHolder.confirmation {
             body {
                 message {
                     contents {
@@ -303,7 +301,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("pressed: yes")
                     })
 
-                    payload?.run {
+                    payload.run {
                         player.sendSystemMessage(component {
                             text(this@run.toString())
                         })
@@ -321,7 +319,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("pressed: no")
                     })
 
-                    payload?.run {
+                    payload.run {
                         player.sendSystemMessage(component {
                             text(this@run.toString())
                         })
@@ -353,6 +351,10 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 option("bar") {
                     initial = "a"
 
+                    label {
+                        text("a or b")
+                    }
+
                     entries {
                         entry("a") {
                             text("A!")
@@ -366,7 +368,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val n = NoticeDialogConfiguration {
+        val n = DynamicDialogHolder.notice {
             body {
                 message {
                     contents {
@@ -404,21 +406,181 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        debugger("d") {
-            context.source.player?.run {
-                d.create(context.source.registryAccess()).open(this)
+        val m = DynamicDialogHolder.multiAction {
+            name {
+                text("multi action dialog test")
+            }
+
+            body {
+                message {
+                    contents {
+                        text("plain message test")
+                    }
+                }
+
+                item(Items.DIAMOND) {
+                    description {
+                        contents {
+                            text("item icon test")
+                        }
+                    }
+
+                    components {
+                        enchantmentGlintOverride(true)
+                    }
+                }
+            }
+
+            inputs {
+                checkBox("check_box") {
+                    label {
+                        text("check box test")
+                    }
+
+                    initial = false
+                }
+
+                option("option") {
+                    label {
+                        text("option test")
+                    }
+
+                    initial = "apple"
+
+                    entries {
+                        entry("apple") {
+                            text("apple")
+                        }
+
+                        entry("banana") {
+                            text("banana")
+                        }
+
+                        entry("grape") {
+                            text("grape")
+                        }
+                    }
+                }
+
+                slider("slider") {
+                    label {
+                        text("slider test")
+                    }
+
+                    initial = 0f
+
+                    range = -50f..50f
+
+                    step = 1f
+
+                    format = "$labelTemplate is: $valueTemplate"
+                }
+
+                textField("text_field") {
+                    label {
+                        text("text field test")
+                    }
+
+                    initial = "initial text"
+
+                    maxLength = 128
+
+                    multilines(maxLines = 6, height = null)
+                }
+            }
+
+            actions {
+                action {
+                    label {
+                        text("action test 1")
+                    }
+
+                    tooltip {
+                        text("tooltip test 1")
+                    }
+
+                    onClick {
+                        player.sendSystemMessage(component { text("1") })
+                        player.sendSystemMessage(NbtSerializer.serialize(payload))
+                    }
+                }
+
+                action {
+                    label {
+                        text("action test 2")
+                    }
+
+                    tooltip {
+                        text("tooltip test 2")
+                    }
+
+                    onClick {
+                        player.sendSystemMessage(component { text("2") })
+                        player.sendSystemMessage(NbtSerializer.serialize(payload))
+                    }
+                }
+
+                action {
+                    label {
+                        text("action test 3")
+                    }
+
+                    tooltip {
+                        text("tooltip test 3")
+                    }
+
+                    onClick {
+                        player.sendSystemMessage(component { text("3") })
+                        player.sendSystemMessage(NbtSerializer.serialize(payload))
+                    }
+                }
+            }
+
+            exitAction {
+                label {
+                    text("exit action test")
+                }
+
+                tooltip {
+                    text("exit action tooltip test")
+                }
+
+                onClick {
+                    player.sendSystemMessage(component { text("exit") })
+                    player.sendSystemMessage(NbtSerializer.serialize(payload))
+                }
+            }
+
+            onEscape {
+                player.sendSystemMessage(component {
+                    text("escape: ")
+                    component(NbtSerializer.serialize(payload))
+                })
+            }
+
+            onClose {
+                player.sendSystemMessage(component {
+                    text("close: ")
+                    component(NbtSerializer.serialize(payload))
+                })
             }
         }
 
-        debugger("dialog_open_count") {
-            context.successful {
-                text(DialogHolder.lastOpen.size.toString())
+        debugger("confirmation_dialog") {
+            context.source.player?.run {
+                c.buildOpen(this)
             }
         }
 
-        debugger("n") {
+        debugger("notice_dialog") {
             context.source.player?.run {
-                n.create(context.source.registryAccess()).open(this)
+                n.buildOpen(this)
+            }
+        }
+
+        debugger("multi_action_dialog") {
+            context.source.player?.run {
+                m.buildOpen(this)
             }
         }
     }

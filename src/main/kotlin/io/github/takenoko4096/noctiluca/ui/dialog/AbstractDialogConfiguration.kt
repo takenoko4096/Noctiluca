@@ -12,7 +12,6 @@ import net.minecraft.server.dialog.CommonDialogData
 import net.minecraft.server.dialog.Dialog
 import net.minecraft.server.dialog.DialogAction
 import net.minecraft.server.dialog.Input
-import net.minecraft.world.entity.player.Player
 import java.util.Optional
 
 @NoctilucaDsl
@@ -25,9 +24,9 @@ abstract class AbstractDialogConfiguration {
 
     private var inputs: List<Input> = listOf()
 
-    private var onEscapeCallback: (DialogCloseLikeEvent.() -> Unit)? = null
+    private var onEscapeCallback: (DynamicDialogEvent.() -> Unit)? = null
 
-    private var onCloseCallback: (DialogCloseLikeEvent.() -> Unit)? = null
+    private var onCloseCallback: (DynamicDialogEvent.() -> Unit)? = null
 
     var after: DialogAction = DialogAction.CLOSE
 
@@ -51,11 +50,11 @@ abstract class AbstractDialogConfiguration {
         inputs = DialogInputConfiguration(callback).build()
     }
 
-    fun onEscape(callback: DialogCloseLikeEvent.() -> Unit) {
+    fun onEscape(callback: DynamicDialogEvent.() -> Unit) {
         onEscapeCallback = callback
     }
 
-    fun onClose(callback: DialogCloseLikeEvent.() -> Unit) {
+    fun onClose(callback: DynamicDialogEvent.() -> Unit) {
         onCloseCallback = callback
     }
 
@@ -71,14 +70,12 @@ abstract class AbstractDialogConfiguration {
         )
     }
 
-    fun create(registryAccess: HolderLookup.Provider): DialogHolder {
+    fun create(registryAccess: HolderLookup.Provider): DynamicDialog {
         val mod = Noctiluca
-        val map = mutableMapOf<Identifier, DialogActionButtonConfiguration.DialogCustomActionButtonClickEvent.() -> Unit>()
+        val map = mutableMapOf<Identifier, DynamicDialogEvent.() -> Unit>()
         val dialog = build(mod, registryAccess, buildCommonDialogData(mod, registryAccess), map)
-        return DialogHolder(dialog, map, onEscapeCallback, onCloseCallback)
+        return DynamicDialog(dialog, map, onEscapeCallback, onCloseCallback)
     }
 
-    abstract fun build(mod: NoctilucaModInitializer, registryAccess: HolderLookup.Provider, commonDialogData: CommonDialogData, map: MutableMap<Identifier, DialogActionButtonConfiguration.DialogCustomActionButtonClickEvent.() -> Unit>): Dialog
-
-    class DialogCloseLikeEvent internal constructor(val player: Player)
+    abstract fun build(mod: NoctilucaModInitializer, registryAccess: HolderLookup.Provider, commonDialogData: CommonDialogData, map: MutableMap<Identifier, DynamicDialogEvent.() -> Unit>): Dialog
 }

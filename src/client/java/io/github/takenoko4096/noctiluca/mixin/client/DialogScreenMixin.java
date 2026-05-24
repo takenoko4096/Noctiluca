@@ -44,10 +44,9 @@ public abstract class DialogScreenMixin extends Screen {
             if (onCloseEvent instanceof ClickEvent.Custom(Identifier id, Optional<Tag> payload) && id.getNamespace().equals(Noctiluca.INSTANCE.getIdentifier())) {
                 info.cancel();
                 minecraft.setScreen(previousScreen);
+                ClientPlayNetworking.send(new ServerboundDialogEscapePayload(payload));
             }
         }
-
-        ClientPlayNetworking.send(ServerboundDialogEscapePayload.INSTANCE);
     }
 
     @Inject(method = "runAction(Ljava/util/Optional;Lnet/minecraft/server/dialog/DialogAction;)V", at = @At("TAIL"))
@@ -55,7 +54,7 @@ public abstract class DialogScreenMixin extends Screen {
         if (closeAction.isPresent()) {
             final var event = closeAction.get();
             if (event instanceof ClickEvent.Custom(Identifier id, Optional<Tag> payload) && id.getNamespace().equals(Noctiluca.INSTANCE.getIdentifier()) && afterAction == DialogAction.CLOSE) {
-                ClientPlayNetworking.send(ServerboundDialogClosePayload.INSTANCE);
+                ClientPlayNetworking.send(new ServerboundDialogClosePayload(payload));
             }
         }
     }

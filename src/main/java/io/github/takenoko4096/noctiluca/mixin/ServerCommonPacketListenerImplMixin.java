@@ -1,7 +1,7 @@
 package io.github.takenoko4096.noctiluca.mixin;
 
 import com.mojang.authlib.GameProfile;
-import io.github.takenoko4096.noctiluca.ui.dialog.DialogHolder;
+import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialog;
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
@@ -24,6 +24,6 @@ abstract class ServerCommonPacketListenerImplMixin {
     public void injectHandleCustomClickAction(ServerboundCustomClickActionPacket packet, CallbackInfo info) {
         final Player player = server.getPlayerList().getPlayer(playerProfile().id());
         if (player == null) return;
-        DialogHolder.Companion.invokeOnClick(player, packet.id(), packet.payload().orElse(null));
+        DynamicDialog.Companion.invokeOnClick(player, packet.id(), packet.payload().orElse(null));
     }
 }
