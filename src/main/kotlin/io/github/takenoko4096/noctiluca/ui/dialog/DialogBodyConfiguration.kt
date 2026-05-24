@@ -1,5 +1,6 @@
 package io.github.takenoko4096.noctiluca.ui.dialog
 
+import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.item.ItemComponents
 import io.github.takenoko4096.noctiluca.item.ItemStackBuilder
@@ -14,6 +15,7 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStackTemplate
 import java.util.Optional
 
+@NoctilucaDsl
 class DialogBodyConfiguration internal constructor(callback: DialogBodyConfiguration.() -> Unit) {
     private val contents = mutableListOf<DialogBodyContent<*>>()
 
@@ -33,6 +35,7 @@ class DialogBodyConfiguration internal constructor(callback: DialogBodyConfigura
         return contents.map { it.build(mod, registryAccess) }
     }
 
+    @NoctilucaDsl
     class PlainMessageConfiguration(callback: PlainMessageConfiguration.() -> Unit) {
         private var contents: Component = Component.empty()
 
@@ -54,6 +57,7 @@ class DialogBodyConfiguration internal constructor(callback: DialogBodyConfigura
         }
     }
 
+    @NoctilucaDsl
     class ItemConfiguration(private val item: Item, private val amount: Int = 1, callback: ItemConfiguration.() -> Unit) {
         private var components: ItemComponents.() -> Unit = {}
 

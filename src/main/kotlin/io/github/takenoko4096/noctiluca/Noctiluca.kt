@@ -1,19 +1,41 @@
 package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
+import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
+import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
+import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.registries.Registries
+import io.github.takenoko4096.noctiluca.ui.dialog.DialogHolder
+import io.github.takenoko4096.noctiluca.ui.dialog.type.ConfirmationDialogConfiguration
+import io.github.takenoko4096.noctiluca.ui.dialog.type.NoticeDialogConfiguration
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
-import net.minecraft.server.dialog.Dialog
-import net.minecraft.server.dialog.Dialogs
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.Items
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
+    private fun initializeSystem() {
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundDialogEscapePayload.TYPE, ServerboundDialogEscapePayload.CODEC)
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundDialogClosePayload.TYPE, ServerboundDialogClosePayload.CODEC)
+
+        ServerPlayNetworking.registerGlobalReceiver(
+            ServerboundDialogEscapePayload.TYPE,
+            ServerboundCustomPacketPayloadReceiver::escapeDialogPayload
+        )
+
+        ServerPlayNetworking.registerGlobalReceiver(
+            ServerboundDialogClosePayload.TYPE,
+            ServerboundCustomPacketPayloadReceiver::closeDialogPayload
+        )
+    }
+
     override fun onInitialize() {
+        initializeSystem()
+
         val debuggerArgumentType = commandRegistry.registerArgumentType<Debugger>("debugger") {
             parses {
                 val first = reader.readUnquotedString()
@@ -200,7 +222,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
             onClose {
                 player.sendSystemMessage(component {
-                    text("closed")
+                    text("container interaction closed")
                 })
             }
 
@@ -241,13 +263,162 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         debugger("container_interaction") {
             context.source.player?.run {
                 interaction.open(this)
-                openDialog(registryAccess().lookupOrThrow(Registries.DIALOG).getOrThrow(Dialogs.SERVER_LINKS))
             }
         }
 
         debugger("custom_container_menu_count") {
             context.successful {
                 text(CustomContainerMenu.menuOpens.size.toString())
+            }
+        }
+
+        val d = ConfirmationDialogConfiguration {
+            body {
+                message {
+                    contents {
+                        text("confirmation test")
+                    }
+                }
+
+                item(Items.STONE, 16) {
+                    description {
+                        contents {
+                            text("stone")
+                        }
+                    }
+
+                    components {
+                        enchantmentGlintOverride(true)
+                    }
+                }
+            }
+
+            yes {
+                label {
+                    text("yes")
+                }
+
+                onClick {
+                    player.sendSystemMessage(component {
+                        text("pressed: yes")
+                    })
+
+                    payload?.run {
+                        player.sendSystemMessage(component {
+                            text(this@run.toString())
+                        })
+                    }
+                }
+            }
+
+            no {
+                label {
+                    text("no")
+                }
+
+                onClick {
+                    player.sendSystemMessage(component {
+                        text("pressed: no")
+                    })
+
+                    payload?.run {
+                        player.sendSystemMessage(component {
+                            text(this@run.toString())
+                        })
+                    }
+                }
+            }
+
+            onEscape {
+                player.sendSystemMessage(component {
+                    text("escape")
+                })
+            }
+
+            onClose {
+                player.sendSystemMessage(component {
+                    text("close")
+                })
+            }
+
+            inputs {
+                checkBox("foo") {
+                    label {
+                        text("check box foo")
+                    }
+
+                    initial = false
+                }
+
+                option("bar") {
+                    initial = "a"
+
+                    entries {
+                        entry("a") {
+                            text("A!")
+                        }
+
+                        entry("b") {
+                            text("B!")
+                        }
+                    }
+                }
+            }
+        }
+
+        val n = NoticeDialogConfiguration {
+            body {
+                message {
+                    contents {
+                        text("notice test")
+                    }
+                }
+            }
+
+            action {
+                label {
+                    text("action")
+                }
+
+                tooltip {
+                    text("tooltip")
+                }
+
+                onClick {
+                    player.sendSystemMessage(component {
+                        text("action clicked")
+                    })
+                }
+            }
+
+            onEscape {
+                player.sendSystemMessage(component {
+                    text("escape")
+                })
+            }
+
+            onClose {
+                player.sendSystemMessage(component {
+                    text("close")
+                })
+            }
+        }
+
+        debugger("d") {
+            context.source.player?.run {
+                d.create(context.source.registryAccess()).open(this)
+            }
+        }
+
+        debugger("dialog_open_count") {
+            context.successful {
+                text(DialogHolder.lastOpen.size.toString())
+            }
+        }
+
+        debugger("n") {
+            context.source.player?.run {
+                n.create(context.source.registryAccess()).open(this)
             }
         }
     }

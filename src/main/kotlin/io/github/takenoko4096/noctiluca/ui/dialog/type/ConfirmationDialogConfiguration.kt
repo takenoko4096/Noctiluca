@@ -2,23 +2,43 @@ package io.github.takenoko4096.noctiluca.ui.dialog.type
 
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.ui.dialog.AbstractDialogConfiguration
+import io.github.takenoko4096.noctiluca.ui.dialog.DialogActionButtonConfiguration
 import net.minecraft.core.HolderLookup
-import net.minecraft.server.dialog.ActionButton
-import net.minecraft.server.dialog.CommonButtonData
+import net.minecraft.resources.Identifier
+import net.minecraft.server.dialog.CommonDialogData
 import net.minecraft.server.dialog.ConfirmationDialog
 import net.minecraft.server.dialog.Dialog
 
 class ConfirmationDialogConfiguration(callback: ConfirmationDialogConfiguration.() -> Unit) : AbstractDialogConfiguration() {
+    private var yes: DialogActionButtonConfiguration? = null
+
+    private var no: DialogActionButtonConfiguration? = null
+
     init {
         callback()
     }
 
-    override fun build(mod: NoctilucaModInitializer, registryAccess: HolderLookup.Provider): Dialog {
-        return ConfirmationDialog(
-            buildCommonDialogData(mod, registryAccess),
-            ActionButton(
+    fun yes(callback: DialogActionButtonConfiguration.() -> Unit) {
+        yes = DialogActionButtonConfiguration(callback)
+    }
 
-            )
+    fun no(callback: DialogActionButtonConfiguration.() -> Unit) {
+        no = DialogActionButtonConfiguration(callback)
+    }
+
+    override fun build(mod: NoctilucaModInitializer, registryAccess: HolderLookup.Provider, commonDialogData: CommonDialogData, map: MutableMap<Identifier, DialogActionButtonConfiguration.DialogCustomActionButtonClickEvent.() -> Unit>): Dialog {
+        if (yes == null) {
+            throw IllegalStateException("'yes' in confirmation dialog config is unset")
+        }
+
+        if (no == null) {
+            throw IllegalStateException("'no' in confirmation dialog config is unset")
+        }
+
+        return ConfirmationDialog(
+            commonDialogData,
+            yes!!.build(mod, map),
+            no!!.build(mod, map)
         )
     }
 }

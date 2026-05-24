@@ -1,5 +1,6 @@
 package io.github.takenoko4096.noctiluca.ui.dialog
 
+import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.text.SectionComponentBuilder
 import io.github.takenoko4096.noctiluca.text.component
 import net.minecraft.network.chat.Component
@@ -50,6 +51,7 @@ class DialogInputConfiguration(callback: DialogInputConfiguration.() -> Unit) {
         internal abstract fun build(): C
     }
 
+    @NoctilucaDsl
     class CheckBoxInputConfiguration(callback: CheckBoxInputConfiguration.() -> Unit) : InputConfiguration<Boolean, BooleanInput>() {
         init {
             callback()
@@ -65,6 +67,7 @@ class DialogInputConfiguration(callback: DialogInputConfiguration.() -> Unit) {
         }
     }
 
+    @NoctilucaDsl
     class OptionInputConfiguration(callback: OptionInputConfiguration.() -> Unit) : InputConfiguration<String, SingleOptionInput>() {
         private var entries: EntriesConfiguration? = null
 
@@ -97,11 +100,16 @@ class DialogInputConfiguration(callback: DialogInputConfiguration.() -> Unit) {
             )
         }
 
+        @NoctilucaDsl
         class EntriesConfiguration(callback: EntriesConfiguration.() -> Unit) {
             private val entries = mutableMapOf<String, Component>()
 
             init {
                 callback()
+            }
+
+            fun entry(key: String, callback: SectionComponentBuilder.() -> Unit) {
+                entries[key] = component(callback)
             }
 
             internal fun build(initial: String): List<SingleOptionInput.Entry> {
@@ -114,6 +122,7 @@ class DialogInputConfiguration(callback: DialogInputConfiguration.() -> Unit) {
         }
     }
 
+    @NoctilucaDsl
     class SliderInputConfiguration(callback: SliderInputConfiguration.() -> Unit) : InputConfiguration<Float, NumberRangeInput>() {
         var width: Int = 200
 
@@ -150,6 +159,7 @@ class DialogInputConfiguration(callback: DialogInputConfiguration.() -> Unit) {
         }
     }
 
+    @NoctilucaDsl
     class TextFieldInputConfiguration(callback: TextFieldInputConfiguration.() -> Unit) : InputConfiguration<String, TextInput>() {
         private var multilineOptions: TextInput.MultilineOptions? = null
 

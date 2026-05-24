@@ -244,14 +244,14 @@ class CustomContainerMenu internal constructor(
 
         internal val menuOpens = mutableSetOf<Open>()
 
-        fun invokeOnClose(clientMenu: CustomContainerMenu, clientPlayer: Player) {
+        fun invokeOnClose(id: Int, clientPlayer: Player) {
             for (open in menuOpens) {
-                if (open.menu.containerId == clientMenu.containerId && open.player.id == clientPlayer.id) {
+                if (open.menu.containerId == id && open.player.id == clientPlayer.id) {
                     open.menu.onClose?.invoke(open.player, open.menu.slots)
                 }
             }
 
-            menuOpens.removeIf { it.menu.containerId == clientMenu.containerId && it.player.id == clientPlayer.id }
+            menuOpens.removeIf { it.menu.containerId == id && it.player.id == clientPlayer.id }
         }
 
         val TYPE_1 = getOrCreateType(1)

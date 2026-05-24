@@ -7,12 +7,16 @@ import io.github.takenoko4096.noctiluca.datagen.NoctilucaDataGenerator
 import net.minecraft.client.gui.screens.MenuScreens
 
 object NoctilucaClient : NoctilucaClientModInitializer(Noctiluca) {
-    override fun onInitialize() {
+    private fun initializeSystem() {
         MenuScreens.register(CustomContainerMenu.TYPE_1, ::CustomContainerScreen)
         MenuScreens.register(CustomContainerMenu.TYPE_2, ::CustomContainerScreen)
         MenuScreens.register(CustomContainerMenu.TYPE_3, ::CustomContainerScreen)
         MenuScreens.register(CustomContainerMenu.TYPE_4, ::CustomContainerScreen)
         MenuScreens.register(CustomContainerMenu.TYPE_5, ::CustomContainerScreen)
         MenuScreens.register(CustomContainerMenu.TYPE_6, ::CustomContainerScreen)
+    }
+
+    override fun onInitialize() {
+        initializeSystem()
     }
 }

@@ -3,6 +3,8 @@
     "package": "io.github.takenoko4096.noctiluca.mixin",
     "compatibilityLevel": "JAVA_25",
     "mixins": [
+        "ServerCommonPacketListenerImplMixin",
+        "ServerGamePacketListenerImplMixin"
     ],
     "injectors": {
         "defaultRequire": 1
