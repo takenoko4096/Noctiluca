@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.StairBlock
 import net.minecraft.world.level.block.WallBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.WoodType
 
 @NoctilucaDsl
@@ -43,9 +44,15 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
     internal var customBehaviourCreator: ((BlockBehaviour.Properties) -> Block) = { Block(it) }
 
-    internal var renderingConfig: BlockRenderingConfiguration = BlockRenderingConfiguration(this)
-
     internal var translation = ModTranslationConfiguration()
+
+    internal var modelConfig: ModelsConfiguration? = null
+
+    internal var tintConfig: TintConfiguration = TintConfiguration {}
+
+    internal var propertyDefinitions: Set<BlockStatesConfiguration.PropertyDefinition<*>> = setOf()
+
+    private var eventDispatcher: BlockEventsConfiguration.BlockEventDispatcher = BlockEventsConfiguration.BlockEventDispatcher(setOf())
 
     internal var withSlab: Boolean = false
     internal var withStairs: Boolean = false
@@ -65,20 +72,25 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         itemProperties = ipc.build()
     }
 
-    fun rendering(callback: BlockRenderingConfiguration.() -> Unit) {
-        val brc = BlockRenderingConfiguration(this)
-        brc.callback()
-        renderingConfig = brc
-        if (renderingConfig.modelConfig == null) {
-            throw IllegalStateException("ブロック '${blockResourceKey.identifier()}' のモデル設定がありません")
-        }
+    fun model(callback: ModelsConfiguration.() -> Unit) {
+        modelConfig = ModelsConfiguration(this, callback)
     }
 
-    fun customBehaviour(callback: CustomBehaviourConfiguration.() -> Unit): CustomBehaviourInfo {
-        val cbc = CustomBehaviourConfiguration()
-        cbc.callback()
-        customBehaviourCreator = cbc.build()
-        return CustomBehaviourInfo(Properties(cbc.propertyDefinitions.toSet()))
+    fun blockStates(callback: BlockStatesConfiguration.() -> Unit): Properties {
+        val bsc = BlockStatesConfiguration()
+        bsc.callback()
+        propertyDefinitions = bsc.build()
+        return Properties(propertyDefinitions.toSet())
+    }
+
+    fun events(callback: BlockEventsConfiguration.() -> Unit) {
+        val bec = BlockEventsConfiguration()
+        bec.callback()
+        eventDispatcher = bec.build()
+    }
+
+    fun color(callback: TintConfiguration.() -> Unit) {
+        tintConfig = TintConfiguration(callback)
     }
 
     fun translation(callback: ModTranslationConfiguration.() -> Unit) {
@@ -124,11 +136,24 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
             itemProperties {}
         }
 
-        if (!fullBlock && renderingConfig.modelConfig?.blockModelConfig == null) {
-            throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': 'rendering.models' is unset despite there are no withXX()")
+        if (!fullBlock && modelConfig?.blockModelConfig == null) {
+            throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': 'models' is unset despite there are no withXX()")
         }
-        else if (fullBlock && renderingConfig.modelConfig?.blockModelConfig != null) {
-            throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': do not set 'rendering.models.block' while using withXX(): these options require parent block is a 'cube all' block")
+        else if (fullBlock && modelConfig?.blockModelConfig != null) {
+            throw IllegalStateException("failed to register block '${blockResourceKey.identifier()}': do not set 'models.block' while using withXX(): these options require parent block is a 'cube all' block")
+        }
+
+        val defs = propertyDefinitions.toSet()
+        val evs = eventDispatcher
+
+        customBehaviourCreator = {
+            object : CustomBlock(it, defs, evs) {
+                override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
+                    for (definition in defs) {
+                        builder.add(definition.property)
+                    }
+                }
+            }
         }
 
         val block = customBehaviourCreator(boundBlockProperties)
@@ -223,8 +248,8 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
     }
 
     class AccessorForClient internal constructor(private val configuration: ModBlockConfiguration) {
-        fun blockModelLegacy(): BlockRenderingConfiguration.SingleArgBlockModel? {
-            return configuration.renderingConfig.modelConfig?.blockModelConfig?.model
+        fun blockModelLegacy(): SingleArgBlockModel? {
+            return configuration.modelConfig?.blockModelConfig?.model
         }
 
         fun family(): BlockFamily? {
@@ -232,11 +257,11 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         }
 
         fun blockModelVariants(): PropertyVariants? {
-            return configuration.renderingConfig.modelConfig?.blockModelConfig?.variants
+            return configuration.modelConfig?.blockModelConfig?.variants
         }
 
         fun blockItemModel(): ItemModelHandle? {
-            return configuration.renderingConfig.modelConfig?.itemModelConfig?.handle
+            return configuration.modelConfig?.itemModelConfig?.handle
         }
 
         fun translation(): ModTranslationConfiguration {
@@ -244,15 +269,15 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         }
 
         fun defaultTint(): (BlockState) -> Int {
-            return configuration.renderingConfig.tintConfig.defaultColorGetter
+            return configuration.tintConfig.defaultColorGetter
         }
 
         fun inWorldTint(): (BlockState, BlockPos, Level) -> Int {
-            return configuration.renderingConfig.tintConfig.colorGetter
+            return configuration.tintConfig.colorGetter
         }
 
         fun terrainParticleTint(): (BlockState, BlockPos, Level) -> Int {
-            return configuration.renderingConfig.tintConfig.particleColorGetter
+            return configuration.tintConfig.particleColorGetter
         }
     }
 

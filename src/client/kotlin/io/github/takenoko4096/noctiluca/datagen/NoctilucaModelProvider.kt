@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
 import net.minecraft.client.data.models.model.TexturedModel
-import io.github.takenoko4096.noctiluca.registry.block.BlockRenderingConfiguration.SingleArgBlockModel.SingleArgBlockTextureMap
+import io.github.takenoko4096.noctiluca.registry.block.SingleArgBlockModel.SingleArgBlockTextureMap
 import io.github.takenoko4096.noctiluca.registry.item.ModItemConfiguration
 import io.github.takenoko4096.noctiluca.registry.item.ModItemRegistry
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput

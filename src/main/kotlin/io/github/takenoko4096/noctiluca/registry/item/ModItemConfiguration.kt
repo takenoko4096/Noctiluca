@@ -23,19 +23,22 @@ class ModItemConfiguration(internal val registry: ModItemRegistry, internal val 
 
     internal var itemProperties: Item.Properties? = null
 
-    internal var renderingConfig: ItemRenderingConfiguration = ItemRenderingConfiguration(this)
+    internal var modelConfig: ItemModelConfiguration = ItemModelConfiguration(itemResourceKey) {}
 
     internal var translation = ModTranslationConfiguration()
+
+    private var eventDispatcher: ItemEventsConfiguration.ItemEventDispatcher = ItemEventsConfiguration.ItemEventDispatcher(setOf())
 
     fun itemProperties(callback: ItemPropertiesConfiguration.() -> Unit) {
         val ipc = ItemPropertiesConfiguration(this, callback)
         itemProperties = ipc.build()
     }
 
-    fun rendering(callback: ItemRenderingConfiguration.() -> Unit) {
-        val brc = ItemRenderingConfiguration(this)
-        brc.callback()
-        renderingConfig = brc
+    fun model(callback: ItemModelConfiguration.() -> Unit) {
+        modelConfig = ItemModelConfiguration(itemResourceKey, callback)
+        if (modelConfig.handle == null) {
+            throw IllegalStateException("please use 'use()' to specify model handler")
+        }
     }
 
     fun translation(callback: ModTranslationConfiguration.() -> Unit) {
@@ -44,10 +47,10 @@ class ModItemConfiguration(internal val registry: ModItemRegistry, internal val 
         translation = tc
     }
 
-    fun customBehaviour(callback: CustomBehaviourConfiguration.() -> Unit) {
-        val cbc = CustomBehaviourConfiguration()
-        cbc.callback()
-        customBehaviourCreator = cbc.build()
+    fun events(callback: ItemEventsConfiguration.() -> Unit) {
+        val bec = ItemEventsConfiguration()
+        bec.callback()
+        eventDispatcher = bec.build()
     }
 
     internal fun register(): Item {
@@ -55,22 +58,16 @@ class ModItemConfiguration(internal val registry: ModItemRegistry, internal val 
             throw IllegalStateException("'itemProperties' is unset!")
         }
 
+        val evs = eventDispatcher
+
+        customBehaviourCreator = {
+            object : CustomItem(it, evs) {}
+        }
+
         val item = customBehaviourCreator(itemProperties!!)
         Registry.register(BuiltInRegistries.ITEM, itemResourceKey, item)
 
         return item
-    }
-
-    @NoctilucaDsl
-    class ItemRenderingConfiguration(private val configuration: ModItemConfiguration) {
-        internal var modelConfig: ItemModelConfiguration = ItemModelConfiguration(configuration.itemResourceKey) {}
-
-        fun model(callback: ItemModelConfiguration.() -> Unit) {
-            modelConfig = ItemModelConfiguration(configuration.itemResourceKey, callback)
-            if (modelConfig.handle == null) {
-                throw IllegalStateException("please use 'use()' to specify model handler")
-            }
-        }
     }
 
     @NoctilucaDsl
@@ -93,7 +90,7 @@ class ModItemConfiguration(internal val registry: ModItemRegistry, internal val 
 
     class AccessorForClient internal constructor(private val configuration: ModItemConfiguration) {
         fun getModelHandle(): ItemModelHandle {
-            return configuration.renderingConfig.modelConfig.handle ?: throw IllegalStateException()
+            return configuration.modelConfig.handle ?: throw IllegalStateException()
         }
 
         fun translation(): ModTranslationConfiguration {
