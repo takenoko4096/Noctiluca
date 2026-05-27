@@ -5,6 +5,8 @@ import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
+import io.github.takenoko4096.noctiluca.schedule.GameTickScheduler
+import io.github.takenoko4096.noctiluca.schedule.GameTickTask
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -13,6 +15,7 @@ import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
+import net.minecraft.server.MinecraftServer
 import net.minecraft.world.item.Items
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -565,6 +568,8 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 })
             }
         }
+
+        val scheduler = GameTickScheduler(useServerTickRate = true)
 
         debugger("confirmation_dialog") {
             context.source.player?.run {

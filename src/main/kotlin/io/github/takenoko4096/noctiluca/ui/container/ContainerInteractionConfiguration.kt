@@ -4,7 +4,6 @@ import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.text.SectionComponentBuilder
 import io.github.takenoko4096.noctiluca.text.component
 import net.minecraft.network.chat.Component
-import net.minecraft.world.entity.player.Player
 
 @NoctilucaDsl
 class ContainerInteractionConfiguration(callback: ContainerInteractionConfiguration.() -> Unit) {
