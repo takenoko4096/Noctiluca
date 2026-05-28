@@ -1,5 +1,6 @@
 package io.github.takenoko4096.noctiluca
 
+import io.github.takenoko4096.mojangson.values.MojangsonCompound
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
@@ -564,6 +565,18 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     text("close: ")
                     component(NbtSerializer.serialize(payload))
                 })
+            }
+        }
+
+        var compound = MojangsonCompound()
+
+        debugger("pack_savable") {
+            context.source.player?.run {
+                val pack = PackSavable(component { text("pack savable") }, 1, compound) {
+                    compound = getSerializedContents()
+                }
+
+                pack.open(this)
             }
         }
 
