@@ -7,6 +7,12 @@ data class GameTickTask(internal val delay: Long, internal val execution: GameTi
 
     internal var isScheduled = false
 
+    init {
+        if (delay < 0L) {
+            throw IllegalArgumentException("GameTickTaskの作成に失敗しました : 負の相対時刻に向けてタスクを作成することはできません")
+        }
+    }
+
     val isSchedulable
         get() = !isScheduled
 

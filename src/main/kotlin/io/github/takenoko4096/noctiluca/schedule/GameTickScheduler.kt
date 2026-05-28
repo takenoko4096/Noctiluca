@@ -2,24 +2,25 @@ package io.github.takenoko4096.noctiluca.schedule
 
 import io.github.takenoko4096.noctiluca.Noctiluca
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.fabricmc.fabric.mixin.event.lifecycle.MinecraftServerMixin
 import net.minecraft.server.MinecraftServer
 import kotlin.collections.component1
 import kotlin.collections.component2
 
-class GameTickScheduler(private val useServerTickRate: Boolean = true) {
+class GameTickScheduler(private val respectTickRate: Boolean = true) {
     private var maximum = Int.MIN_VALUE
 
     private val tasks = mutableMapOf<Int, GameTickTask>()
 
-    private fun tick(handle: MutableIterator<GameTickScheduler>, server: MinecraftServer) {
-        val iterator = tasks.iterator()
+    private fun tick(server: MinecraftServer) {
+        val iterator = tasks.toMap().iterator()
 
         while (iterator.hasNext()) {
-            val (_, task) = iterator.next()
+            val (id, task) = iterator.next()
 
             if (task.remaining > 0) task.remaining--
             else {
-                iterator.remove()
+                tasks.remove(id)
                 task.isScheduled = false
                 task.remaining = task.delay
                 try {
@@ -32,7 +33,7 @@ class GameTickScheduler(private val useServerTickRate: Boolean = true) {
         }
 
         if (tasks.isEmpty()) {
-            handle.remove()
+            schedulers.remove(this)
         }
     }
 
@@ -52,11 +53,11 @@ class GameTickScheduler(private val useServerTickRate: Boolean = true) {
         return id
     }
 
-    fun timeout(delay: Long, callback: GameTickTask.(MinecraftServer) -> Unit): Int {
+    fun timeout(delay: Long = 0L, callback: GameTickTask.(MinecraftServer) -> Unit): Int {
         return schedule(GameTickTask(delay, callback))
     }
 
-    fun interval(interval: Long, callback: GameTickTask.(MinecraftServer) -> Unit) {
+    fun interval(interval: Long= 0L, callback: GameTickTask.(MinecraftServer) -> Unit) {
         GameTickTask(interval) {
             callback(it)
         }
@@ -74,23 +75,26 @@ class GameTickScheduler(private val useServerTickRate: Boolean = true) {
         private val schedulers = mutableSetOf<GameTickScheduler>()
 
         init {
-            ServerTickEvents.END_SERVER_TICK.register(::onServerTick)
+            ServerTickEvents.END_SERVER_TICK.register {
+                tick(it, respectTickRate = false)
+            }
+
+            // each?
+            ServerTickEvents.END_LEVEL_TICK.register {
+                tick(it.server!!, respectTickRate = true)
+            }
         }
 
-        private fun onServerTick(server: MinecraftServer) {
-            val iterator = schedulers.iterator()
+        private fun tick(server: MinecraftServer, respectTickRate: Boolean) {
+            val iterator = schedulers.toSet().iterator()
 
             while (iterator.hasNext()) {
                 val scheduler = iterator.next()
 
-                if (scheduler.useServerTickRate) {
-                    scheduler.tick(iterator, server)
+                if (scheduler.respectTickRate == respectTickRate) {
+                    scheduler.tick(server)
                 }
             }
-        }
-
-        private fun onProgramTick(server: MinecraftServer) {
-
         }
     }
 }
