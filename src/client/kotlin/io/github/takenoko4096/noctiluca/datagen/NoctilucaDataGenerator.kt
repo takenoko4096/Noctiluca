@@ -8,7 +8,7 @@ import net.minecraft.core.HolderLookup
 import java.util.concurrent.CompletableFuture
 
 abstract class NoctilucaDataGenerator(private val mod: NoctilucaModInitializer) : DataGeneratorEntrypoint {
-    override fun onInitializeDataGenerator(fabricDataGenerator: FabricDataGenerator) {
+    final override fun onInitializeDataGenerator(fabricDataGenerator: FabricDataGenerator) {
         val pack = fabricDataGenerator.createPack()
 
         pack.addProvider { output: FabricPackOutput ->

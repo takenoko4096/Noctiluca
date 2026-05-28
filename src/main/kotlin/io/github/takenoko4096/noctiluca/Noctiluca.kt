@@ -1,11 +1,11 @@
 package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
+import io.github.takenoko4096.noctiluca.container.PackSavable
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
-import io.github.takenoko4096.noctiluca.schedule.GameTickScheduler
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -565,11 +565,6 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     component(NbtSerializer.serialize(payload))
                 })
             }
-        }
-
-        val scheduler = GameTickScheduler(respectTickRate = true)
-        scheduler.timeout(20) {
-
         }
 
         debugger("confirmation_dialog") {

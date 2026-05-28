@@ -1,8 +1,6 @@
 package io.github.takenoko4096.noctiluca.schedule
 
-import net.minecraft.server.MinecraftServer
-
-data class GameTickTask(internal val delay: Long, internal val execution: GameTickTask.(MinecraftServer) -> Unit) {
+data class GameTickTask<T>(internal val delay: Long, internal val execution: GameTickTask<T>.(T) -> Unit) {
     internal var remaining: Long = delay
 
     internal var isScheduled = false
@@ -16,7 +14,7 @@ data class GameTickTask(internal val delay: Long, internal val execution: GameTi
     val isSchedulable
         get() = !isScheduled
 
-    fun GameTickScheduler.reschedule() {
+    fun AbstractGameTickScheduler<T>.reschedule() {
         schedule(this@GameTickTask)
     }
 }

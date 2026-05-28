@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState
 abstract class NoctilucaClientModInitializer(private val mod: NoctilucaModInitializer) : ClientModInitializer {
     private val commands = mutableSetOf<(CommandBuildContext) -> LiteralArgumentBuilder<FabricClientCommandSource>>()
 
-    override fun onInitializeClient() {
+    final override fun onInitializeClient() {
         val blockRegistry = mod.blockRegistry
 
         for (configuration in blockRegistry.getConfigurations()) {

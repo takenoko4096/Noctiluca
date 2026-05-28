@@ -1,18 +1,15 @@
 package io.github.takenoko4096.noctiluca.schedule
 
 import io.github.takenoko4096.noctiluca.Noctiluca
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.fabricmc.fabric.mixin.event.lifecycle.MinecraftServerMixin
-import net.minecraft.server.MinecraftServer
 import kotlin.collections.component1
 import kotlin.collections.component2
 
-class GameTickScheduler(private val respectTickRate: Boolean = true) {
+abstract class AbstractGameTickScheduler<T> protected constructor(private val ticker: SchedulerTicker<T>) {
     private var maximum = Int.MIN_VALUE
 
-    private val tasks = mutableMapOf<Int, GameTickTask>()
+    private val tasks = mutableMapOf<Int, GameTickTask<T>>()
 
-    private fun tick(server: MinecraftServer) {
+    private fun tick(server: T) {
         val iterator = tasks.toMap().iterator()
 
         while (iterator.hasNext()) {
@@ -33,11 +30,11 @@ class GameTickScheduler(private val respectTickRate: Boolean = true) {
         }
 
         if (tasks.isEmpty()) {
-            schedulers.remove(this)
+            ticker.unsubscribe(this)
         }
     }
 
-    fun schedule(task: GameTickTask): Int {
+    fun schedule(task: GameTickTask<T>): Int {
         if (task.isScheduled) {
             throw IllegalStateException("Already scheduled! Please use copy()")
         }
@@ -46,24 +43,22 @@ class GameTickScheduler(private val respectTickRate: Boolean = true) {
         tasks[id] = task
         task.isScheduled = true
 
-        if (this !in schedulers) {
-            schedulers.add(this)
-        }
+        ticker.subscribe(this)
 
         return id
     }
 
-    fun timeout(delay: Long = 0L, callback: GameTickTask.(MinecraftServer) -> Unit): Int {
+    fun timeout(delay: Long = 0L, callback: GameTickTask<T>.(T) -> Unit): Int {
         return schedule(GameTickTask(delay, callback))
     }
 
-    fun interval(interval: Long= 0L, callback: GameTickTask.(MinecraftServer) -> Unit) {
+    fun interval(interval: Long= 0L, callback: GameTickTask<T>.(T) -> Unit) {
         GameTickTask(interval) {
             callback(it)
         }
     }
 
-    fun cancel(id: Int): GameTickTask {
+    fun cancel(id: Int): GameTickTask<T> {
         return tasks.remove(id) ?: throw IllegalArgumentException("Invalid task id")
     }
 
@@ -71,29 +66,26 @@ class GameTickScheduler(private val respectTickRate: Boolean = true) {
         tasks.clear()
     }
 
-    companion object {
-        private val schedulers = mutableSetOf<GameTickScheduler>()
+    abstract class SchedulerTicker<T> protected constructor() {
+        private val schedulers = mutableSetOf<AbstractGameTickScheduler<T>>()
 
-        init {
-            ServerTickEvents.END_SERVER_TICK.register {
-                tick(it, respectTickRate = false)
-            }
-
-            // each?
-            ServerTickEvents.END_LEVEL_TICK.register {
-                tick(it.server!!, respectTickRate = true)
+        internal fun subscribe(scheduler: AbstractGameTickScheduler<T>) {
+            if (scheduler !in schedulers) {
+                schedulers.add(scheduler)
             }
         }
 
-        private fun tick(server: MinecraftServer, respectTickRate: Boolean) {
+        internal fun unsubscribe(scheduler: AbstractGameTickScheduler<T>) {
+            schedulers.remove(scheduler)
+        }
+
+        protected fun tick(parameter: T) {
             val iterator = schedulers.toSet().iterator()
 
             while (iterator.hasNext()) {
                 val scheduler = iterator.next()
 
-                if (scheduler.respectTickRate == respectTickRate) {
-                    scheduler.tick(server)
-                }
+                scheduler.tick(parameter)
             }
         }
     }
