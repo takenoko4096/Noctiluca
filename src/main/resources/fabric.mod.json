@@ -14,7 +14,7 @@
     ],
     "contact": {},
     "license": "All-Rights-Reserved",
-    "icon": "assets/noctiluca/icon.png",
+    "icon": "assets/noctiluca/noctiluca.png",
     "environment": "*",
     "entrypoints": {
         "fabric-datagen": [

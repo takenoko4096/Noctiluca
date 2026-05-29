@@ -572,11 +572,14 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         }
 
         val packSavable = PackSavable(
-            component { text("pack savable") },
-            3
+            component {
+                text("pack savable")
+            },
+            3,
+            onUpdate = {
+                getSerializedContents()
+            }
         )
-
-        packSavable.getSerializedContents()
 
         debugger("pack_savable") {
             context.source.player?.run {
