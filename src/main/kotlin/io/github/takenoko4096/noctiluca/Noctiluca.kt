@@ -12,6 +12,7 @@ import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
 import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
@@ -31,6 +32,8 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             ServerboundDialogClosePayload.TYPE,
             ServerboundCustomPacketPayloadReceiver::closeDialogPayload
         )
+
+        ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
     }
 
     override fun onInitialize() {
@@ -268,7 +271,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         debugger("custom_container_menu_count") {
             context.successful {
-                text(CustomContainerMenu.menuOpens.size.toString())
+                text(CustomContainerMenu.menus.size.toString())
             }
         }
 

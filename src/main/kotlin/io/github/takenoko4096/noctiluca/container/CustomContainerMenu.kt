@@ -1,11 +1,9 @@
 package io.github.takenoko4096.noctiluca.container
 
-import com.mojang.serialization.RecordBuilder
 import io.github.takenoko4096.mojangson.values.MojangsonCompound
 import io.github.takenoko4096.mojangson.values.MojangsonList
 import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.nbt.toMojangsonCompound
-import net.minecraft.core.NonNullList
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.nbt.CompoundTag
@@ -21,15 +19,17 @@ import net.minecraft.world.inventory.ContainerListener
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
+import kotlin.jvm.optionals.getOrNull
 
 class CustomContainerMenu internal constructor(
     id: Int,
     inventory: Inventory,
     val columnCount: Int,
     initializer: SimpleContainer.() -> Unit = {},
-    private val onClick: ((Player, Int, Int, ContainerInput, NonNullList<Slot>) -> Boolean)? = null,
-    private val onSlotChanged: ((Player, Int, ItemStack, NonNullList<Slot>) -> Unit)? = null,
-    private val onClose: ((Player, NonNullList<Slot>) -> Unit)? = null
+    private val onClick: ((Player, Int, Int, ContainerInput, CustomContainerMenu) -> Boolean)? = null,
+    private val onSlotChanged: ((Player, Int, ItemStack, CustomContainerMenu) -> Unit)? = null,
+    private val onClose: ((Player, CustomContainerMenu) -> Unit)? = null,
+    private val onRemove: ((Player, CustomContainerMenu) -> Unit)? = null
 ) : AbstractContainerMenu(getOrCreateType(columnCount),id) {
     private val container = SimpleContainer(SLOTS_PER_ROW * columnCount)
 
@@ -72,7 +72,11 @@ class CustomContainerMenu internal constructor(
 
         addSlotListener(object : ContainerListener {
             override fun slotChanged(menu: AbstractContainerMenu, slotIndex: Int, itemStack: ItemStack) {
-                onSlotChanged?.invoke(inventory.player, slotIndex, itemStack, slots)
+                if (slotIndex >= columnCount * SLOTS_PER_ROW) {
+                    return
+                }
+
+                onSlotChanged?.invoke(inventory.player, slotIndex, itemStack, this@CustomContainerMenu)
             }
 
             override fun dataChanged(menu: AbstractContainerMenu, id: Int, value: Int) {
@@ -126,7 +130,7 @@ class CustomContainerMenu internal constructor(
                 // swap(多分１とかFキー押してカーソル合わせたものと入れ替える操作のこと): 非コンテナではターゲットがコンテナ外のもののみ許可
                 // quick craft(試した限りではspreadのこと): 非コンテナではコンテナ外のもののみ許可
                 if (isContainerSlot(slotIndex)) {
-                    val doOperation = onClick(player, slotIndex, buttonNum, containerInput, slots)
+                    val doOperation = onClick(player, slotIndex, buttonNum, containerInput, this)
                     if (doOperation) {
                         super.clicked(slotIndex, buttonNum, containerInput, player)
                     }
@@ -137,7 +141,7 @@ class CustomContainerMenu internal constructor(
             }
             ContainerInput.QUICK_MOVE -> {
                 // quick move: 非コンテナでは常に禁止
-                val doOperation = onClick(player, slotIndex, buttonNum, containerInput, slots)
+                val doOperation = onClick(player, slotIndex, buttonNum, containerInput, this)
                 if (doOperation) {
                     super.clicked(slotIndex, buttonNum, containerInput, player)
                 }
@@ -146,7 +150,7 @@ class CustomContainerMenu internal constructor(
                 // pickup all(多分これは左クリック2回押しで同じアイテムをまとめる操作のこと): 非コンテナでは常に禁止、コンテナでは非コンテナのアイテムを取らないような改造(?)コードを実行
 
                 if (isContainerSlot(slotIndex)) {
-                    val doOperation = onClick(player, slotIndex, buttonNum, containerInput, slots)
+                    val doOperation = onClick(player, slotIndex, buttonNum, containerInput, this)
                     if (doOperation) {
                         super.clicked(slotIndex, buttonNum, containerInput, player)
                     }
@@ -189,20 +193,24 @@ class CustomContainerMenu internal constructor(
     }
 
     fun serializeContents(): MojangsonList {
-        return MojangsonList.valueOf(slots.map {
-            val itemStack = it.item
-            val result = ItemStack.MAP_CODEC.encoder().encodeStart(NbtOps.INSTANCE, itemStack)
-            if (result.isError) {
-                MojangsonCompound.valueOf(mapOf<String, Any>(
-                    "id" to "minecraft:air",
-                    "count" to 1,
-                    "Slot" to it.containerSlot.toByte()
-                ))
+        return MojangsonList.valueOf(
+            slots.mapNotNull { slot ->
+                if (slot.index >= columnCount * SLOTS_PER_ROW) return@mapNotNull null
+
+                val itemStack = slot.item
+
+                if (itemStack.isEmpty) null
+                else ItemStack.MAP_CODEC.encoder()
+                    .encodeStart(NbtOps.INSTANCE, itemStack)
+                    .getOrThrow(::IllegalStateException)
+                    .asCompound()
+                    .getOrNull()
+                    ?.toMojangsonCompound()
+                    ?.also {
+                        it.set("Slot", slot.containerSlot.toByte())
+                    }
             }
-            else {
-                (result.getOrThrow { throw RuntimeException("NEVER HAPPENS") } as CompoundTag).toMojangsonCompound()
-            }
-        })
+        )
     }
 
     companion object {
@@ -242,16 +250,21 @@ class CustomContainerMenu internal constructor(
             return types[columnCount]!!
         }
 
-        internal val menuOpens = mutableSetOf<Open>()
+        internal val menus = mutableMapOf<Player, CustomContainerMenu>()
 
-        fun invokeOnClose(id: Int, clientPlayer: Player) {
-            for (open in menuOpens) {
-                if (open.menu.containerId == id && open.player.id == clientPlayer.id) {
-                    open.menu.onClose?.invoke(open.player, open.menu.slots)
-                }
+        fun invokeOnClose(id: Int, player: Player) {
+            val menu = menus[player] ?: return
+
+            if (menu.containerId == id) {
+                menu.onClose?.invoke(player, menu)
+                remove(player)
             }
+        }
 
-            menuOpens.removeIf { it.menu.containerId == id && it.player.id == clientPlayer.id }
+        internal fun remove(player: Player) {
+            val menu = menus[player] ?: return
+            menu.onRemove?.invoke(player, menu)
+            menus.remove(player)
         }
 
         val TYPE_1 = getOrCreateType(1)
@@ -261,6 +274,4 @@ class CustomContainerMenu internal constructor(
         val TYPE_5 = getOrCreateType(5)
         val TYPE_6 = getOrCreateType(6)
     }
-
-    class Open internal constructor(internal val player: Player, internal val menu: CustomContainerMenu)
 }

@@ -72,9 +72,9 @@ open class ContainerInteraction(callback: ContainerInteractionConfiguration.() -
             title,
             contents.columnCount,
             initializer = contents.toInitializer(Noctiluca, player.registryAccess()),
-            onClick = { player, slot, _, _, slots ->
+            onClick = { player, slot, _, _, menu ->
                 val button = get(slot) ?: return@ContainerInteractionMenuProvider false
-                button.click(ItemButtonClickEvent(this, player, button, slots[slot].item.copy()))
+                button.click(ItemButtonClickEvent(this, player, button, menu.slots[slot].item.copy()))
                 return@ContainerInteractionMenuProvider false
             },
             onClose = { player, _ ->
