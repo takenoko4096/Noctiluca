@@ -1,6 +1,5 @@
 package io.github.takenoko4096.noctiluca
 
-import io.github.takenoko4096.mojangson.values.MojangsonCompound
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
@@ -306,7 +305,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("pressed: yes")
                     })
 
-                    payload.run {
+                    response.run {
                         player.sendSystemMessage(component {
                             text(this@run.toString())
                         })
@@ -324,7 +323,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("pressed: no")
                     })
 
-                    payload.run {
+                    response.run {
                         player.sendSystemMessage(component {
                             text(this@run.toString())
                         })
@@ -506,7 +505,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
                     onClick {
                         player.sendSystemMessage(component { text("1") })
-                        player.sendSystemMessage(NbtSerializer.serialize(payload))
+                        player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
                     }
                 }
 
@@ -521,7 +520,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
                     onClick {
                         player.sendSystemMessage(component { text("2") })
-                        player.sendSystemMessage(NbtSerializer.serialize(payload))
+                        player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
                     }
                 }
 
@@ -536,7 +535,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
                     onClick {
                         player.sendSystemMessage(component { text("3") })
-                        player.sendSystemMessage(NbtSerializer.serialize(payload))
+                        player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
                     }
                 }
             }
@@ -552,34 +551,36 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
                 onClick {
                     player.sendSystemMessage(component { text("exit") })
-                    player.sendSystemMessage(NbtSerializer.serialize(payload))
+                    player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
                 }
             }
 
             onEscape {
                 player.sendSystemMessage(component {
                     text("escape: ")
-                    component(NbtSerializer.serialize(payload))
+                    response.string("a")
+                    component(NbtSerializer.serialize(response.toCompound()))
                 })
             }
 
             onClose {
                 player.sendSystemMessage(component {
                     text("close: ")
-                    component(NbtSerializer.serialize(payload))
+                    component(NbtSerializer.serialize(response.toCompound()))
                 })
             }
         }
 
-        var compound = MojangsonCompound()
+        val packSavable = PackSavable(
+            component { text("pack savable") },
+            3
+        )
+
+        packSavable.getSerializedContents()
 
         debugger("pack_savable") {
             context.source.player?.run {
-                val pack = PackSavable(component { text("pack savable") }, 1, compound) {
-                    compound = getSerializedContents()
-                }
-
-                pack.open(this)
+                packSavable.openPack(this)
             }
         }
 
