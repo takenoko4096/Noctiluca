@@ -1,4 +1,4 @@
-package io.github.takenoko4096.noctiluca.datagen
+package io.github.takenoko4096.noctiluca.datagen.providers
 
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput

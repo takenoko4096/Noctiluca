@@ -1,17 +1,17 @@
-package io.github.takenoko4096.noctiluca.datagen
+package io.github.takenoko4096.noctiluca.datagen.providers
 
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.datagen.model.BlockModelVariantsRegistrar
 import io.github.takenoko4096.noctiluca.datagen.model.builder.ClientItemModelHandle
 import io.github.takenoko4096.noctiluca.registry.block.ModBlockConfiguration
+import io.github.takenoko4096.noctiluca.registry.block.SingleArgBlockModel
+import io.github.takenoko4096.noctiluca.registry.item.ModItemConfiguration
+import io.github.takenoko4096.noctiluca.registry.item.ModItemRegistry
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
 import net.minecraft.client.data.models.model.TexturedModel
-import io.github.takenoko4096.noctiluca.registry.block.SingleArgBlockModel.SingleArgBlockTextureMap
-import io.github.takenoko4096.noctiluca.registry.item.ModItemConfiguration
-import io.github.takenoko4096.noctiluca.registry.item.ModItemRegistry
-import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput
 
 class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: FabricPackOutput) : FabricModelProvider(output) {
     override fun generateBlockStateModels(blockModelGenerators: BlockModelGenerators) {
@@ -19,33 +19,33 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
 
         for (configuration in blockRegistry.getConfigurations()) {
             val block = blockRegistry.getBlock(configuration.blockResourceKey)
-            val accessor = ModBlockConfiguration.getAccessorForClient(configuration)
+            val accessor = ModBlockConfiguration.Companion.getAccessorForClient(configuration)
             configuration.withItem()
 
             val model = accessor.blockModelLegacy()
             when (model?.textureMap) {
-                SingleArgBlockTextureMap.TRIVIAL_CUBE -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.TRIVIAL_CUBE -> {
                     blockModelGenerators.createTrivialCube(block)
                 }
-                SingleArgBlockTextureMap.TRIVIAL_COLUMN -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.TRIVIAL_COLUMN -> {
                     blockModelGenerators.createTrivialBlock(block, TexturedModel.COLUMN)
                 }
-                SingleArgBlockTextureMap.TRIVIAL_COLUMN_ALT -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.TRIVIAL_COLUMN_ALT -> {
                     blockModelGenerators.createTrivialBlock(block, TexturedModel.COLUMN_ALT)
                 }
-                SingleArgBlockTextureMap.TRIVIAL_COLUMN_HORIZONTAL -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.TRIVIAL_COLUMN_HORIZONTAL -> {
                     blockModelGenerators.createTrivialBlock(block, TexturedModel.COLUMN_HORIZONTAL)
                 }
-                SingleArgBlockTextureMap.TRIVIAL_COLUMN_HORIZONTAL_ALT -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.TRIVIAL_COLUMN_HORIZONTAL_ALT -> {
                     blockModelGenerators.createTrivialBlock(block, TexturedModel.COLUMN_HORIZONTAL_ALT)
                 }
-                SingleArgBlockTextureMap.ANVIL -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.ANVIL -> {
                     blockModelGenerators.createAnvil(block)
                 }
-                SingleArgBlockTextureMap.DOOR -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.DOOR -> {
                     blockModelGenerators.createDoor(block)
                 }
-                SingleArgBlockTextureMap.LANTERN -> {
+                SingleArgBlockModel.SingleArgBlockTextureMap.LANTERN -> {
                     blockModelGenerators.createLantern(block)
                 }
                 null -> {}
@@ -69,9 +69,9 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
 
         for (configuration in itemRegistry.getConfigurations()) {
             val item = itemRegistry.getItem(configuration.itemResourceKey)
-            val accessor = ModItemConfiguration.getAccessor(configuration)
+            val accessor = ModItemConfiguration.Companion.getAccessor(configuration)
 
-            ClientItemModelHandle.registerModel(itemModelGenerators, item, accessor.getModelHandle())
+            ClientItemModelHandle.Companion.registerModel(itemModelGenerators, item, accessor.getModelHandle())
         }
     }
 

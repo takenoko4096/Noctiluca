@@ -1,4 +1,4 @@
-package io.github.takenoko4096.noctiluca.datagen
+package io.github.takenoko4096.noctiluca.datagen.providers
 
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.registry.block.ModBlockConfiguration
@@ -18,7 +18,7 @@ abstract class NoctilucaLanguageProvider(private val mod: NoctilucaModInitialize
         val blockRegistry = mod.blockRegistry
         for (configuration in blockRegistry.getConfigurations()) {
             val block = blockRegistry.getBlock(configuration.blockResourceKey)
-            val accessor = ModBlockConfiguration.getAccessorForClient(configuration)
+            val accessor = ModBlockConfiguration.Companion.getAccessorForClient(configuration)
             val translation = accessor.translation()
 
             getTranslation(translation)?.let {
@@ -29,7 +29,7 @@ abstract class NoctilucaLanguageProvider(private val mod: NoctilucaModInitialize
         val itemRegistry = mod.itemRegistry
         for (configuration in itemRegistry.getConfigurations()) {
             val item = itemRegistry.getItem(configuration.itemResourceKey)
-            val accessor = ModItemConfiguration.getAccessor(configuration)
+            val accessor = ModItemConfiguration.Companion.getAccessor(configuration)
             val translation = accessor.translation()
 
             getTranslation(translation)?.let {
@@ -39,7 +39,7 @@ abstract class NoctilucaLanguageProvider(private val mod: NoctilucaModInitialize
 
         val creativeModeTabRegistry = mod.creativeModeTabRegistry
         for (configuration in creativeModeTabRegistry.getConfigurations()) {
-            val accessor = ModCreativeModeTabConfiguration.getAccessor(configuration)
+            val accessor = ModCreativeModeTabConfiguration.Companion.getAccessor(configuration)
             val translation = accessor.translation()
 
             getTranslation(translation)?.let {
