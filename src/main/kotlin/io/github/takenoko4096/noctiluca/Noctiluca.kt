@@ -2,11 +2,13 @@ package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
+import io.github.takenoko4096.noctiluca.math.toPosition3i
+import io.github.takenoko4096.noctiluca.math.toVector3d
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
-import io.github.takenoko4096.noctiluca.portal.PortalFinder
+import io.github.takenoko4096.noctiluca.portal.VerticalPortalDetector
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -16,8 +18,12 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.core.Direction
 import net.minecraft.resources.Identifier
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -35,8 +41,6 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         )
 
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
-
-        BlockEvents.USE_ITEM_ON.register(PortalFinder::onItemUseOnBlock)
     }
 
     override fun onInitialize() {
@@ -607,6 +611,26 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             context.source.player?.run {
                 m.buildOpen(this)
             }
+        }
+
+        val portalDetector = VerticalPortalDetector(Blocks.GLOWSTONE, Blocks.OAK_LOG)
+
+        BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
+            val portal = portalDetector.findPortal(
+                level,
+                blockPos.toPosition3i() + result.direction.unitVec3.toVector3d().toPosition3i(false)
+            ) ?: return@register InteractionResult.PASS
+
+            for (position3i in portal.portalPositions) {
+                level.setBlockAndUpdate(
+                    position3i.toBlockPos(),
+                    portal.portal.defaultBlockState().setValue(
+                        BlockStateProperties.AXIS, portal.axis.toAxis()
+                    )
+                )
+            }
+
+            return@register InteractionResult.SUCCESS
         }
     }
 }

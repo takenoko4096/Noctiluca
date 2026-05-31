@@ -1,34 +1,25 @@
 package io.github.takenoko4096.noctiluca.portal
 
 import io.github.takenoko4096.noctiluca.math.Position3i
-import net.minecraft.core.BlockPos
-import net.minecraft.core.Direction
-import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.portal.PortalShape
-import net.minecraft.world.phys.BlockHitResult
-import org.apache.commons.lang3.mutable.MutableInt
 import kotlin.math.max
 
-abstract class PortalFinder(protected val frame: Block) {
-    fun find(level: Level, position: Position3i): PortalFrame? {
-        return find(level, position, PortalAxis.X) ?: find(level, position, PortalAxis.Z)
+class VerticalPortalDetector(val frame: Block, val portal: Block) {
+    fun findPortal(level: Level, position: Position3i): VerticalPortal? {
+        return findPortalWithAxis(level, position, PortalAxis.X) ?: findPortalWithAxis(level, position, PortalAxis.Z)
     }
 
-    private fun find(level: Level, position: Position3i, axis: PortalAxis): PortalFrame? {
+    private fun findPortalWithAxis(level: Level, position: Position3i, axis: PortalAxis): VerticalPortal? {
         val innerBottomLeftPos = findInnerBottomLeft(level, position, axis) ?: return null
         val innerWidth = measureInnerWidthWithFloorValidation(level, innerBottomLeftPos, axis) ?: return null
         val innerHeight = measureInnerHeightWithWallsAndCeilValidation(level, innerBottomLeftPos, innerWidth, axis) ?: return null
-        return PortalFrame(innerBottomLeftPos, axis, innerWidth, innerHeight)
+        return VerticalPortal(level, innerBottomLeftPos, axis, innerWidth, innerHeight, frame, portal)
     }
 
     private fun isObstacle(blockState: BlockState): Boolean {
-        return !blockState.`is`(frame) && !blockState.isAir
+        return !blockState.`is`(frame) && !blockState.isAir && !blockState.`is`(portal)
     }
 
     private fun findInnerBottomLeft(level: Level, position: Position3i, axis: PortalAxis): Position3i? {
@@ -154,16 +145,12 @@ abstract class PortalFinder(protected val frame: Block) {
     }
 
     companion object {
-        private const val MIN_HEIGHT = 3
-
-        private const val MAX_HEIGHT = 21
-
         private const val MIN_WIDTH = 2
 
         private const val MAX_WIDTH = 21
 
-        internal fun onItemUseOnBlock(itemStack: ItemStack, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, hand: InteractionHand, result: BlockHitResult): InteractionResult {
+        private const val MIN_HEIGHT = 3
 
-        }
+        private const val MAX_HEIGHT = 21
     }
 }
