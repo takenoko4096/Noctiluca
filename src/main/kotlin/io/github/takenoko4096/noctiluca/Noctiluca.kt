@@ -6,12 +6,14 @@ import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
+import io.github.takenoko4096.noctiluca.portal.PortalFinder
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
 import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
+import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
@@ -33,6 +35,8 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         )
 
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
+
+        BlockEvents.USE_ITEM_ON.register(PortalFinder::onItemUseOnBlock)
     }
 
     override fun onInitialize() {

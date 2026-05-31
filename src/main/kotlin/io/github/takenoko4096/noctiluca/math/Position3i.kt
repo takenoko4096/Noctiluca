@@ -7,7 +7,7 @@ import kotlin.math.min
 
 class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> {
     override val isZero: Boolean
-        get() = equals(Position3i(x, y, z))
+        get() = equals(ZERO)
 
     override val components: List<Int>
         get() {
@@ -118,5 +118,19 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         fun from(blockPos: BlockPos): Position3i {
             return Position3i(blockPos.x, blockPos.y, blockPos.z)
         }
+
+        val ZERO = Position3i(0, 0, 0)
+
+        val NORTH = Position3i(0, 0, -1)
+
+        val SOUTH = Position3i(0, 0, 1)
+
+        val EAST = Position3i(1, 0, 0)
+
+        val WEST = Position3i(-1, 0, 0)
+
+        val UP = Position3i(0, 1, 0)
+
+        val DOWN = Position3i(0, -1, 0)
     }
 }

@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.registries.Registries
+import net.minecraft.data.registries.RegistriesDatapackGenerator
 import net.minecraft.data.worldgen.BootstrapContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.biome.Biome
