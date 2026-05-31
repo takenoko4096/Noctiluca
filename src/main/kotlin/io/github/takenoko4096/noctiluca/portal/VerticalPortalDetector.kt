@@ -19,7 +19,7 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
     }
 
     private fun isObstacle(blockState: BlockState): Boolean {
-        return !blockState.`is`(frame) && !blockState.isAir && !blockState.`is`(portal)
+        return !blockState.`is`(frame) && !blockState.isAir // && !blockState.`is`(portal)
     }
 
     private fun findInnerBottomLeft(level: Level, position: Position3i, axis: PortalAxis): Position3i? {

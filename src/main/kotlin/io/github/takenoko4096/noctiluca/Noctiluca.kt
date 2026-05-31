@@ -8,7 +8,9 @@ import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
+import io.github.takenoko4096.noctiluca.portal.PortalAxis
 import io.github.takenoko4096.noctiluca.portal.VerticalPortalDetector
+import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -23,7 +25,9 @@ import net.minecraft.resources.Identifier
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.world.level.material.PushReaction
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -613,9 +617,52 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val portalDetector = VerticalPortalDetector(Blocks.GLOWSTONE, Blocks.OAK_LOG)
+        val customPortal = blockRegistry.register("custom_portal") {
+            blockProperties {
+                sound = SoundType.GLASS
+                destroyTime = Float.POSITIVE_INFINITY
+                occlusion = false
+                collision = false
+                pushReaction = PushReaction.DESTROY
+                isReplaceable = true
+            }
+
+            val properties = blockStates {
+                enumerationProperty("axis", PortalAxis::class) {
+                    defaultValue = PortalAxis.X
+                }
+            }
+
+            model {
+                val model = blockModels.custom(
+                    identifierOf("block/custom_portal"),
+                    mapOf(
+                        "portal" to blockDefaultTexturePath
+                    )
+                )
+
+                block {
+                    variants(properties.enumeration("axis", PortalAxis::class)) {
+                        case(PortalAxis.X, model.toVariant(NonClientVariantMutator.Y_ROT_90))
+                        case(PortalAxis.Z, model.toVariant())
+                    }
+                }
+            }
+
+            color {
+                default { 0xffffff }
+            }
+        }
+
+        val portalDetector = VerticalPortalDetector(Blocks.GLOWSTONE, customPortal)
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
+            if (!itemStack.`is`(Items.GLOWSTONE_DUST)) {
+                return@register InteractionResult.PASS
+            }
+
+            // val properties = blockRegistry.getBlockPorperties()
+
             val portal = portalDetector.findPortal(
                 level,
                 blockPos.toPosition3i() + result.direction.unitVec3.toVector3d().toPosition3i(false)
@@ -625,7 +672,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 level.setBlockAndUpdate(
                     position3i.toBlockPos(),
                     portal.portal.defaultBlockState().setValue(
-                        BlockStateProperties.AXIS, portal.axis.toAxis()
+                        properties.enumeration("axis", PortalAxis::class), portal.axis
                     )
                 )
             }
