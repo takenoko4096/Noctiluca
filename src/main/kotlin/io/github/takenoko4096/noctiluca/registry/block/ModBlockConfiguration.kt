@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
+import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.registry.translation.ModTranslationConfiguration
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
@@ -14,17 +15,17 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.Item
+import net.minecraft.world.level.BlockAndLightGetter
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.FenceBlock
-import net.minecraft.world.level.block.FenceGateBlock
-import net.minecraft.world.level.block.SlabBlock
-import net.minecraft.world.level.block.StairBlock
-import net.minecraft.world.level.block.WallBlock
+import net.minecraft.world.level.block.*
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.WoodType
+import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.VoxelShape
+
 
 @NoctilucaDsl
 class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal val identifier: String) {
@@ -62,6 +63,8 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
     internal var familyBuilder: BlockFamily.Builder? = null
 
+    private var shapeBuilderCallback: ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)? = null
+
     fun blockProperties(callback: BlockPropertiesConfiguration.() -> Unit) {
         val bpc = BlockPropertiesConfiguration(this, callback)
         blockProperties = bpc.build()
@@ -97,6 +100,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         val tc = ModTranslationConfiguration()
         tc.callback()
         translation = tc
+    }
+
+    fun voxelShape(callback: BlockVoxelShapeProvider.() -> VoxelShape) {
+        shapeBuilderCallback = { blockState, level, blockPos, context -> callback(BlockVoxelShapeProvider(blockState, level, Position3i.from(blockPos), context)) }
     }
 
     fun withItem() {
@@ -152,6 +159,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
                     for (definition in defs) {
                         builder.add(definition.property)
                     }
+                }
+
+                override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
+                    return shapeBuilderCallback?.invoke(state, level, pos, context) ?: super.getShape(state, level, pos, context)
                 }
             }
         }
@@ -272,11 +283,11 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
             return configuration.tintConfig.defaultColorGetter
         }
 
-        fun inWorldTint(): (BlockState, BlockPos, Level) -> Int {
+        fun inWorldTint(): (BlockState, BlockPos, BlockAndLightGetter) -> Int {
             return configuration.tintConfig.colorGetter
         }
 
-        fun terrainParticleTint(): (BlockState, BlockPos, Level) -> Int {
+        fun terrainParticleTint(): (BlockState, BlockPos, BlockAndLightGetter) -> Int {
             return configuration.tintConfig.particleColorGetter
         }
     }

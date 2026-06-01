@@ -6,7 +6,7 @@ import io.github.takenoko4096.noctiluca.render.model.ModelProvider
 import io.github.takenoko4096.noctiluca.render.model.builtin.NonClientBuiltinModel
 import io.github.takenoko4096.noctiluca.render.model.builtin.NonClientBuiltinModelTemplate
 import io.github.takenoko4096.noctiluca.render.model.builtin.NonClientBuiltinTextureSlot
-import io.github.takenoko4096.noctiluca.render.model.custom.NonClientCustomModel
+import io.github.takenoko4096.noctiluca.render.model.custom.NonClientParentExtensionModel
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.world.level.block.Block
@@ -89,8 +89,8 @@ class BlockModelProvider internal constructor(resourceKey: ResourceKey<Block>) :
         )
     }
 
-    fun custom(modelTemplate: Identifier, textureMapping: Map<String, TexturePath>, callback: ModelOptions.() -> Unit = {}): NonClientCustomModel {
-        return NonClientCustomModel(
+    fun fromParent(modelTemplate: Identifier, textureMapping: Map<String, TexturePath>, callback: ModelOptions.() -> Unit = {}): NonClientParentExtensionModel {
+        return NonClientParentExtensionModel(
             resourceKey,
             modelTemplate,
             textureMapping,

@@ -14,6 +14,9 @@ class RgbColor private constructor(private val rgb: Int?) {
     val b: Int
         get() = if (rgb != null) rgb and 0xFF else throw IllegalStateException("NULLの色成分は取得できません")
 
+    val rgbValue: Int
+        get() = rgb ?: throw IllegalStateException("NULLの色は取得できません")
+
     internal constructor(r: Int, g: Int, b: Int): this((r shl 16) + (g shl 8) + b)
 
     override fun hashCode(): Int {

@@ -2,6 +2,7 @@ package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
+import io.github.takenoko4096.noctiluca.math.Vector3d
 import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.math.toVector3d
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
@@ -20,14 +21,14 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.core.Direction
 import net.minecraft.resources.Identifier
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.SoundType
-import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.minecraft.world.level.material.PushReaction
+import net.minecraft.world.phys.shapes.VoxelShape
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -633,11 +634,22 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 }
             }
 
+            voxelShape {
+                val x = box(Vector3d(0.0, 0.0, 6.0), Vector3d(16.0, 16.0, 10.0))
+                val z = box(Vector3d(6.0, 0.0, 0.0), Vector3d(10.0, 16.0, 16.0))
+
+                when (blockState.getValue(properties.enumeration("axis", PortalAxis::class))) {
+                    PortalAxis.X -> x
+                    PortalAxis.Z -> z
+                }
+            }
+
             model {
-                val model = blockModels.custom(
-                    identifierOf("block/custom_portal"),
+                val model = blockModels.fromParent(
+                    identifierOf("block/custom_portal_ew_parent"),
                     mapOf(
-                        "portal" to blockDefaultTexturePath
+                        "portal" to blockDefaultTexturePath,
+                        "particle" to blockDefaultTexturePath
                     )
                 )
 
@@ -650,18 +662,20 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
 
             color {
-                default { 0xffffff }
+                default { RgbColor.AQUA.rgbValue }
+
+                inWorld { state, pos, level -> RgbColor.AQUA.rgbValue }
             }
         }
 
         val portalDetector = VerticalPortalDetector(Blocks.GLOWSTONE, customPortal)
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
-            if (!itemStack.`is`(Items.GLOWSTONE_DUST)) {
+            if (!itemStack.`is`(Items.WATER_BUCKET)) {
                 return@register InteractionResult.PASS
             }
 
-            // val properties = blockRegistry.getBlockPorperties()
+            val properties = blockRegistry.getProperties(customPortal)
 
             val portal = portalDetector.findPortal(
                 level,

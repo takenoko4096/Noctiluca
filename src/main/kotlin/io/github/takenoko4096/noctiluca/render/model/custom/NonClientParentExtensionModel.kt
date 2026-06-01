@@ -6,7 +6,7 @@ import io.github.takenoko4096.noctiluca.render.model.NonClientModel
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 
-class NonClientCustomModel(
+class NonClientParentExtensionModel(
     resourceKey: ResourceKey<*>,
     val parent: Identifier,
     val mapping: Map<String, TexturePath>,

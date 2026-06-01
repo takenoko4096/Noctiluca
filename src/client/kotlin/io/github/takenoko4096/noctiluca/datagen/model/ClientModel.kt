@@ -2,11 +2,11 @@ package io.github.takenoko4096.noctiluca.datagen.model
 
 import io.github.takenoko4096.noctiluca.datagen.model.builtin.ClientBuiltinBlockModel
 import io.github.takenoko4096.noctiluca.datagen.model.builtin.ClientBuiltinItemModel
-import io.github.takenoko4096.noctiluca.datagen.model.custom.ClientCustomBlockModel
-import io.github.takenoko4096.noctiluca.datagen.model.custom.ClientCustomItemModel
+import io.github.takenoko4096.noctiluca.datagen.model.custom.ClientParentExtensionBlockModel
+import io.github.takenoko4096.noctiluca.datagen.model.custom.ClientParentExtensionItemModel
 import io.github.takenoko4096.noctiluca.render.model.NonClientModel
 import io.github.takenoko4096.noctiluca.render.model.builtin.NonClientBuiltinModel
-import io.github.takenoko4096.noctiluca.render.model.custom.NonClientCustomModel
+import io.github.takenoko4096.noctiluca.render.model.custom.NonClientParentExtensionModel
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
 import net.minecraft.client.data.models.model.ModelTemplate
@@ -41,7 +41,7 @@ abstract class ClientModel {
 
             val clientModel = when (model) {
                 is NonClientBuiltinModel -> ClientBuiltinItemModel(item, model, generators)
-                is NonClientCustomModel -> ClientCustomItemModel(item, model, generators)
+                is NonClientParentExtensionModel -> ClientParentExtensionItemModel(item, model, generators)
                 else -> throw IllegalStateException("NEVER HAPPENS")
             }
 
@@ -58,8 +58,8 @@ abstract class ClientModel {
                 is NonClientBuiltinModel -> {
                     ClientBuiltinBlockModel(block, model, generators)
                 }
-                is NonClientCustomModel -> {
-                    ClientCustomBlockModel(block, model, generators)
+                is NonClientParentExtensionModel -> {
+                    ClientParentExtensionBlockModel(block, model, generators)
                 }
                 else -> throw IllegalStateException("NEVER HAPPENS")
             }

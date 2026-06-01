@@ -5,6 +5,7 @@ import io.github.takenoko4096.noctiluca.client.ui.container.CustomContainerScree
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import net.minecraft.client.gui.screens.MenuScreens
 
+
 object NoctilucaClient : NoctilucaClientModInitializer(Noctiluca) {
     private fun initializeSystem() {
         MenuScreens.register(CustomContainerMenu.TYPE_1, ::CustomContainerScreen)

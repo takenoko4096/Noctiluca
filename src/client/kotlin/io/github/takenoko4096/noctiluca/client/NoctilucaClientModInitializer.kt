@@ -38,21 +38,11 @@ abstract class NoctilucaClientModInitializer(private val mod: NoctilucaModInitia
                     }
 
                     override fun colorInWorld(state: BlockState, level: BlockAndTintGetter, pos: BlockPos): Int {
-                        return if (level is ClientLevel) {
-                            accessor.inWorldTint()(state, pos, level)
-                        }
-                        else {
-                            super.colorInWorld(state, level, pos)
-                        }
+                        return accessor.inWorldTint()(state, pos, level)
                     }
 
                     override fun colorAsTerrainParticle(state: BlockState, level: BlockAndTintGetter, pos: BlockPos): Int {
-                        return if (level is ClientLevel) {
-                            accessor.terrainParticleTint()(state, pos, level)
-                        }
-                        else {
-                            super.colorAsTerrainParticle(state, level, pos)
-                        }
+                        return accessor.terrainParticleTint()(state, pos, level)
                     }
                 }),
                 block
