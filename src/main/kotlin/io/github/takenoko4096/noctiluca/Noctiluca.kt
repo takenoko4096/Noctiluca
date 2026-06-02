@@ -661,9 +661,11 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
 
             color {
-                default { RgbColor.AQUA.withAlpha(192) }
+                default { RgbColor.AQUA.withAlpha(192).argbValue }
 
-                inWorld { state, pos, level -> RgbColor.AQUA.withAlpha(192) }
+                inWorld { state, pos, level -> RgbColor.AQUA.withAlpha(192).argbValue }
+
+                terrainParticle { state, pos, getter -> RgbColor.AQUA.withAlpha(192).argbValue }
             }
         }
 

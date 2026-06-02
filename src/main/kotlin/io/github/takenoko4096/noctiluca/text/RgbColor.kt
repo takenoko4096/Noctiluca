@@ -82,8 +82,8 @@ class RgbColor private constructor(private val rgb: Int?) {
         return HsvColor(h, s, v)
     }
 
-    fun withAlpha(alpha: Int): Int {
-        return ((alpha and 0xFF) shl 24) or (rgbValue and 0xFFFFFF)
+    fun withAlpha(alpha: Int): ArgbColor {
+        return ArgbColor(alpha, this)
     }
 
     companion object {
