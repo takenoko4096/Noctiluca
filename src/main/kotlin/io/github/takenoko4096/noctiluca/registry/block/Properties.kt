@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 class Properties internal constructor(private val definitions: Set<BlockStatesConfiguration.PropertyDefinition<*>>) {
     private fun getProperty(name: String): Property<*> {
         val def = definitions.find { it.property.name == name }
-        if (def == null) throw IllegalArgumentException()
+        if (def == null) throw IllegalArgumentException("ブロックプロパティ '$name' が見つかりません")
         return def.property
     }
 
@@ -20,6 +20,10 @@ class Properties internal constructor(private val definitions: Set<BlockStatesCo
 
     fun integer(name: String): IntegerProperty {
         return getProperty(name) as? IntegerProperty ?: throw IllegalArgumentException()
+    }
+
+    inline fun <reified T> enumeration(name: String): EnumProperty<T> where T : Enum<T>, T : StringRepresentable {
+        return enumeration(name, T::class)
     }
 
     fun <T> enumeration(name: String, clazz: KClass<T>): EnumProperty<T> where T : Enum<T>, T : StringRepresentable {

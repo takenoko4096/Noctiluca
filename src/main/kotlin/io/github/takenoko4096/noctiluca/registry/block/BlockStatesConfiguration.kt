@@ -43,6 +43,10 @@ class BlockStatesConfiguration internal constructor() {
         states.add(config.build())
     }
 
+    inline fun <reified T> enumerationProperty(name: String, noinline callback: EnumerationPropertyConfiguration<T>.() -> Unit) where T : Enum<T>, T : StringRepresentable {
+        return enumerationProperty(name, T::class, callback)
+    }
+
     internal fun build(): Set<PropertyDefinition<*>> {
         return states.toSet()
     }

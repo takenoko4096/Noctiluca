@@ -1,5 +1,5 @@
 {
-  "parent": "noctiluca:block/custom_portal_ew_parent",
+  "parent": "noctiluca:block/custom_portal_z_parent",
   "textures": {
     "particle": "noctiluca:block/custom_portal",
     "portal": "noctiluca:block/custom_portal"

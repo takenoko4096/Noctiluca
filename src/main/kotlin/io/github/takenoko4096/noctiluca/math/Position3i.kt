@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca.math
 
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import java.util.Objects
 import kotlin.math.max
 import kotlin.math.min
@@ -108,6 +109,10 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
 
     fun bottomCenter(): Vector3d {
         return toVector3d() + Vector3d(0.5, 0.0, 0.5)
+    }
+
+    fun withDirection(direction: Direction): Position3i {
+        return this + direction.unitVec3.toVector3d().toPosition3i(false)
     }
 
     fun toBlockPos(): BlockPos {

@@ -1,7 +1,10 @@
 package io.github.takenoko4096.noctiluca.portal
 
+import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
+import net.minecraft.server.MinecraftServer
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 
@@ -21,10 +24,9 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
     init {
         framePositions = collectFramePositions()
         portalPositions = collectPortalPositions()
-        portals.add(this)
     }
 
-    val isLoadable: Boolean
+    val isLoaded: Boolean
         get() {
             return level.isLoaded(frameBottomLeftPos.toBlockPos()) && level.isLoaded(frameBottomRightPos.toBlockPos())
         }
@@ -124,30 +126,8 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
     }
 
     fun isCompletePortal(): Boolean {
-        return isFilledWith { it.`is`(type.portalBlock) }
+        return isFilledWith { it.`is`(type.portalBlock) } && !isFrameBroken()
     }
 
     fun isIgnitable(): Boolean = isFilledWith { it.isAir }
-
-    private fun tick() {
-        if (isFrameBroken() || !isCompletePortal()) {
-            for (pos in portalPositions) {
-                level.destroyBlock(pos.toBlockPos(), false)
-            }
-
-            portals.remove(this)
-        }
-    }
-
-    companion object {
-        private val portals = mutableSetOf<VerticalPortal>()
-
-        init {
-            ServerTickEvents.END_SERVER_TICK.register {
-                for (portal in portals.toSet()) {
-                    if (portal.isLoadable) portal.tick()
-                }
-            }
-        }
-    }
 }

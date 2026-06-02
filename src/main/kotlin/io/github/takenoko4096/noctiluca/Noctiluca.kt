@@ -2,13 +2,13 @@ package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
+import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.math.Vector3d
 import io.github.takenoko4096.noctiluca.math.toPosition3i
-import io.github.takenoko4096.noctiluca.math.toVector3d
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
+import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
-import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
 import io.github.takenoko4096.noctiluca.portal.PortalFinder
 import io.github.takenoko4096.noctiluca.portal.PortalType
@@ -25,9 +25,11 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.material.PushReaction
+import net.minecraft.world.level.portal.PortalShape
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -617,91 +619,105 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val customPortal = blockRegistry.register("custom_portal") {
-            blockProperties {
-                sound = SoundType.GLASS
-                destroyTime = Float.POSITIVE_INFINITY
-                occlusion = false
-                collision = false
-                pushReaction = PushReaction.DESTROY
-                isReplaceable = true
-            }
-
-            val properties = blockStates {
-                enumerationProperty("axis", PortalAxis::class) {
-                    defaultValue = PortalAxis.X
-                }
-            }
-
-            voxelShape {
-                val x = box(Vector3d(0.0, 0.0, 6.0), Vector3d(16.0, 16.0, 10.0))
-                val z = box(Vector3d(6.0, 0.0, 0.0), Vector3d(10.0, 16.0, 16.0))
-
-                when (blockState.getValue(properties.enumeration("axis", PortalAxis::class))) {
-                    PortalAxis.X -> x
-                    PortalAxis.Z -> z
-                }
-            }
-
-            model {
-                val model = blockModels.fromParent(
-                    identifierOf("block/custom_portal_ew_parent"),
-                    mapOf(
-                        "portal" to blockDefaultTexturePath,
-                        "particle" to blockDefaultTexturePath
-                    )
-                )
-
-                block {
-                    variants(properties.enumeration("axis", PortalAxis::class)) {
-                        case(PortalAxis.X, model.toVariant(NonClientVariantMutator.Y_ROT_90))
-                        case(PortalAxis.Z, model.toVariant())
-                    }
-                }
-            }
-
-            color {
-                default { RgbColor.AQUA.withAlpha(192).argbValue }
-
-                inWorld { state, pos, level -> RgbColor.AQUA.withAlpha(192).argbValue }
-
-                terrainParticle { state, pos, getter -> RgbColor.AQUA.withAlpha(192).argbValue }
-            }
-        }
-
-        val finder = PortalFinder(PortalType(
-            Blocks.GLOWSTONE,
-            customPortal,
-            21,
-            21
-        ))
+        val customPortalProperties = blockRegistry.getPropertiesOf(customPortal)
+        val customPortalAxisProperty = customPortalProperties.enumeration<PortalAxis>("axis")
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
-            if (!itemStack.`is`(Items.WATER_BUCKET)) {
-                return@register InteractionResult.PASS
-            }
+            val position = blockPos.toPosition3i().withDirection(result.direction)
 
-            val properties = blockRegistry.getProperties(customPortal)
+            val portal = finder.findPortal(level, position) { isIgnitable() } ?: return@register null
 
-            val portal = finder.findPortal(
-                level,
-                blockPos.toPosition3i() + result.direction.unitVec3.toVector3d().toPosition3i(false)
-            ) ?: return@register InteractionResult.PASS
-
-            if (!portal.isIgnitable()) {
-                return@register InteractionResult.PASS
+            if (!itemStack.`is`(portal.type.ignitionSource)) {
+                return@register null
             }
 
             for (position3i in portal.portalPositions) {
                 level.setBlockAndUpdate(
                     position3i.toBlockPos(),
-                    portal.type.portalBlock.defaultBlockState().setValue(
-                        properties.enumeration("axis", PortalAxis::class), portal.axis
-                    )
+                    portal.type.portalBlock.defaultBlockState().setValue(customPortalAxisProperty, portal.axis)
                 )
             }
 
             return@register InteractionResult.SUCCESS
         }
     }
+
+    val customPortal: Block = blockRegistry.register("custom_portal") {
+        blockProperties {
+            sound = SoundType.GLASS
+            destroyTime = Float.POSITIVE_INFINITY
+            occlusion = false
+            collision = false
+            pushReaction = PushReaction.DESTROY
+            isReplaceable = true
+        }
+
+        val properties = blockStates {
+            enumerationProperty<PortalAxis>("axis") {
+                defaultValue = PortalAxis.X
+            }
+        }
+
+        events {
+            onUpdate {
+                val portalAxis = blockState.getValue(properties.enumeration<PortalAxis>("axis"))
+
+                if (directionToNeighbour.axis.isHorizontal && directionToNeighbour.axis != portalAxis.toAxis()) {
+                    Noctiluca.logger.info("1, {}, != {}", directionToNeighbour.axis, portalAxis.toAxis())
+                    return@onUpdate
+                }
+
+                if (neighbourState.`is`(blockState.block)) {
+                    Noctiluca.logger.info("2")
+                    return@onUpdate
+                }
+
+                if (finder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { true }?.isCompletePortal() != true) {
+                    Noctiluca.logger.info("3, {}", finder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { true }?.isCompletePortal())
+                    finalBlockState = Blocks.AIR.defaultBlockState()
+                }
+            }
+        }
+
+        voxelShape {
+            val x = box(Vector3d(0.0, 0.0, 6.0), Vector3d(16.0, 16.0, 10.0))
+            val z = box(Vector3d(6.0, 0.0, 0.0), Vector3d(10.0, 16.0, 16.0))
+
+            when (blockState.getValue(properties.enumeration<PortalAxis>("axis"))) {
+                PortalAxis.X -> x
+                PortalAxis.Z -> z
+            }
+        }
+
+        model {
+            val model = blockModels.fromParent(
+                identifierOf("block/custom_portal_z_parent"),
+                mapOf(
+                    "portal" to blockDefaultTexturePath,
+                    "particle" to blockDefaultTexturePath
+                )
+            )
+
+            block {
+                variants(properties.enumeration("axis", PortalAxis::class)) {
+                    case(PortalAxis.X, model.toVariant(NonClientVariantMutator.Y_ROT_90))
+                    case(PortalAxis.Z, model.toVariant())
+                }
+            }
+        }
+
+        color {
+            default {
+                RgbColor.AQUA.withAlpha(255)
+            }
+        }
+    }
+
+    val finder: PortalFinder = PortalFinder(PortalType(
+        Blocks.GLOWSTONE,
+        customPortal,
+        Items.WATER_BUCKET,
+        21,
+        21
+    ))
 }

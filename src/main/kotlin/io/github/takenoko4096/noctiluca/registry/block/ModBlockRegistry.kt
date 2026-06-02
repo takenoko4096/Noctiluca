@@ -22,7 +22,7 @@ class ModBlockRegistry(mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
         return block
     }
 
-    fun getProperties(block: Block): Properties {
+    fun getPropertiesOf(block: Block): Properties {
         return properties[block] ?: throw IllegalArgumentException("properties not found")
     }
 

@@ -2,10 +2,8 @@ package io.github.takenoko4096.noctiluca.client
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
-import io.github.takenoko4096.noctiluca.client.ui.container.CustomContainerScreen
 import io.github.takenoko4096.noctiluca.registry.block.ModBlockConfiguration
 import io.github.takenoko4096.noctiluca.registry.command.node.ConfigurableCommandNode
-import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
@@ -13,8 +11,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry
 import net.minecraft.client.Minecraft
 import net.minecraft.client.color.block.BlockTintSource
-import net.minecraft.client.gui.screens.MenuScreens
-import net.minecraft.client.multiplayer.ClientLevel
 import net.minecraft.client.renderer.block.BlockAndTintGetter
 import net.minecraft.commands.CommandBuildContext
 import net.minecraft.core.BlockPos
@@ -34,15 +30,15 @@ abstract class NoctilucaClientModInitializer(private val mod: NoctilucaModInitia
             BlockColorRegistry.register(
                 listOf(object : BlockTintSource {
                     override fun color(state: BlockState): Int {
-                        return accessor.defaultTint()(state)
+                        return accessor.color()(state)
                     }
 
                     override fun colorInWorld(state: BlockState, level: BlockAndTintGetter, pos: BlockPos): Int {
-                        return accessor.inWorldTint()(state, pos, level)
+                        return accessor.inWorldColor()?.invoke(state, pos, level) ?: super.colorInWorld(state, level, pos)
                     }
 
                     override fun colorAsTerrainParticle(state: BlockState, level: BlockAndTintGetter, pos: BlockPos): Int {
-                        return accessor.terrainParticleTint()(state, pos, level)
+                        return accessor.terrainParticleColor()?.invoke(state, pos, level) ?: super.colorAsTerrainParticle(state, level, pos)
                     }
                 }),
                 block

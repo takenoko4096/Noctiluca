@@ -2,7 +2,9 @@ package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.util.RandomSource
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Entity
@@ -10,6 +12,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Explosion
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
 import kotlin.reflect.KClass
@@ -42,6 +45,13 @@ class BlockEventsConfiguration internal constructor() {
     fun onInteract(callback: InteractEvent.() -> Unit) {
         handlers.add(BlockEventHandler(
             InteractEvent::class,
+            callback
+        ))
+    }
+
+    fun onUpdate(callback: UpdateEvent.() -> Unit) {
+        handlers.add(BlockEventHandler(
+            UpdateEvent::class,
             callback
         ))
     }
@@ -101,6 +111,19 @@ class BlockEventsConfiguration internal constructor() {
         internal var interactionResult: InteractionResult
     ) : BlockEvent() {
 
+    }
+
+    class UpdateEvent internal constructor(
+        val level: Level,
+        val blockState: BlockState,
+        val blockPos: BlockPos,
+        val directionToNeighbour: Direction,
+        val neighbourPos: BlockPos,
+        val neighbourState: BlockState,
+        val ticks: ScheduledTickAccess,
+        val random: RandomSource
+    ) : BlockEvent() {
+        var finalBlockState: BlockState? = null
     }
 
     internal fun build(): BlockEventDispatcher {

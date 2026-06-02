@@ -1,7 +1,10 @@
 package io.github.takenoko4096.noctiluca.registry.block
 
+import io.github.takenoko4096.noctiluca.Noctiluca
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.util.RandomSource
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Entity
@@ -9,7 +12,13 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Explosion
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.CropBlock
+import net.minecraft.world.level.block.DoublePlantBlock
+import net.minecraft.world.level.block.NetherPortalBlock
+import net.minecraft.world.level.block.ObserverBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
@@ -69,6 +78,18 @@ open class CustomBlock internal constructor(
                 event.dropHandle(BlockEventsConfiguration.ExplosionHitEvent.ExplosionDrop(itemStack, blockPos))
             }
         }
+    }
+
+    override fun updateShape(state: BlockState, level: LevelReader, ticks: ScheduledTickAccess, pos: BlockPos, directionToNeighbour: Direction, neighbourPos: BlockPos, neighbourState: BlockState, random: RandomSource): BlockState {
+        if (level !is Level) {
+            Noctiluca.logger.info("UPDATE SHAPE FAILURE")
+            return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random)
+        }
+
+        val event = BlockEventsConfiguration.UpdateEvent(level, state, pos, directionToNeighbour, neighbourPos, neighbourState, ticks, random)
+        eventDispatcher.dispatch(BlockEventsConfiguration.UpdateEvent::class, event)
+
+        return event.finalBlockState ?: super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random)
     }
 
     override fun useItemOn(itemStack: ItemStack, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, interactionHand: InteractionHand, blockHitResult: BlockHitResult): InteractionResult {

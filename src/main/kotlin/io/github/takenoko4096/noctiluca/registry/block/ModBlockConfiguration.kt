@@ -6,6 +6,7 @@ import io.github.takenoko4096.noctiluca.registry.translation.ModTranslationConfi
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
@@ -13,11 +14,13 @@ import net.minecraft.data.BlockFamily
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.tags.BlockTags
+import net.minecraft.util.RandomSource
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.BlockAndLightGetter
 import net.minecraft.world.level.BlockGetter
-import net.minecraft.world.level.Level
+import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.*
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
@@ -279,16 +282,16 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
             return configuration.translation
         }
 
-        fun defaultTint(): (BlockState) -> Int {
-            return configuration.tintConfig.defaultColorGetter
+        fun color(): (BlockState) -> Int {
+            return configuration.tintConfig.default
         }
 
-        fun inWorldTint(): (BlockState, BlockPos, BlockAndLightGetter) -> Int {
-            return configuration.tintConfig.colorGetter
+        fun inWorldColor(): ((BlockState, BlockPos, BlockAndLightGetter) -> Int)? {
+            return configuration.tintConfig.inWorld
         }
 
-        fun terrainParticleTint(): (BlockState, BlockPos, BlockAndLightGetter) -> Int {
-            return configuration.tintConfig.particleColorGetter
+        fun terrainParticleColor(): ((BlockState, BlockPos, BlockAndLightGetter) -> Int)? {
+            return configuration.tintConfig.particle
         }
     }
 
