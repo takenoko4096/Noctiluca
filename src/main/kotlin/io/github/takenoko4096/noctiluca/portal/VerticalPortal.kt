@@ -3,9 +3,9 @@ package io.github.takenoko4096.noctiluca.portal
 import io.github.takenoko4096.noctiluca.math.Position3i
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
 
-data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val frame: Block, val portal: Block) {
+data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
     val frameInclusiveWidth = innerWidth + 2
 
     val frameInclusiveHeight = innerHeight + 2
@@ -36,24 +36,24 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
 
         for (u in 0..<frameInclusiveWidth) {
             val bottomPos = frameBottomLeftPos + right * u
-            if (level.getBlockState(bottomPos.toBlockPos()).`is`(frame)) {
+            if (level.getBlockState(bottomPos.toBlockPos()).`is`(type.frameBlock)) {
                 list.add(bottomPos)
             }
 
             val topPos = bottomPos + Position3i.UP * (frameInclusiveHeight - 1)
-            if (level.getBlockState(topPos.toBlockPos()).`is`(frame)) {
+            if (level.getBlockState(topPos.toBlockPos()).`is`(type.frameBlock)) {
                 list.add(topPos)
             }
         }
 
         for (v in 1..innerHeight) {
             val leftPos = frameBottomLeftPos + Position3i.UP * v
-            if (level.getBlockState(leftPos.toBlockPos()).`is`(frame)) {
+            if (level.getBlockState(leftPos.toBlockPos()).`is`(type.frameBlock)) {
                 list.add(leftPos)
             }
 
             val rightPos = leftPos + right * (frameInclusiveWidth - 1)
-            if (level.getBlockState(rightPos.toBlockPos()).`is`(frame)) {
+            if (level.getBlockState(rightPos.toBlockPos()).`is`(type.frameBlock)) {
                 list.add(rightPos)
             }
         }
@@ -81,24 +81,24 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
 
         for (u in 1..innerWidth) {
             val bottomPos = frameBottomLeftPos + right * u
-            if (!level.getBlockState(bottomPos.toBlockPos()).`is`(frame)) {
+            if (!level.getBlockState(bottomPos.toBlockPos()).`is`(type.frameBlock)) {
                 return true
             }
 
             val topPos = bottomPos + Position3i.UP * (frameInclusiveHeight - 1)
-            if (!level.getBlockState(topPos.toBlockPos()).`is`(frame)) {
+            if (!level.getBlockState(topPos.toBlockPos()).`is`(type.frameBlock)) {
                 return true
             }
         }
 
         for (v in 1..innerHeight) {
             val leftPos = frameBottomLeftPos + Position3i.UP * v
-            if (!level.getBlockState(leftPos.toBlockPos()).`is`(frame)) {
+            if (!level.getBlockState(leftPos.toBlockPos()).`is`(type.frameBlock)) {
                 return true
             }
 
             val rightPos = leftPos + right * (frameInclusiveWidth - 1)
-            if (!level.getBlockState(rightPos.toBlockPos()).`is`(frame)) {
+            if (!level.getBlockState(rightPos.toBlockPos()).`is`(type.frameBlock)) {
                 return true
             }
         }
@@ -106,14 +106,15 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
         return false
     }
 
-    fun isFilledWithPortalBlock(): Boolean {
+    fun isFilledWith(predicate: (BlockState) -> Boolean): Boolean {
         val right = axis.unit
 
         for (u in 0..<innerWidth) {
             for (v in 0..<innerHeight) {
                 val currentPos = innerBottomLeftPos + (right * u) + (Position3i.UP * v)
+                val currentState = level.getBlockState(currentPos.toBlockPos())
 
-                if (!level.getBlockState(currentPos.toBlockPos()).`is`(portal)) {
+                if (!predicate(currentState)) {
                     return false
                 }
             }
@@ -122,8 +123,14 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
         return true
     }
 
+    fun isCompletePortal(): Boolean {
+        return isFilledWith { it.`is`(type.portalBlock) }
+    }
+
+    fun isIgnitable(): Boolean = isFilledWith { it.isAir }
+
     private fun tick() {
-        if (isFrameBroken() || !isFilledWithPortalBlock()) {
+        if (isFrameBroken() || !isCompletePortal()) {
             for (pos in portalPositions) {
                 level.destroyBlock(pos.toBlockPos(), false)
             }

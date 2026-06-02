@@ -2,11 +2,10 @@ package io.github.takenoko4096.noctiluca.portal
 
 import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
 import kotlin.math.max
 
-class VerticalPortalDetector(val frame: Block, val portal: Block) {
+class PortalFinder(val type: PortalType) {
     fun findPortal(level: Level, position: Position3i): VerticalPortal? {
         return findPortalWithAxis(level, position, PortalAxis.X) ?: findPortalWithAxis(level, position, PortalAxis.Z)
     }
@@ -15,16 +14,16 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
         val innerBottomLeftPos = findInnerBottomLeft(level, position, axis) ?: return null
         val innerWidth = measureInnerWidthWithFloorValidation(level, innerBottomLeftPos, axis) ?: return null
         val innerHeight = measureInnerHeightWithWallsAndCeilValidation(level, innerBottomLeftPos, innerWidth, axis) ?: return null
-        return VerticalPortal(level, innerBottomLeftPos, axis, innerWidth, innerHeight, frame, portal)
+        return VerticalPortal(level, innerBottomLeftPos, axis, innerWidth, innerHeight, type)
     }
 
     private fun isObstacle(blockState: BlockState): Boolean {
-        return !blockState.`is`(frame) && !blockState.isAir // && !blockState.`is`(portal)
+        return !blockState.`is`(type.frameBlock) && !blockState.isAir && !blockState.`is`(type.portalBlock)
     }
 
     private fun findInnerBottomLeft(level: Level, position: Position3i, axis: PortalAxis): Position3i? {
         // ポータルフレームのありうる最低の高さをディメンションの最低高度でクランプ
-        val minY = max(level.minY, position.y - MAX_HEIGHT)
+        val minY = max(level.minY, position.y - type.maxHeight)
 
         var currentPos = position
 
@@ -33,7 +32,7 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
             val belowPos = currentPos + Position3i.DOWN
             val belowState = level.getBlockState(belowPos.toBlockPos())
 
-            if (belowState.`is`(frame)) break
+            if (belowState.`is`(type.frameBlock)) break
             else if (isObstacle(belowState)) return null
             else currentPos = belowPos
         }
@@ -43,10 +42,10 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
 
         // 下を這うように左向きに進む
         var i = 0
-        while (i <= MAX_WIDTH) {
+        while (i <= type.maxWidth) {
             val leftPos = currentPos + left
             val leftState = level.getBlockState(leftPos.toBlockPos())
-            if (leftState.`is`(frame)) {
+            if (leftState.`is`(type.frameBlock)) {
                 // 現在の位置のひとつ左の位置がフレームならここを左下として返す
                 return currentPos
             }
@@ -58,7 +57,7 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
             // ひとつ左が空気なら続行
             val leftBelowPos = leftPos + Position3i.DOWN
             val leftBelowState = level.getBlockState(leftBelowPos.toBlockPos())
-            if (leftBelowState.`is`(frame)) {
+            if (leftBelowState.`is`(type.frameBlock)) {
                 // 左の位置のひとつ下がフレームならさらに左へ
                 currentPos = leftPos
             }
@@ -80,16 +79,16 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
         var currentPos = innerBottomLeftPos
 
         // 0から開始すればフレームブロックが初回で現れたときにinnerWidth=0を返すことができる
-        for (width in 0..MAX_WIDTH) {
+        for (width in 0..type.maxWidth) {
             val blockState = level.getBlockState(currentPos.toBlockPos())
-            if (blockState.`is`(frame)) {
+            if (blockState.`is`(type.frameBlock)) {
                 if (width < MIN_WIDTH) return null
                 return width
             }
             if (isObstacle(blockState)) return null
 
             val belowState = level.getBlockState((currentPos + Position3i.DOWN).toBlockPos())
-            if (!belowState.`is`(frame)) return null
+            if (!belowState.`is`(type.frameBlock)) return null
 
             currentPos += right
         }
@@ -105,17 +104,17 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
         var innerLeftPos = innerBottomLeftPos
 
         // 0から開始すればフレームブロックが初回で現れたときにinnerHeight=0を返すことができる
-        for (height in 0..MAX_HEIGHT) {
+        for (height in 0..type.maxHeight) {
             val innerRightPos = innerLeftPos + leftToRightVec
 
             // 上にぶつかったらそれが障害物でないか確認
             val innerLeftState = level.getBlockState(innerLeftPos.toBlockPos())
-            if (innerLeftState.`is`(frame)) {
+            if (innerLeftState.`is`(type.frameBlock)) {
                 // フレームブロックだった場合、さらに端から端まですべてがフレームブロックか確認
                 for (i in 0..<innerWidth) {
                     val currentPos = innerLeftPos + (right * i)
                     val currentState = level.getBlockState(currentPos.toBlockPos())
-                    if (!currentState.`is`(frame)) return null
+                    if (!currentState.`is`(type.frameBlock)) return null
                 }
 
                 if (height < MIN_HEIGHT) return null
@@ -129,13 +128,13 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
             // 左右フレームがあるかのチェック
             val leftEdgeState = level.getBlockState((innerLeftPos + left).toBlockPos())
             val rightEdgeState = level.getBlockState((innerRightPos + right).toBlockPos())
-            if (!leftEdgeState.`is`(frame) || !rightEdgeState.`is`(frame)) return null
+            if (!leftEdgeState.`is`(type.frameBlock) || !rightEdgeState.`is`(type.frameBlock)) return null
 
             // 左右フレームの間に邪魔なものがないか確認
             for (i in 0..<innerWidth) {
                 val currentPos = innerLeftPos + (right * i)
                 val currentState = level.getBlockState(currentPos.toBlockPos())
-                if (currentState.`is`(frame) || isObstacle(currentState)) return null
+                if (currentState.`is`(type.frameBlock) || isObstacle(currentState)) return null
             }
 
             innerLeftPos += Position3i.UP
@@ -147,10 +146,6 @@ class VerticalPortalDetector(val frame: Block, val portal: Block) {
     companion object {
         private const val MIN_WIDTH = 2
 
-        private const val MAX_WIDTH = 21
-
         private const val MIN_HEIGHT = 3
-
-        private const val MAX_HEIGHT = 21
     }
 }

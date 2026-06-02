@@ -10,7 +10,8 @@ import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
-import io.github.takenoko4096.noctiluca.portal.VerticalPortalDetector
+import io.github.takenoko4096.noctiluca.portal.PortalFinder
+import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
@@ -24,11 +25,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
-import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.material.PushReaction
-import net.minecraft.world.phys.shapes.VoxelShape
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -662,13 +661,18 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
 
             color {
-                default { RgbColor.AQUA.rgbValue }
+                default { RgbColor.AQUA.withAlpha(192) }
 
-                inWorld { state, pos, level -> RgbColor.AQUA.rgbValue }
+                inWorld { state, pos, level -> RgbColor.AQUA.withAlpha(192) }
             }
         }
 
-        val portalDetector = VerticalPortalDetector(Blocks.GLOWSTONE, customPortal)
+        val finder = PortalFinder(PortalType(
+            Blocks.GLOWSTONE,
+            customPortal,
+            21,
+            21
+        ))
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             if (!itemStack.`is`(Items.WATER_BUCKET)) {
@@ -677,15 +681,19 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
             val properties = blockRegistry.getProperties(customPortal)
 
-            val portal = portalDetector.findPortal(
+            val portal = finder.findPortal(
                 level,
                 blockPos.toPosition3i() + result.direction.unitVec3.toVector3d().toPosition3i(false)
             ) ?: return@register InteractionResult.PASS
 
+            if (!portal.isIgnitable()) {
+                return@register InteractionResult.PASS
+            }
+
             for (position3i in portal.portalPositions) {
                 level.setBlockAndUpdate(
                     position3i.toBlockPos(),
-                    portal.portal.defaultBlockState().setValue(
+                    portal.type.portalBlock.defaultBlockState().setValue(
                         properties.enumeration("axis", PortalAxis::class), portal.axis
                     )
                 )
