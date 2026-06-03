@@ -25,13 +25,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
-import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.SoundType
-import net.minecraft.world.level.block.state.StateDefinition
-import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.material.PushReaction
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -628,13 +625,8 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
 
-            var portal: VerticalPortal? = null
-            for (type in PortalType.getAllTypes()) {
-                portal = type.portalFinder.findPortal(level, position) { isIgnitable() }
-                if (portal != null) break
-            }
-
-            if (portal == null) return@register null
+            val portal: VerticalPortal = PortalType.getByFrame(blockState.block)
+                ?.portalFinder?.findPortal(level, position) { isIgnitable() } ?: return@register null
 
             if (!itemStack.`is`(portal.type.ignitionSource)) {
                 return@register null
@@ -653,6 +645,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         }
 
         PortalType.register(
+            identifierOf("dummy_aether"),
             Blocks.GLOWSTONE,
             RgbColor.AQUA.withAlpha(255),
             Items.WATER_BUCKET
