@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.Noctiluca
+import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
@@ -15,34 +16,16 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.CropBlock
-import net.minecraft.world.level.block.DoublePlantBlock
-import net.minecraft.world.level.block.NetherPortalBlock
-import net.minecraft.world.level.block.ObserverBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
-import org.jetbrains.annotations.ApiStatus
-import java.lang.reflect.Field
 import java.util.function.BiConsumer
 
-@ApiStatus.Experimental
 open class CustomBlock internal constructor(
     properties: BlockBehaviour.Properties,
     propertyDefinitions: Set<BlockStatesConfiguration.PropertyDefinition<*>>,
     private val eventDispatcher: BlockEventsConfiguration.BlockEventDispatcher
 ) : Block(properties) {
-    /**
-     * 呼び出し順は
-     * Block(properties)
-     *      の中の createBlockStateDefinition()
-     *          の中の this.propertyDefinitions
-     * ↓
-     * private val propertyDefinitions (プロパティ初期化)
-     *
-     * propertyDefinitions の初期化や init {} の前に呼ばれるのが createBlockStateDefinition()
-     */
-
     init {
         var defaultState = defaultBlockState()
 
@@ -92,6 +75,13 @@ open class CustomBlock internal constructor(
         return event.finalBlockState ?: super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random)
     }
 
+    override fun animateTick(state: BlockState, level: Level, pos: BlockPos, random: RandomSource) {
+        super.animateTick(state, level, pos, random)
+
+        val event = BlockEventsConfiguration.AnimateTickEvent(level, state, Position3i.from(pos), random)
+        eventDispatcher.dispatch(BlockEventsConfiguration.AnimateTickEvent::class, event)
+    }
+
     override fun useItemOn(itemStack: ItemStack, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, interactionHand: InteractionHand, blockHitResult: BlockHitResult): InteractionResult {
         val event = BlockEventsConfiguration.InteractEvent(level, blockState, blockPos, player, blockHitResult, interactionHand, itemStack, InteractionResult.SUCCESS)
 
@@ -106,35 +96,5 @@ open class CustomBlock internal constructor(
         eventDispatcher.dispatch(BlockEventsConfiguration.InteractEvent::class, event)
 
         return event.interactionResult
-    }
-
-    companion object {
-        fun setField(mojang: String, intermediary: String, obfuscated: String, block: Block, value: Any) {
-            val clazz = Block::class.java
-            val field: Field = try {
-                clazz.getDeclaredField(mojang)
-            }
-            catch (e: NoSuchFieldException) {
-                e.printStackTrace()
-
-                try {
-                    clazz.getDeclaredField(intermediary)
-                }
-                catch (f: NoSuchFieldException) {
-                    f.printStackTrace()
-
-                    try {
-                        clazz.getDeclaredField(obfuscated)
-                    }
-                    catch (g: NoSuchFieldException) {
-                        g.printStackTrace()
-
-                        throw RuntimeException("Could not find field 'stateDefinition' (Mojang), 'field_10647' (Intermediary), 'C' (Obfuscated) in class '${clazz.name}'.")
-                    }
-                }
-            }
-            field.trySetAccessible()
-            field.set(block, value)
-        }
     }
 }

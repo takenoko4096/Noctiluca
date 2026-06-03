@@ -22,13 +22,21 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.core.particles.ColorParticleOption
+import net.minecraft.core.particles.DustParticleOptions
+import net.minecraft.core.particles.ParticleOptions
+import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.resources.Identifier
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.NetherPortalBlock
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty
 import net.minecraft.world.level.material.PushReaction
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -648,7 +656,10 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             identifierOf("dummy_aether"),
             Blocks.GLOWSTONE,
             RgbColor.AQUA.withAlpha(255),
-            Items.WATER_BUCKET
+            Items.WATER_BUCKET,
+            SoundEvents.PORTAL_AMBIENT,
+            1.6f,
+            DustParticleOptions(RgbColor.WHITE.withAlpha(255).argbValue, 1f)
         )
     }
 
@@ -689,6 +700,43 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
                 if (type.portalFinder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { isCompletePortal() } == null) {
                     finalBlockState = Blocks.AIR.defaultBlockState()
+                }
+            }
+
+            onAnimateTick {
+                val type = PortalType.getById(blockState.getValue(properties.integer("type"))) ?: return@onAnimateTick
+
+                if (randomSource.nextInt(100) == 0) {
+                    level.playLocalSound(
+                        position.x + 0.5,
+                        position.y + 0.5,
+                        position.z + 0.5,
+                        type.ambientSound,
+                        SoundSource.BLOCKS,
+                        0.5f,
+                        randomSource.nextFloat() * 0.4f + type.ambientBasePitch,
+                        false
+                    )
+                }
+
+                for (i in 0..3) {
+                    var x: Double = position.x + randomSource.nextDouble()
+                    val y: Double = position.y + randomSource.nextDouble()
+                    var z: Double = position.z + randomSource.nextDouble()
+                    var xa: Double = (randomSource.nextFloat() - 0.5) * 0.5
+                    val ya: Double = (randomSource.nextFloat() - 0.5) * 0.5
+                    var za: Double = (randomSource.nextFloat() - 0.5) * 0.5
+                    val flip: Int = randomSource.nextInt(2) * 2 - 1
+                    if (!level.getBlockState(position.toBlockPos().west()).`is`(blockState.block) && !level.getBlockState(position.toBlockPos().east()).`is`(blockState.block)) {
+                        x = position.x + 0.5 + 0.25 * flip
+                        xa = (randomSource.nextFloat() * 2.0f * flip).toDouble()
+                    }
+                    else {
+                        z = position.z + 0.5 + 0.25 * flip
+                        za = (randomSource.nextFloat() * 2.0f * flip).toDouble()
+                    }
+
+                    level.addParticle(type.particleOptions, x, y, z, xa, ya, za)
                 }
             }
         }

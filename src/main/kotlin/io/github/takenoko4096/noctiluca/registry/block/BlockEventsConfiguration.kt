@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
+import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
@@ -52,6 +53,13 @@ class BlockEventsConfiguration internal constructor() {
     fun onUpdate(callback: UpdateEvent.() -> Unit) {
         handlers.add(BlockEventHandler(
             UpdateEvent::class,
+            callback
+        ))
+    }
+
+    fun onAnimateTick(callback: AnimateTickEvent.() -> Unit) {
+        handlers.add(BlockEventHandler(
+            AnimateTickEvent::class,
             callback
         ))
     }
@@ -125,6 +133,13 @@ class BlockEventsConfiguration internal constructor() {
     ) : BlockEvent() {
         var finalBlockState: BlockState? = null
     }
+
+    class AnimateTickEvent internal constructor(
+        val level: Level,
+        val blockState: BlockState,
+        val position: Position3i,
+        val randomSource: RandomSource
+    ) : BlockEvent()
 
     internal fun build(): BlockEventDispatcher {
         return BlockEventDispatcher(handlers.toSet())
