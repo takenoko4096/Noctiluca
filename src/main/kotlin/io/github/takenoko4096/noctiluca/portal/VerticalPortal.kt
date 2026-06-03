@@ -5,10 +5,11 @@ import io.github.takenoko4096.noctiluca.math.Position3i
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.server.MinecraftServer
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 
-data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
+data class VerticalPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
     val frameInclusiveWidth = innerWidth + 2
 
     val frameInclusiveHeight = innerHeight + 2
@@ -25,11 +26,6 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
         framePositions = collectFramePositions()
         portalPositions = collectPortalPositions()
     }
-
-    val isLoaded: Boolean
-        get() {
-            return level.isLoaded(frameBottomLeftPos.toBlockPos()) && level.isLoaded(frameBottomRightPos.toBlockPos())
-        }
 
     private fun collectFramePositions(): List<Position3i> {
         val right = axis.unit
@@ -126,7 +122,7 @@ data class VerticalPortal(val level: Level, val innerBottomLeftPos: Position3i, 
     }
 
     fun isCompletePortal(): Boolean {
-        return isFilledWith { it.`is`(type.portalBlock) } && !isFrameBroken()
+        return isFilledWith { it.`is`(Noctiluca.customPortal) } && !isFrameBroken()
     }
 
     fun isIgnitable(): Boolean = isFilledWith { it.isAir }

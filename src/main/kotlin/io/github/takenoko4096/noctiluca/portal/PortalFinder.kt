@@ -1,16 +1,18 @@
 package io.github.takenoko4096.noctiluca.portal
 
+import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 import kotlin.math.max
 
-class PortalFinder(val type: PortalType) {
-    fun findPortal(level: Level, position: Position3i, predicate: VerticalPortal.() -> Boolean = { true }): VerticalPortal? {
+class PortalFinder internal constructor(val type: PortalType) {
+    fun findPortal(level: BlockGetter, position: Position3i, predicate: VerticalPortal.() -> Boolean = { true }): VerticalPortal? {
         return findPortalWithAxis(level, position, PortalAxis.X, predicate) ?: findPortalWithAxis(level, position, PortalAxis.Z, predicate)
     }
 
-    fun findPortalWithAxis(level: Level, position: Position3i, axis: PortalAxis, predicate: VerticalPortal.() -> Boolean): VerticalPortal? {
+    fun findPortalWithAxis(level: BlockGetter, position: Position3i, axis: PortalAxis, predicate: VerticalPortal.() -> Boolean): VerticalPortal? {
         val innerBottomLeftPos = findInnerBottomLeft(level, position, axis) ?: return null
         val innerWidth = measureInnerWidthWithFloorValidation(level, innerBottomLeftPos, axis) ?: return null
         val innerHeight = measureInnerHeightWithWallsAndCeilValidation(level, innerBottomLeftPos, innerWidth, axis) ?: return null
@@ -19,10 +21,10 @@ class PortalFinder(val type: PortalType) {
     }
 
     private fun isObstacle(blockState: BlockState): Boolean {
-        return !blockState.`is`(type.frameBlock) && !blockState.isAir && !blockState.`is`(type.portalBlock)
+        return !blockState.`is`(type.frameBlock) && !blockState.isAir && !blockState.`is`(Noctiluca.customPortal)
     }
 
-    private fun findInnerBottomLeft(level: Level, position: Position3i, axis: PortalAxis): Position3i? {
+    private fun findInnerBottomLeft(level: BlockGetter, position: Position3i, axis: PortalAxis): Position3i? {
         // ポータルフレームのありうる最低の高さをディメンションの最低高度でクランプ
         val minY = max(level.minY, position.y - type.maxHeight)
 
@@ -73,7 +75,7 @@ class PortalFinder(val type: PortalType) {
         return null
     }
 
-    private fun measureInnerWidthWithFloorValidation(level: Level, innerBottomLeftPos: Position3i, axis: PortalAxis): Int? {
+    private fun measureInnerWidthWithFloorValidation(level: BlockGetter, innerBottomLeftPos: Position3i, axis: PortalAxis): Int? {
         // これは右向きベクトル
         val right = axis.unit
 
@@ -97,7 +99,7 @@ class PortalFinder(val type: PortalType) {
         return null
     }
 
-    private fun measureInnerHeightWithWallsAndCeilValidation(level: Level, innerBottomLeftPos: Position3i, innerWidth: Int, axis: PortalAxis): Int? {
+    private fun measureInnerHeightWithWallsAndCeilValidation(level: BlockGetter, innerBottomLeftPos: Position3i, innerWidth: Int, axis: PortalAxis): Int? {
         val right = axis.unit
         val left = -right
         val leftToRightVec = right * (innerWidth - 1)

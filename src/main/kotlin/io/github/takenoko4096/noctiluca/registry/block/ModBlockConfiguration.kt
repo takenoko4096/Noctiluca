@@ -6,7 +6,6 @@ import io.github.takenoko4096.noctiluca.registry.translation.ModTranslationConfi
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
 import net.minecraft.core.BlockPos
-import net.minecraft.core.Direction
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
@@ -14,13 +13,10 @@ import net.minecraft.data.BlockFamily
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.tags.BlockTags
-import net.minecraft.util.RandomSource
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.BlockAndLightGetter
 import net.minecraft.world.level.BlockGetter
-import net.minecraft.world.level.LevelReader
-import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.*
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
@@ -68,6 +64,8 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
     private var shapeBuilderCallback: ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)? = null
 
+    private var onRotateCallback: ((BlockState, Rotation) -> BlockState)? = null
+
     fun blockProperties(callback: BlockPropertiesConfiguration.() -> Unit) {
         val bpc = BlockPropertiesConfiguration(this, callback)
         blockProperties = bpc.build()
@@ -107,6 +105,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
     fun voxelShape(callback: BlockVoxelShapeProvider.() -> VoxelShape) {
         shapeBuilderCallback = { blockState, level, blockPos, context -> callback(BlockVoxelShapeProvider(blockState, level, Position3i.from(blockPos), context)) }
+    }
+
+    fun rotatableInStructure(callback: BlockRotatableConfiguration.() -> Unit) {
+        onRotateCallback = { blockState, rotation -> BlockRotatableConfiguration(blockState, rotation, callback).finalBlockState }
     }
 
     fun withItem() {
@@ -166,6 +168,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
                 override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
                     return shapeBuilderCallback?.invoke(state, level, pos, context) ?: super.getShape(state, level, pos, context)
+                }
+
+                override fun rotate(state: BlockState, rotation: Rotation): BlockState {
+                    return onRotateCallback?.invoke(state, rotation) ?: super.rotate(state, rotation)
                 }
             }
         }

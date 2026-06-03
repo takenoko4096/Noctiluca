@@ -10,8 +10,8 @@ import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadRe
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
-import io.github.takenoko4096.noctiluca.portal.PortalFinder
 import io.github.takenoko4096.noctiluca.portal.PortalType
+import io.github.takenoko4096.noctiluca.portal.VerticalPortal
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
@@ -25,11 +25,14 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.resources.Identifier
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.material.PushReaction
-import net.minecraft.world.level.portal.PortalShape
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -619,13 +622,19 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val customPortalProperties = blockRegistry.getPropertiesOf(customPortal)
-        val customPortalAxisProperty = customPortalProperties.enumeration<PortalAxis>("axis")
+        val customPortalAxisProperty = blockRegistry.getPropertiesOf(customPortal).enumeration<PortalAxis>("axis")
+        val customPortalTypeProperty = blockRegistry.getPropertiesOf(customPortal).integer("type")
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
 
-            val portal = finder.findPortal(level, position) { isIgnitable() } ?: return@register null
+            var portal: VerticalPortal? = null
+            for (type in PortalType.getAllTypes()) {
+                portal = type.portalFinder.findPortal(level, position) { isIgnitable() }
+                if (portal != null) break
+            }
+
+            if (portal == null) return@register null
 
             if (!itemStack.`is`(portal.type.ignitionSource)) {
                 return@register null
@@ -634,12 +643,20 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             for (position3i in portal.portalPositions) {
                 level.setBlockAndUpdate(
                     position3i.toBlockPos(),
-                    portal.type.portalBlock.defaultBlockState().setValue(customPortalAxisProperty, portal.axis)
+                    customPortal.defaultBlockState()
+                        .setValue(customPortalAxisProperty, portal.axis)
+                        .setValue(customPortalTypeProperty, portal.type.id)
                 )
             }
 
             return@register InteractionResult.SUCCESS
         }
+
+        PortalType.register(
+            Blocks.GLOWSTONE,
+            RgbColor.AQUA.withAlpha(255),
+            Items.WATER_BUCKET
+        )
     }
 
     val customPortal: Block = blockRegistry.register("custom_portal") {
@@ -656,6 +673,11 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             enumerationProperty<PortalAxis>("axis") {
                 defaultValue = PortalAxis.X
             }
+
+            integerProperty("type") {
+                defaultValue = 0
+                range = 0..1023
+            }
         }
 
         events {
@@ -663,17 +685,16 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 val portalAxis = blockState.getValue(properties.enumeration<PortalAxis>("axis"))
 
                 if (directionToNeighbour.axis.isHorizontal && directionToNeighbour.axis != portalAxis.toAxis()) {
-                    Noctiluca.logger.info("1, {}, != {}", directionToNeighbour.axis, portalAxis.toAxis())
                     return@onUpdate
                 }
 
                 if (neighbourState.`is`(blockState.block)) {
-                    Noctiluca.logger.info("2")
                     return@onUpdate
                 }
 
-                if (finder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { true }?.isCompletePortal() != true) {
-                    Noctiluca.logger.info("3, {}", finder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { true }?.isCompletePortal())
+                val type = PortalType.getById(blockState.getValue(properties.integer("type"))) ?: return@onUpdate
+
+                if (type.portalFinder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { isCompletePortal() } == null) {
                     finalBlockState = Blocks.AIR.defaultBlockState()
                 }
             }
@@ -689,9 +710,20 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
+        rotatableInStructure {
+            val axisProperty = properties.enumeration<PortalAxis>("axis")
+
+            if (rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90) {
+                finalBlockState = when (blockState.getValue(axisProperty)) {
+                    PortalAxis.X -> blockState.setValue(axisProperty, PortalAxis.Z)
+                    PortalAxis.Z -> blockState.setValue(axisProperty, PortalAxis.X)
+                }
+            }
+        }
+
         model {
             val model = blockModels.fromParent(
-                identifierOf("block/custom_portal_z_parent"),
+                identifierOf("block/custom_portal_parent"),
                 mapOf(
                     "portal" to blockDefaultTexturePath,
                     "particle" to blockDefaultTexturePath
@@ -699,7 +731,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             )
 
             block {
-                variants(properties.enumeration("axis", PortalAxis::class)) {
+                variants(properties.enumeration<PortalAxis>("axis")) {
                     case(PortalAxis.X, model.toVariant(NonClientVariantMutator.Y_ROT_90))
                     case(PortalAxis.Z, model.toVariant())
                 }
@@ -707,17 +739,12 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         }
 
         color {
-            default {
-                RgbColor.AQUA.withAlpha(255)
+            val defaultColor = RgbColor.WHITE.withAlpha(255)
+
+            default { blockState ->
+                val type = PortalType.getById(blockState.getValue(properties.integer("type"))) ?: return@default defaultColor
+                return@default type.tintColor
             }
         }
     }
-
-    val finder: PortalFinder = PortalFinder(PortalType(
-        Blocks.GLOWSTONE,
-        customPortal,
-        Items.WATER_BUCKET,
-        21,
-        21
-    ))
 }
