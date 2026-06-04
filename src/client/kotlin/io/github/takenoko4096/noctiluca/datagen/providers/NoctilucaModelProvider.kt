@@ -1,5 +1,12 @@
 package io.github.takenoko4096.noctiluca.datagen.providers
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
+import com.mojang.serialization.JsonOps
+import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.datagen.model.BlockModelVariantsRegistrar
 import io.github.takenoko4096.noctiluca.datagen.model.builder.ClientItemModelHandle
@@ -11,15 +18,48 @@ import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
+import net.minecraft.client.data.models.model.TextureSlot
 import net.minecraft.client.data.models.model.TexturedModel
+import net.minecraft.client.resources.model.sprite.Material
+import net.minecraft.resources.Identifier
+import java.util.function.Consumer
 
 class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: FabricPackOutput) : FabricModelProvider(output) {
     override fun generateBlockStateModels(blockModelGenerators: BlockModelGenerators) {
         val blockRegistry = mod.blockRegistry
 
+        blockModelGenerators.modelOutput.accept(Noctiluca.identifierOf("block/custom_portal")) {
+            val result = JsonObject()
+            val elements = JsonArray()
+            elements.add(JsonParser.parseString("""
+                    {
+                        "from": [ 6, 0, 0 ],
+                        "to": [ 10, 16, 16 ],
+                        "faces": {
+                            "east": {
+                                "uv": [ 0, 0, 16, 16 ],
+                                "texture": "#portal",
+                                "tintindex": 0
+                            },
+                            "west": {
+                                "uv": [ 0, 0, 16, 16 ],
+                                "texture": "#portal",
+                                "tintindex": 0
+                            }
+                        }
+                    }
+                    """.trimIndent()))
+            result.add("elements", elements)
+            val textureObj = JsonObject()
+            textureObj.add("portal", JsonPrimitive("minecraft:block/nether_portal_ew"))
+            textureObj.add("particle", JsonPrimitive("minecraft:block/nether_portal_ew"))
+            result.add("textures", textureObj)
+            return@accept result
+        }
+
         for (configuration in blockRegistry.getConfigurations()) {
             val block = blockRegistry.getBlock(configuration.blockResourceKey)
-            val accessor = ModBlockConfiguration.Companion.getAccessorForClient(configuration)
+            val accessor = ModBlockConfiguration.getAccessorForClient(configuration)
             configuration.withItem()
 
             val model = accessor.blockModelLegacy()

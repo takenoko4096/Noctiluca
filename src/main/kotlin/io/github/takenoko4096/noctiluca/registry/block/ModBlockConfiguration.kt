@@ -27,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape
 
 
 @NoctilucaDsl
-class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal val identifier: String) {
+class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal val identifier: String, callback: ModBlockConfiguration.() -> Unit) {
     typealias CustomBlockConstructor = ((BlockBehaviour.Properties, Set<BlockStatesConfiguration.PropertyDefinition<*>>, BlockEventsConfiguration.BlockEventDispatcher, ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)?, ((BlockState, Rotation) -> BlockState)?) -> Block)
 
     val blockResourceKey: ResourceKey<Block> = ResourceKey.create(
@@ -73,6 +73,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
     private var shapeBuilderCallback: ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)? = null
 
     private var onRotateCallback: ((BlockState, Rotation) -> BlockState)? = null
+
+    init {
+        callback()
+    }
 
     fun blockProperties(callback: BlockPropertiesConfiguration.() -> Unit) {
         val bpc = BlockPropertiesConfiguration(this, callback)

@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
+import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
 import io.github.takenoko4096.noctiluca.text.ArgbColor
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.ParticleOptions
@@ -21,8 +22,9 @@ abstract class CustomPortalBlock(
     rotator: ((BlockState, Rotation) -> BlockState)?,
     val color: ArgbColor,
     val ambientSoundEvent: SoundEvent,
-    val ambientBasePitch: Float,
-    val particleOptions: ParticleOptions
+    val ambientVolumeProvider: PortalBlockTemplate.AmbientConfiguration.SoundValueProvider.() -> Float,
+    val ambientPitchProvider: PortalBlockTemplate.AmbientConfiguration.SoundValueProvider.() -> Float,
+    val particleOptions: ParticleOptions?
 ) : CustomBlock(behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeProvider, rotator) {
     fun getPortalAxisProperty(): Property<PortalAxis> {
         return stateDefinition.getProperty("axis") as Property<PortalAxis>

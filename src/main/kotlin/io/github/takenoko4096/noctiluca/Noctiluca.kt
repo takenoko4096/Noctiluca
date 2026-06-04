@@ -2,17 +2,15 @@ package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
-import io.github.takenoko4096.noctiluca.math.Position3i
-import io.github.takenoko4096.noctiluca.math.Vector3d
 import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
-import io.github.takenoko4096.noctiluca.portal.PortalAxis
 import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.portal.VerticalPortal
-import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
+import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
+import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -25,15 +23,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.core.particles.DustParticleOptions
 import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.sounds.SoundSource
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
-import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.Rotation
-import net.minecraft.world.level.block.SoundType
-import net.minecraft.world.level.block.state.properties.Property
-import net.minecraft.world.level.material.PushReaction
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -648,13 +640,20 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             return@register InteractionResult.SUCCESS
         }
 
-        val aetherPortal = blockRegistry.registerPortalBlock(
-            "aether_portal",
-            RgbColor.BLUE.withAlpha(255),
-            SoundEvents.PORTAL_AMBIENT,
-            1.6f,
-            DustParticleOptions(RgbColor.WHITE.withAlpha(255).argbValue, 1f)
-        )
+        val aetherPortal = blockRegistry.registerUsingTemplate("aether_portal", PortalBlockTemplate {
+            ambient {
+                sound {
+                    soundEvent = SoundEvents.PORTAL_AMBIENT
+                    pitch { 2.0f }
+                }
+
+                particle = DustParticleOptions(RgbColor.WHITE.withAlpha(255).argbValue, 1f)
+            }
+
+            color = RgbColor.BLUE.withAlpha(255)
+
+            texturePath = TexturePath.minecraft("block/water_flow")
+        })
 
         PortalType.register(
             identifierOf("aether"),

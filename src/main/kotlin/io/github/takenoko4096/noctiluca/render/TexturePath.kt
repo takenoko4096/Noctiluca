@@ -31,5 +31,9 @@ open class TexturePath internal constructor(val identifier: Identifier) {
         internal fun itemDefault(resourceKey: ResourceKey<Item>): TexturePath {
             return TexturePath(resourceKey.identifier().withPrefix("item/"))
         }
+
+        fun of(namespace: String, path: String) = TexturePath(Identifier.fromNamespaceAndPath(namespace, path))
+
+        fun minecraft(path: String) = of(Identifier.DEFAULT_NAMESPACE, path)
     }
 }
