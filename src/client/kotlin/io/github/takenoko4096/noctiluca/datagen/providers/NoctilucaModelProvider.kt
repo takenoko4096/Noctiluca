@@ -28,7 +28,7 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
     override fun generateBlockStateModels(blockModelGenerators: BlockModelGenerators) {
         val blockRegistry = mod.blockRegistry
 
-        blockModelGenerators.modelOutput.accept(Noctiluca.identifierOf("block/custom_portal")) {
+        /*blockModelGenerators.modelOutput.accept(Noctiluca.identifierOf("block/custom_portal")) {
             val result = JsonObject()
             val elements = JsonArray()
             elements.add(JsonParser.parseString("""
@@ -55,7 +55,7 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
             textureObj.add("particle", JsonPrimitive("minecraft:block/nether_portal_ew"))
             result.add("textures", textureObj)
             return@accept result
-        }
+        }*/
 
         for (configuration in blockRegistry.getConfigurations()) {
             val block = blockRegistry.getBlock(configuration.blockResourceKey)

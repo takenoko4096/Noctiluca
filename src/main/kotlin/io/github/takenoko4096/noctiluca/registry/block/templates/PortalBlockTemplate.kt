@@ -33,6 +33,8 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
 
     var texturePath: TexturePath? = null
 
+    val noctilucaCustomPortalTexturePath = Noctiluca.identifierOf("block/custom_portal")
+
     private var ambient: AmbientConfiguration = AmbientConfiguration {}
 
     fun ambient(callback: AmbientConfiguration.() -> Unit) {

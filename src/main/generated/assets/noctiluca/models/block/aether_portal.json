@@ -1,0 +1,7 @@
+{
+  "parent": "noctiluca:block/custom_portal",
+  "textures": {
+    "particle": "minecraft:block/water_flow",
+    "portal": "minecraft:block/water_flow"
+  }
+}
