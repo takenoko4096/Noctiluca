@@ -650,7 +650,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 particle = DustParticleOptions(RgbColor.WHITE.withAlpha(255).argbValue, 1f)
             }
 
-            color = RgbColor.BLUE.withAlpha(255)
+            color = RgbColor.AQUA.withAlpha(255)
 
             texturePath = TexturePath.minecraft("block/water_flow")
         })
