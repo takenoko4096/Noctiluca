@@ -22,10 +22,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.core.particles.ColorParticleOption
 import net.minecraft.core.particles.DustParticleOptions
-import net.minecraft.core.particles.ParticleOptions
-import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
@@ -33,10 +30,9 @@ import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.NetherPortalBlock
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.SoundType
-import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.Property
 import net.minecraft.world.level.material.PushReaction
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -627,165 +623,44 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val customPortalAxisProperty = blockRegistry.getPropertiesOf(customPortal).enumeration<PortalAxis>("axis")
-        val customPortalTypeProperty = blockRegistry.getPropertiesOf(customPortal).integer("type")
-
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
 
-            val portal: VerticalPortal = PortalType.getByFrame(blockState.block)
+            val portalType = PortalType.getByFrameBlock(blockState.block)
+
+            val portal: VerticalPortal = portalType
                 ?.portalFinder?.findPortal(level, position) { isIgnitable() } ?: return@register null
 
             if (!itemStack.`is`(portal.type.ignitionSource)) {
                 return@register null
             }
 
+            val axisProperty = portalType.portalBlock.getPortalAxisProperty()
+
             for (position3i in portal.portalPositions) {
                 level.setBlockAndUpdate(
                     position3i.toBlockPos(),
-                    customPortal.defaultBlockState()
-                        .setValue(customPortalAxisProperty, portal.axis)
-                        .setValue(customPortalTypeProperty, portal.type.id)
+                    portalType.portalBlock.defaultBlockState()
+                        .setValue(axisProperty, portal.axis)
                 )
             }
 
             return@register InteractionResult.SUCCESS
         }
 
-        PortalType.register(
-            identifierOf("dummy_aether"),
-            Blocks.GLOWSTONE,
-            RgbColor.AQUA.withAlpha(255),
-            Items.WATER_BUCKET,
+        val aetherPortal = blockRegistry.registerPortalBlock(
+            "aether_portal",
+            RgbColor.BLUE.withAlpha(255),
             SoundEvents.PORTAL_AMBIENT,
             1.6f,
             DustParticleOptions(RgbColor.WHITE.withAlpha(255).argbValue, 1f)
         )
-    }
 
-    val customPortal: Block = blockRegistry.register("custom_portal") {
-        blockProperties {
-            sound = SoundType.GLASS
-            destroyTime = Float.POSITIVE_INFINITY
-            occlusion = false
-            collision = false
-            pushReaction = PushReaction.DESTROY
-            isReplaceable = true
-        }
-
-        val properties = blockStates {
-            enumerationProperty<PortalAxis>("axis") {
-                defaultValue = PortalAxis.X
-            }
-
-            integerProperty("type") {
-                defaultValue = 0
-                range = 0..1023
-            }
-        }
-
-        events {
-            onUpdate {
-                val portalAxis = blockState.getValue(properties.enumeration<PortalAxis>("axis"))
-
-                if (directionToNeighbour.axis.isHorizontal && directionToNeighbour.axis != portalAxis.toAxis()) {
-                    return@onUpdate
-                }
-
-                if (neighbourState.`is`(blockState.block)) {
-                    return@onUpdate
-                }
-
-                val type = PortalType.getById(blockState.getValue(properties.integer("type"))) ?: return@onUpdate
-
-                if (type.portalFinder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { isCompletePortal() } == null) {
-                    finalBlockState = Blocks.AIR.defaultBlockState()
-                }
-            }
-
-            onAnimateTick {
-                val type = PortalType.getById(blockState.getValue(properties.integer("type"))) ?: return@onAnimateTick
-
-                if (randomSource.nextInt(100) == 0) {
-                    level.playLocalSound(
-                        position.x + 0.5,
-                        position.y + 0.5,
-                        position.z + 0.5,
-                        type.ambientSound,
-                        SoundSource.BLOCKS,
-                        0.5f,
-                        randomSource.nextFloat() * 0.4f + type.ambientBasePitch,
-                        false
-                    )
-                }
-
-                for (i in 0..3) {
-                    var x: Double = position.x + randomSource.nextDouble()
-                    val y: Double = position.y + randomSource.nextDouble()
-                    var z: Double = position.z + randomSource.nextDouble()
-                    var xa: Double = (randomSource.nextFloat() - 0.5) * 0.5
-                    val ya: Double = (randomSource.nextFloat() - 0.5) * 0.5
-                    var za: Double = (randomSource.nextFloat() - 0.5) * 0.5
-                    val flip: Int = randomSource.nextInt(2) * 2 - 1
-                    if (!level.getBlockState(position.toBlockPos().west()).`is`(blockState.block) && !level.getBlockState(position.toBlockPos().east()).`is`(blockState.block)) {
-                        x = position.x + 0.5 + 0.25 * flip
-                        xa = (randomSource.nextFloat() * 2.0f * flip).toDouble()
-                    }
-                    else {
-                        z = position.z + 0.5 + 0.25 * flip
-                        za = (randomSource.nextFloat() * 2.0f * flip).toDouble()
-                    }
-
-                    level.addParticle(type.particleOptions, x, y, z, xa, ya, za)
-                }
-            }
-        }
-
-        voxelShape {
-            val x = box(Vector3d(0.0, 0.0, 6.0), Vector3d(16.0, 16.0, 10.0))
-            val z = box(Vector3d(6.0, 0.0, 0.0), Vector3d(10.0, 16.0, 16.0))
-
-            when (blockState.getValue(properties.enumeration<PortalAxis>("axis"))) {
-                PortalAxis.X -> x
-                PortalAxis.Z -> z
-            }
-        }
-
-        rotatableInStructure {
-            val axisProperty = properties.enumeration<PortalAxis>("axis")
-
-            if (rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90) {
-                finalBlockState = when (blockState.getValue(axisProperty)) {
-                    PortalAxis.X -> blockState.setValue(axisProperty, PortalAxis.Z)
-                    PortalAxis.Z -> blockState.setValue(axisProperty, PortalAxis.X)
-                }
-            }
-        }
-
-        model {
-            val model = blockModels.fromParent(
-                identifierOf("block/custom_portal_parent"),
-                mapOf(
-                    "portal" to blockDefaultTexturePath,
-                    "particle" to blockDefaultTexturePath
-                )
-            )
-
-            block {
-                variants(properties.enumeration<PortalAxis>("axis")) {
-                    case(PortalAxis.X, model.toVariant(NonClientVariantMutator.Y_ROT_90))
-                    case(PortalAxis.Z, model.toVariant())
-                }
-            }
-        }
-
-        color {
-            val defaultColor = RgbColor.WHITE.withAlpha(255)
-
-            default { blockState ->
-                val type = PortalType.getById(blockState.getValue(properties.integer("type"))) ?: return@default defaultColor
-                return@default type.tintColor
-            }
-        }
+        PortalType.register(
+            identifierOf("aether"),
+            Blocks.GLOWSTONE,
+            aetherPortal,
+            Items.WATER_BUCKET
+        )
     }
 }

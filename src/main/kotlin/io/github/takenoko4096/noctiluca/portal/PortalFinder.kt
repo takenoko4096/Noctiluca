@@ -1,9 +1,7 @@
 package io.github.takenoko4096.noctiluca.portal
 
-import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.world.level.BlockGetter
-import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 import kotlin.math.max
 
@@ -21,7 +19,7 @@ class PortalFinder internal constructor(val type: PortalType) {
     }
 
     private fun isObstacle(blockState: BlockState): Boolean {
-        return !blockState.`is`(type.frameBlock) && !blockState.isAir && !blockState.`is`(Noctiluca.customPortal)
+        return !blockState.`is`(type.frameBlock) && !blockState.isAir && !blockState.`is`(type.portalBlock)
     }
 
     private fun findInnerBottomLeft(level: BlockGetter, position: Position3i, axis: PortalAxis): Position3i? {

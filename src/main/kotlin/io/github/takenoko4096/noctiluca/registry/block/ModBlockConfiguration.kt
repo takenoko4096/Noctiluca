@@ -28,6 +28,8 @@ import net.minecraft.world.phys.shapes.VoxelShape
 
 @NoctilucaDsl
 class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal val identifier: String) {
+    typealias CustomBlockConstructor = ((BlockBehaviour.Properties, Set<BlockStatesConfiguration.PropertyDefinition<*>>, BlockEventsConfiguration.BlockEventDispatcher, ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)?, ((BlockState, Rotation) -> BlockState)?) -> Block)
+
     val blockResourceKey: ResourceKey<Block> = ResourceKey.create(
         Registries.BLOCK,
         Identifier.fromNamespaceAndPath(registry.mod.identifier, identifier)
@@ -42,7 +44,13 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
     internal var itemProperties: Item.Properties? = null
 
-    internal var customBehaviourCreator: ((BlockBehaviour.Properties) -> Block) = { Block(it) }
+    private var constructor: CustomBlockConstructor = { behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeProvider, rotator ->
+        object : CustomBlock(behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeProvider, rotator) {
+            override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
+                initializeProperties(builder, blockStateProperties)
+            }
+        }
+    }
 
     internal var translation = ModTranslationConfiguration()
 
@@ -115,6 +123,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         itemProperties {}
     }
 
+    fun constructor(callback: CustomBlockConstructor) {
+        constructor = callback
+    }
+
     fun withSlab() {
         withSlab = true
     }
@@ -157,26 +169,10 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
         val defs = propertyDefinitions.toSet()
         val evs = eventDispatcher
+        val boundVoxelShapeProvider = shapeBuilderCallback
+        val boundRotator = onRotateCallback
 
-        customBehaviourCreator = {
-            object : CustomBlock(it, defs, evs) {
-                override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
-                    for (definition in defs) {
-                        builder.add(definition.property)
-                    }
-                }
-
-                override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-                    return shapeBuilderCallback?.invoke(state, level, pos, context) ?: super.getShape(state, level, pos, context)
-                }
-
-                override fun rotate(state: BlockState, rotation: Rotation): BlockState {
-                    return onRotateCallback?.invoke(state, rotation) ?: super.rotate(state, rotation)
-                }
-            }
-        }
-
-        val block = customBehaviourCreator(boundBlockProperties)
+        val block = constructor(boundBlockProperties, defs, evs, shapeBuilderCallback, onRotateCallback)
         Registry.register(BuiltInRegistries.BLOCK, blockResourceKey, block)
 
         if (itemProperties != null) {

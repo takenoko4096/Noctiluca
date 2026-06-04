@@ -122,7 +122,7 @@ data class VerticalPortal(val level: BlockGetter, val innerBottomLeftPos: Positi
     }
 
     fun isCompletePortal(): Boolean {
-        return isFilledWith { it.`is`(Noctiluca.customPortal) } && !isFrameBroken()
+        return isFilledWith { it.`is`(type.portalBlock) } && !isFrameBroken()
     }
 
     fun isIgnitable(): Boolean = isFilledWith { it.isAir }

@@ -11,20 +11,27 @@ import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Explosion
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.ScheduledTickAccess
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.VoxelShape
 import java.util.function.BiConsumer
 
-open class CustomBlock internal constructor(
+abstract class CustomBlock internal constructor(
     properties: BlockBehaviour.Properties,
     propertyDefinitions: Set<BlockStatesConfiguration.PropertyDefinition<*>>,
-    private val eventDispatcher: BlockEventsConfiguration.BlockEventDispatcher
+    private val eventDispatcher: BlockEventsConfiguration.BlockEventDispatcher,
+    private val voxelShapeProvider: ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)?,
+    private val rotator: ((BlockState, Rotation) -> BlockState)?
 ) : Block(properties) {
     init {
         var defaultState = defaultBlockState()
@@ -34,6 +41,16 @@ open class CustomBlock internal constructor(
         }
 
         registerDefaultState(defaultState)
+    }
+
+    abstract override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>)
+
+    override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
+        return voxelShapeProvider?.invoke(state, level, pos, context) ?: super.getShape(state, level, pos, context)
+    }
+
+    override fun rotate(state: BlockState, rotation: Rotation): BlockState {
+        return rotator?.invoke(state, rotation) ?: super.rotate(state, rotation)
     }
 
     override fun stepOn(level: Level, blockPos: BlockPos, blockState: BlockState, entity: Entity) {
@@ -96,5 +113,14 @@ open class CustomBlock internal constructor(
         eventDispatcher.dispatch(BlockEventsConfiguration.InteractEvent::class, event)
 
         return event.interactionResult
+    }
+
+    companion object {
+        @JvmStatic
+        protected fun initializeProperties(definitionBuilder: StateDefinition.Builder<Block, BlockState>, blockStateProperties: Set<BlockStatesConfiguration.PropertyDefinition<*>>) {
+            for (definition in blockStateProperties) {
+                definitionBuilder.add(definition.property)
+            }
+        }
     }
 }
