@@ -647,7 +647,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                     pitch { 2.0f }
                 }
 
-                particle = DustParticleOptions(RgbColor.WHITE.withAlpha(255).argbValue, 1f)
+                particle = DustParticleOptions(RgbColor.BLUE.withAlpha(255).argbValue, 0.5f)
             }
 
             color = RgbColor.AQUA.withAlpha(255)
