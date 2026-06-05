@@ -2,6 +2,7 @@ package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
+import io.github.takenoko4096.noctiluca.math.toPosition3i
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
@@ -9,6 +10,7 @@ import net.minecraft.util.RandomSource
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.InsideBlockEffectApplier
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.BlockGetter
@@ -56,6 +58,12 @@ abstract class CustomBlock internal constructor(
     override fun stepOn(level: Level, blockPos: BlockPos, blockState: BlockState, entity: Entity) {
         val event = BlockEventsConfiguration.StepOnEvent(level, blockState, blockPos, entity)
         eventDispatcher.dispatch(BlockEventsConfiguration.StepOnEvent::class, event)
+    }
+
+    override fun entityInside(state: BlockState, level: Level, pos: BlockPos, entity: Entity, effectApplier: InsideBlockEffectApplier, isPrecise: Boolean) {
+        val event = BlockEventsConfiguration.EntityInsideEvent(level, pos.toPosition3i(), state, entity, effectApplier, isPrecise)
+        eventDispatcher.dispatch(BlockEventsConfiguration.EntityInsideEvent::class, event)
+        super.entityInside(state, level, pos, entity, effectApplier, isPrecise)
     }
 
     override fun fallOn(level: Level, blockState: BlockState, blockPos: BlockPos, entity: Entity, d: Double) {

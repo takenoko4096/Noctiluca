@@ -1,8 +1,10 @@
 package io.github.takenoko4096.noctiluca.math
 
+import com.mojang.serialization.Codec
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import java.util.Objects
+import java.util.stream.IntStream
 import kotlin.math.max
 import kotlin.math.min
 
@@ -123,6 +125,17 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         fun from(blockPos: BlockPos): Position3i {
             return Position3i(blockPos.x, blockPos.y, blockPos.z)
         }
+
+        val CODEC: Codec<Position3i> = Codec.INT_STREAM.xmap(
+            {
+                val array = it.toArray()
+                if (array.size != 3) throw IllegalStateException("CANNOT DECODE NON-SIZE-3-ARRAY TO POSITION-3I")
+                Position3i(array[0], array[1], array[2])
+            },
+            {
+                IntStream.of(it.x, it.y, it.z)
+            }
+        )
 
         val ZERO
             get() = Position3i(0, 0, 0)

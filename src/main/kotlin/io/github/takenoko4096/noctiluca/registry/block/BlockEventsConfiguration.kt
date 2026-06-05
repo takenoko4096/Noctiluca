@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.InsideBlockEffectApplier
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Explosion
@@ -60,6 +61,13 @@ class BlockEventsConfiguration internal constructor() {
     fun onAnimateTick(callback: AnimateTickEvent.() -> Unit) {
         handlers.add(BlockEventHandler(
             AnimateTickEvent::class,
+            callback
+        ))
+    }
+
+    fun onEntityInsideBlock(callback: EntityInsideEvent.() -> Unit) {
+        handlers.add(BlockEventHandler(
+            EntityInsideEvent::class,
             callback
         ))
     }
@@ -139,6 +147,15 @@ class BlockEventsConfiguration internal constructor() {
         val blockState: BlockState,
         val position: Position3i,
         val randomSource: RandomSource
+    ) : BlockEvent()
+
+    class EntityInsideEvent internal constructor(
+        val level: Level,
+        val position: Position3i,
+        val blockState: BlockState,
+        val entity: Entity,
+        val insideBlockEffectApplier: InsideBlockEffectApplier,
+        val isPrecise: Boolean
     ) : BlockEvent()
 
     internal fun build(): BlockEventDispatcher {

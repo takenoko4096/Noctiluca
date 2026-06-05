@@ -1,5 +1,8 @@
 package io.github.takenoko4096.noctiluca.portal
 
+import com.mojang.serialization.Codec
+import com.mojang.serialization.MapCodec
+import com.mojang.serialization.codecs.RecordCodecBuilder
 import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.core.Direction
 import net.minecraft.util.StringRepresentable
@@ -31,4 +34,8 @@ enum class PortalAxis(val unit: Position3i) : StringRepresentable {
     }
 
     abstract override fun toString(): String
+
+    companion object {
+        val CODEC: Codec<PortalAxis> = Codec.stringResolver(PortalAxis::toString, PortalAxis::valueOf)
+    }
 }

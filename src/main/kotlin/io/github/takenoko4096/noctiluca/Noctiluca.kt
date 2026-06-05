@@ -7,6 +7,7 @@ import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
+import io.github.takenoko4096.noctiluca.portal.PortalAccess
 import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.portal.VerticalPortal
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
@@ -16,6 +17,7 @@ import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
 import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
@@ -25,7 +27,9 @@ import net.minecraft.resources.Identifier
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.NetherPortalBlock
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -44,6 +48,8 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
     }
+
+    val PORTAL_ACCESSES = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.CODEC.listOf())
 
     override fun onInitialize() {
         initializeSystem()
@@ -617,27 +623,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
-
-            val portalType = PortalType.getByFrameBlock(blockState.block)
-
-            val portal: VerticalPortal = portalType
-                ?.portalFinder?.findPortal(level, position) { isIgnitable() } ?: return@register null
-
-            if (!itemStack.`is`(portal.type.ignitionSource)) {
-                return@register null
-            }
-
-            val axisProperty = portalType.portalBlock.getPortalAxisProperty()
-
-            for (position3i in portal.portalPositions) {
-                level.setBlockAndUpdate(
-                    position3i.toBlockPos(),
-                    portalType.portalBlock.defaultBlockState()
-                        .setValue(axisProperty, portal.axis)
-                )
-            }
-
-            return@register InteractionResult.SUCCESS
+            if (VerticalPortal.tryIgniteAt(level, position, blockState, itemStack)) InteractionResult.SUCCESS else null
         }
 
         val aetherPortal = blockRegistry.registerUsingTemplate("aether_portal", PortalBlockTemplate {
@@ -659,7 +645,9 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             identifierOf("aether"),
             Blocks.GLOWSTONE,
             aetherPortal,
-            Items.WATER_BUCKET
+            Items.WATER_BUCKET,
+            Level.OVERWORLD,
+            Level.NETHER
         )
     }
 }

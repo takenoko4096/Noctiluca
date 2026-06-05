@@ -138,6 +138,17 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
                     level.addParticle(customPortalBlock.particleOptions, x, y, z, xa, ya, za)
                 }
             }
+
+            onEntityInsideBlock {
+                if (entity.canUsePortal(false)) {
+                    if (entity.isOnPortalCooldown) {
+                        entity.setPortalCooldown()
+                    }
+                    else {
+                        // TODO
+                    }
+                }
+            }
         }
 
         voxelShape {
