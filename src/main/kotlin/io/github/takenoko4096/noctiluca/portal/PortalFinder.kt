@@ -6,15 +6,15 @@ import net.minecraft.world.level.block.state.BlockState
 import kotlin.math.max
 
 class PortalFinder internal constructor(val type: PortalType) {
-    fun findPortal(level: BlockGetter, position: Position3i, predicate: VerticalPortal.() -> Boolean = { true }): VerticalPortal? {
+    fun findPortal(level: BlockGetter, position: Position3i, predicate: CustomPortal.() -> Boolean = { true }): CustomPortal? {
         return findPortalWithAxis(level, position, PortalAxis.X, predicate) ?: findPortalWithAxis(level, position, PortalAxis.Z, predicate)
     }
 
-    fun findPortalWithAxis(level: BlockGetter, position: Position3i, axis: PortalAxis, predicate: VerticalPortal.() -> Boolean): VerticalPortal? {
+    fun findPortalWithAxis(level: BlockGetter, position: Position3i, axis: PortalAxis, predicate: CustomPortal.() -> Boolean): CustomPortal? {
         val innerBottomLeftPos = findInnerBottomLeft(level, position, axis) ?: return null
         val innerWidth = measureInnerWidthWithFloorValidation(level, innerBottomLeftPos, axis) ?: return null
         val innerHeight = measureInnerHeightWithWallsAndCeilValidation(level, innerBottomLeftPos, innerWidth, axis) ?: return null
-        val portal = VerticalPortal(level, innerBottomLeftPos, axis, innerWidth, innerHeight, type)
+        val portal = CustomPortal(level, innerBottomLeftPos, axis, innerWidth, innerHeight, type)
         return if (portal.predicate()) portal else null
     }
 

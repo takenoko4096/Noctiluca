@@ -113,8 +113,8 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return toVector3d() + Vector3d(0.5, 0.0, 0.5)
     }
 
-    fun withDirection(direction: Direction): Position3i {
-        return this + direction.unitVec3.toVector3d().toPosition3i(false)
+    fun withDirection(direction: Direction, step: Int = 1): Position3i {
+        return this + (direction.unitVec3.toVector3d().toPosition3i(false) * step)
     }
 
     fun toBlockPos(): BlockPos {

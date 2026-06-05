@@ -8,7 +8,7 @@ import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 
-data class VerticalPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
+class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
     val frameInclusiveWidth = innerWidth + 2
 
     val frameInclusiveHeight = innerHeight + 2
@@ -145,7 +145,7 @@ data class VerticalPortal(val level: BlockGetter, val innerBottomLeftPos: Positi
         fun tryIgniteAt(level: Level, position: Position3i, blockState: BlockState, itemStack: ItemStack): Boolean {
             val portalType = PortalType.getByFrameBlock(blockState.block)
 
-            val portal: VerticalPortal = portalType
+            val portal: CustomPortal = portalType
                 ?.portalFinder?.findPortal(level, position) { isIgnitable() } ?: return false
 
             if (!itemStack.`is`(portal.type.ignitionSource)) {

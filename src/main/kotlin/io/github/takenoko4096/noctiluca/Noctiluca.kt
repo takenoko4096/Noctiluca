@@ -9,7 +9,7 @@ import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.portal.PortalAccess
 import io.github.takenoko4096.noctiluca.portal.PortalType
-import io.github.takenoko4096.noctiluca.portal.VerticalPortal
+import io.github.takenoko4096.noctiluca.portal.CustomPortal
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
@@ -29,7 +29,6 @@ import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.NetherPortalBlock
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -623,7 +622,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
-            if (VerticalPortal.tryIgniteAt(level, position, blockState, itemStack)) InteractionResult.SUCCESS else null
+            if (CustomPortal.tryIgniteAt(level, position, blockState, itemStack)) InteractionResult.SUCCESS else null
         }
 
         val aetherPortal = blockRegistry.registerUsingTemplate("aether_portal", PortalBlockTemplate {

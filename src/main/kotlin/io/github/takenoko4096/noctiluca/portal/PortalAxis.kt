@@ -7,7 +7,7 @@ import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.core.Direction
 import net.minecraft.util.StringRepresentable
 
-enum class PortalAxis(val unit: Position3i) : StringRepresentable {
+enum class PortalAxis(private val positive: Position3i) : StringRepresentable {
     X(Position3i(1, 0, 0)) {
         override fun toAxis(): Direction.Axis {
             return Direction.Axis.X
@@ -26,6 +26,9 @@ enum class PortalAxis(val unit: Position3i) : StringRepresentable {
             return "z"
         }
     };
+
+    val unit: Position3i
+        get() = positive.copy()
 
     abstract fun toAxis(): Direction.Axis
 

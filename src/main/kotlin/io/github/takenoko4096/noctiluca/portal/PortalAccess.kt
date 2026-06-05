@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.world.level.Level
 
 data class PortalAccess(val type: Identifier, val position: Position3i, val axis: PortalAxis) {
-    fun getPortal(level: Level): VerticalPortal? {
+    fun getPortal(level: Level): CustomPortal? {
         return PortalType.get(type)?.portalFinder?.findPortalWithAxis(level, position, axis) { isCompletePortal() }
     }
 
