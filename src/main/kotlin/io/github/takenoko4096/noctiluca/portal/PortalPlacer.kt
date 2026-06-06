@@ -236,7 +236,11 @@ class PortalPlacer internal constructor(private val type: PortalType) {
             2,
             3,
             type
-        )
+        ).also { portal ->
+            CustomPortal.usePortalAccessStorage(level) {
+                it.add(portal.toAccess())
+            }
+        }
     }
 
     sealed class PositionSearchResult {

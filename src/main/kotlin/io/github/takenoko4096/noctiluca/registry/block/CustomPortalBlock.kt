@@ -45,7 +45,10 @@ abstract class CustomPortalBlock(
         val axisProperty = (blockState.block as CustomPortalBlock).getPortalAxisProperty()
         val axis = blockState.getValue(axisProperty)
 
-        return type.portalFinder.findPortalWithAxis(currentLevel, portalEntryPos.toPosition3i(), axis) { isCompletePortal() }
+        val portal = type.portalFinder.findPortalWithAxis(currentLevel, portalEntryPos.toPosition3i(), axis) { isCompletePortal() }
+            ?: return null
+
+        return portal.getOrCreateLinkablePortal(currentLevel, portalEntryPos.toPosition3i())
             ?.getTeleportTransition(currentLevel)
     }
 }

@@ -94,11 +94,10 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
     }
 
     override fun format(pattern: String, digits: Int): String {
-        val format = "%.${digits}f"
         return pattern
-            .replace("#x".toRegex(), String.format(format, x))
-            .replace("#y".toRegex(), String.format(format, y))
-            .replace("#z".toRegex(), String.format(format, z))
+            .replace("#x".toRegex(), x.toString())
+            .replace("#y".toRegex(), y.toString())
+            .replace("#z".toRegex(), z.toString())
     }
 
     override fun copy(): Position3i {

@@ -18,12 +18,15 @@ import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
 import io.github.takenoko4096.noctiluca.ui.container.ItemButton
 import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.core.particles.DustParticleOptions
+import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceKey
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
@@ -48,7 +51,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
     }
 
-    val PORTAL_ACCESSES = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.CODEC.listOf())
+    val PORTAL_ACCESSES: AttachmentType<Map<Identifier, List<PortalAccess>>> = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.DIMENSIONS_CODEC)
 
     override fun onInitialize() {
         initializeSystem()
@@ -646,7 +649,31 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             aetherPortalBlock,
             Items.WATER_BUCKET,
             Level.OVERWORLD,
-            Level.NETHER
+            ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )
+
+        commandRegistry.register("custom-portal") {
+            "list" {
+                executes {
+                    val attachments = context.source.level.globalAttachments()
+                    val dimensions = attachments.getAttachedOrElse(PORTAL_ACCESSES, mapOf())
+
+                    context.successful {
+                        for ((dimensionId, accessList) in dimensions) {
+                            text(dimensionId.toString())
+                            text(':')
+                            space()
+                            text(accessList.joinToString(", ") { it.toString() })
+                            linebreak()
+                        }
+                        text("found ${dimensions.flatMap { it.value }.size} entries")
+                    }
+                }
+
+                catches {
+                    logger.warn("error on command /custom-portal: ", error)
+                }
+            }
+        }
     }
 }

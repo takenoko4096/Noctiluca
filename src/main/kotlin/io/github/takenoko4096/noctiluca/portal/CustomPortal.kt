@@ -4,13 +4,16 @@ import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.math.Vector3d
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.MappedRegistry
 import net.minecraft.core.registries.Registries
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.NetherPortalBlock
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.dimension.LevelStem
 import net.minecraft.world.level.portal.TeleportTransition
 
 class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
@@ -131,34 +134,58 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
 
     fun isIgnitable(): Boolean = isFilledWith { it.isAir }
 
-    fun getOrCreateLinkablePortal(from: Level, at: Position3i): CustomPortal? {
-        val registry = from.registryAccess().lookupOrThrow(Registries.DIMENSION)
-        val dim1 = registry.getValueOrThrow(type.dimension1)
-        val dim2 = registry.getValueOrThrow(type.dimension2)
+    fun getOrCreateLinkablePortal(from: ServerLevel, at: Position3i): CustomPortal? {
+        val server = from.server!!
+        val dim1 = server.getLevel(type.dimension1)
+        val dim2 = server.getLevel(type.dimension2)
+
+        if (dim1 == null) {
+            return null
+        }
+
+        if (dim2 == null) {
+            return null
+        }
+
         val to = if (from == dim1) dim2 else dim1
 
         val coordinateScaleRatio = from.dimensionType().coordinateScale / to.dimensionType().coordinateScale
 
         val searchBasePos = at.toVector3d() * coordinateScaleRatio
 
-        val portalAccesses = to.globalAttachments().getAttachedOrSet(Noctiluca.PORTAL_ACCESSES, listOf())
-        val nearestPortalAccess = portalAccesses.minByOrNull { it.position.toVector3d() distanceBetween searchBasePos }
+        val portalAccesses = to.globalAttachments()
+            .getAttachedOrSet(Noctiluca.PORTAL_ACCESSES, mapOf())[to.dimension().identifier()] ?: listOf()
+
+        Noctiluca.logger.info("portal access list on '${to.dimension().identifier()}': {}", portalAccesses)
+
+        val nearestPortalAccess = portalAccesses.minByOrNull { it.position.toVector3d() distanceBetween searchBasePos }/*?.let {
+            if (it.position.toVector3d() distanceBetween searchBasePos > 16) null else it
+        }*/
+
+        Noctiluca.logger.info("nearest access: $nearestPortalAccess with distance ${if (nearestPortalAccess == null) '?' else nearestPortalAccess.position.toVector3d() distanceBetween searchBasePos}")
 
         return nearestPortalAccess?.getPortal(to)
             ?: type.portalPlacer.placePortalNearby(to, searchBasePos.toPosition3i(false), axis)
     }
 
-    fun getTeleportTransition(from: ServerLevel): TeleportTransition {
-        val registry = from.registryAccess().lookupOrThrow(Registries.DIMENSION)
-        val dim1 = registry.getValueOrThrow(type.dimension1)
-        val dim2 = registry.getValueOrThrow(type.dimension2)
+    internal fun getTeleportTransition(from: ServerLevel): TeleportTransition? {
+        val server = from.server!!
+        val dim1 = server.getLevel(type.dimension1)
+        val dim2 = server.getLevel(type.dimension2)
+
+        if (dim1 == null) {
+            Noctiluca.logger.info("Could not find dimension ${type.dimension1} in getTeleportTransition()")
+            return null
+        }
+
+        if (dim2 == null) {
+            Noctiluca.logger.info("Could not find dimension ${type.dimension2} in getTeleportTransition()")
+            return null
+        }
+
         val to = if (from == dim1) dim2 else dim1
         val rot = axis.opposite().unit.toVector3d().toRotation2f()
         val pos = innerBottomLeftPos.toVector3d().add(axis.unit.toVector3d() * 0.5)
-
-        if (to !is ServerLevel) {
-            throw IllegalStateException("Please call 'teleportToThisPortal' from server-side")
-        }
 
         return TeleportTransition(
             to,
@@ -171,6 +198,12 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
             }
         )
     }
+
+    fun toAccess(): PortalAccess = PortalAccess(
+        type.identifier,
+        innerBottomLeftPos,
+        axis
+    )
 
     companion object {
         fun tryIgnite(level: Level, position: Position3i, blockState: BlockState, itemStack: ItemStack): Boolean {
@@ -193,7 +226,26 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
                 )
             }
 
+            usePortalAccessStorage(level) {
+                it.add(portal.toAccess())
+            }
+
             return true
+        }
+
+        internal fun usePortalAccessStorage(level: Level, callback: (MutableList<PortalAccess>) -> Unit) {
+            val attachments = level.globalAttachments()
+            val attached = attachments.getAttachedOrElse(Noctiluca.PORTAL_ACCESSES, mapOf()).toMutableMap()
+
+            val dimId = level.dimension().identifier()
+
+            val list = attached[dimId]?.toMutableList() ?: mutableListOf()
+
+            callback(list)
+
+            attached[dimId] = list
+
+            attachments.setAttached(Noctiluca.PORTAL_ACCESSES, attached)
         }
     }
 }

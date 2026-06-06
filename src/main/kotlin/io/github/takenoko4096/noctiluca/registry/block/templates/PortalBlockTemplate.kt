@@ -4,6 +4,8 @@ import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.math.Vector3d
+import io.github.takenoko4096.noctiluca.math.toPosition3i
+import io.github.takenoko4096.noctiluca.portal.CustomPortal
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
 import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.registry.block.CustomPortalBlock
@@ -98,6 +100,19 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
 
                 if (type.portalFinder.findPortalWithAxis(level, Position3i.from(blockPos), portalAxis) { isCompletePortal() } == null) {
                     finalBlockState = Blocks.AIR.defaultBlockState()
+
+                    val targetPos = blockPos.toPosition3i()
+
+                    CustomPortal.usePortalAccessStorage(level) {
+                        val cpy = it.toList()
+
+                        for (access in cpy) {
+                            if (access.position == targetPos) {
+                                it.remove(access)
+                                break
+                            }
+                        }
+                    }
                 }
             }
 

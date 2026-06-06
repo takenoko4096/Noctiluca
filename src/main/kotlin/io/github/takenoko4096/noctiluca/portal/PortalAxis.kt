@@ -45,6 +45,6 @@ enum class PortalAxis(private val positive: Position3i) : StringRepresentable {
     abstract override fun toString(): String
 
     companion object {
-        val CODEC: Codec<PortalAxis> = Codec.stringResolver(PortalAxis::toString, PortalAxis::valueOf)
+        val CODEC: Codec<PortalAxis> = Codec.stringResolver(PortalAxis::name, PortalAxis::valueOf)
     }
 }

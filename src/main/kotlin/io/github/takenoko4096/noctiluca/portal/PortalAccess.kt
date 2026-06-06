@@ -1,6 +1,7 @@
 package io.github.takenoko4096.noctiluca.portal
 
 import com.mojang.serialization.Codec
+import com.mojang.serialization.Keyable
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.resources.Identifier
@@ -18,6 +19,10 @@ data class PortalAccess(val type: Identifier, val position: Position3i, val axis
                 Position3i.CODEC.fieldOf("pos").forGetter(PortalAccess::position),
                 PortalAxis.CODEC.fieldOf("axis").forGetter(PortalAccess::axis)
             ).apply(it, ::PortalAccess)
+        }
+
+        val DIMENSIONS_CODEC: Codec<Map<Identifier, List<PortalAccess>>> = Codec.dispatchedMap(Identifier.CODEC) {
+            CODEC.listOf()
         }
     }
 }
