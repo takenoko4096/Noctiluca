@@ -50,6 +50,11 @@ class Rotation2f(var yaw: Float, var pitch: Float) : IVector<Rotation2f, Float> 
     }
 
     @Destructive
+    override infix fun set(other: Rotation2f): Rotation2f {
+        return calculate(other) { _, b -> b }
+    }
+
+    @Destructive
     override infix fun add(other: Rotation2f): Rotation2f {
         return calculate(other) { a, b -> a + b }
     }

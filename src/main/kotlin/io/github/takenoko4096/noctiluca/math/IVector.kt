@@ -19,6 +19,9 @@ interface IVector<T : IVector<T, U>, U : Number> {
     fun calculate(other1: T, other2: T, operator: (U, U, U) -> U): T
 
     @Destructive
+    infix fun set(other: T): T
+
+    @Destructive
     infix fun add(other: T): T
 
     @Destructive

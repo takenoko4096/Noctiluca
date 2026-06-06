@@ -15,6 +15,8 @@ import kotlin.math.min
 class PortalType private constructor(val identifier: Identifier, val frameBlock: Block, val portalBlock: CustomPortalBlock, val ignitionSource: Item, val dimension1: ResourceKey<Level>, val dimension2: ResourceKey<Level>, val maxWidth: Int, val maxHeight: Int) {
     val portalFinder: PortalFinder = PortalFinder(this)
 
+    val portalPlacer: PortalPlacer = PortalPlacer(this)
+
     override fun hashCode(): Int {
         return Objects.hash(identifier)
     }

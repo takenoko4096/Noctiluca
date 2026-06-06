@@ -13,6 +13,8 @@ enum class PortalAxis(private val positive: Position3i) : StringRepresentable {
             return Direction.Axis.X
         }
 
+        override fun opposite() = Z
+
         override fun toString(): String {
             return "x"
         }
@@ -21,6 +23,8 @@ enum class PortalAxis(private val positive: Position3i) : StringRepresentable {
         override fun toAxis(): Direction.Axis {
             return Direction.Axis.Z
         }
+
+        override fun opposite() = X
 
         override fun toString(): String {
             return "z"
@@ -31,6 +35,8 @@ enum class PortalAxis(private val positive: Position3i) : StringRepresentable {
         get() = positive.copy()
 
     abstract fun toAxis(): Direction.Axis
+
+    abstract fun opposite(): PortalAxis
 
     override fun getSerializedName(): String {
         return toString()

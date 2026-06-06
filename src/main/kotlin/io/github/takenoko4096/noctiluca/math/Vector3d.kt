@@ -59,6 +59,11 @@ class Vector3d(var x: Double, var y: Double, var z: Double) : IVector<Vector3d, 
     }
 
     @Destructive
+    override infix fun set(other: Vector3d): Vector3d {
+        return calculate(other) { _, b -> b }
+    }
+
+    @Destructive
     override infix fun add(other: Vector3d): Vector3d {
         return calculate(other) { a, b -> a + b }
     }

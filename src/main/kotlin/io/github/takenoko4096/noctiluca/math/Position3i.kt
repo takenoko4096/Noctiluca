@@ -49,6 +49,10 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return this
     }
 
+    override infix fun set(other: Position3i): Position3i {
+        return calculate(other) { _, b -> b }
+    }
+
     override infix fun add(other: Position3i): Position3i {
         return calculate(other) { a, b -> a + b }
     }

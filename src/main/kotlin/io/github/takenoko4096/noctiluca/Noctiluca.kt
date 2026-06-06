@@ -622,10 +622,10 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
-            if (CustomPortal.tryIgniteAt(level, position, blockState, itemStack)) InteractionResult.SUCCESS else null
+            if (CustomPortal.tryIgnite(level, position, blockState, itemStack)) InteractionResult.SUCCESS else null
         }
 
-        val aetherPortal = blockRegistry.registerUsingTemplate("aether_portal", PortalBlockTemplate {
+        val aetherPortalBlock = blockRegistry.registerUsingTemplate("aether_portal", PortalBlockTemplate {
             ambient {
                 sound {
                     soundEvent = SoundEvents.PORTAL_AMBIENT
@@ -643,7 +643,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         PortalType.register(
             identifierOf("aether"),
             Blocks.GLOWSTONE,
-            aetherPortal,
+            aetherPortalBlock,
             Items.WATER_BUCKET,
             Level.OVERWORLD,
             Level.NETHER

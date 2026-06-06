@@ -56,6 +56,11 @@ class Orientation3f(var yaw: Float, var pitch: Float, var roll: Float) : IVector
     }
 
     @Destructive
+    override infix fun set(other: Orientation3f): Orientation3f {
+        return calculate(other) { _, b -> b }
+    }
+
+    @Destructive
     override infix fun add(other: Orientation3f): Orientation3f {
         return calculate(other) { a, b -> a + b }
     }
