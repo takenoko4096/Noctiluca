@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.NetherPortalBlock
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.dimension.LevelStem
+import net.minecraft.world.level.portal.PortalForcer
 import net.minecraft.world.level.portal.TeleportTransition
 
 class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
@@ -154,15 +155,20 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         val searchBasePos = at.toVector3d() * coordinateScaleRatio
 
         val portalAccesses = to.globalAttachments()
-            .getAttachedOrSet(Noctiluca.PORTAL_ACCESSES, mapOf())[to.dimension().identifier()] ?: listOf()
+            .getAttachedOrSet(Noctiluca.PORTAL_ACCESSES, mapOf())[to.dimension().identifier()]
+            ?.filter { PortalType.get(it.type) == type }
+            ?: listOf()
 
         Noctiluca.logger.info("portal access list on '${to.dimension().identifier()}': {}", portalAccesses)
 
-        val nearestPortalAccess = portalAccesses.minByOrNull { it.position.toVector3d() distanceBetween searchBasePos }/*?.let {
-            if (it.position.toVector3d() distanceBetween searchBasePos > 16) null else it
-        }*/
-
-        Noctiluca.logger.info("nearest access: $nearestPortalAccess with distance ${if (nearestPortalAccess == null) '?' else nearestPortalAccess.position.toVector3d() distanceBetween searchBasePos}")
+        val nearestPortalAccess = portalAccesses
+            .associateWith { it.position.toVector3d().apply { this.y = 0.0 } distanceBetween searchBasePos.copy().apply { this.y = 0.0 } }
+            .entries.minByOrNull { it.value }
+            ?.takeIf {
+                Noctiluca.logger.info("nearest access: ${it.key} with distance ${it.value}, compared with ${(16 * coordinateScaleRatio)}")
+                it.value < (16 * coordinateScaleRatio)
+            }
+            ?.key
 
         return nearestPortalAccess?.getPortal(to)
             ?: type.portalPlacer.placePortalNearby(to, searchBasePos.toPosition3i(false), axis)
