@@ -30,7 +30,13 @@
     },
     "carvers": [],
     "downfall": 0.4,
-    "effects": {},
+    "effects": {
+        "water_color": 4159204,
+        "grass_color": 5406207,
+        "foliage_color": 32460,
+        "dry_foliage_color": 4372479,
+        "grass_color_modifier": "dark_forest"
+    },
     "features": [
         [
             "minecraft:lake_lava_surface"
