@@ -1,3 +1,7 @@
 classTweaker v1 official
 
 accessible field net/minecraft/world/entity/player/Player containerMenu Lnet/minecraft/world/inventory/AbstractContainerMenu;
+
+accessible field net/minecraft/world/entity/PortalProcessor portal Lnet/minecraft/world/level/block/Portal;
+
+accessible field net/minecraft/world/level/block/state/BlockBehaviour$Properties soundType Lnet/minecraft/world/level/block/SoundType;

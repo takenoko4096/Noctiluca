@@ -20,11 +20,9 @@ import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.util.RandomSource
-import net.minecraft.world.entity.PortalProcessor
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.Portal
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.state.BlockState
@@ -103,7 +101,7 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
 
                     val targetPos = blockPos.toPosition3i()
 
-                    CustomPortal.usePortalAccessStorage(level) {
+                    CustomPortal.updatePortalAccessStorage(level) {
                         val cpy = it.toList()
 
                         for (access in cpy) {

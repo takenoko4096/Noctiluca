@@ -10,8 +10,10 @@ import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
 import io.github.takenoko4096.noctiluca.portal.PortalAccess
 import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.portal.CustomPortal
+import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
+import io.github.takenoko4096.noctiluca.schedule.ServerTickScheduler
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -31,6 +33,8 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.BaseFireBlock
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
@@ -49,6 +53,13 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         )
 
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
+
+        BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, _, _, result ->
+            val position = blockPos.toPosition3i().withDirection(result.direction)
+            val item = itemStack.item
+            CustomPortal.ignitePortal(level, position, blockState, PortalIgnitionSource.item(item))
+            null
+        }
     }
 
     val PORTAL_ACCESSES: AttachmentType<Map<Identifier, List<PortalAccess>>> = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.DIMENSIONS_CODEC)
@@ -623,11 +634,6 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, hand, result ->
-            val position = blockPos.toPosition3i().withDirection(result.direction)
-            if (CustomPortal.tryIgnite(level, position, blockState, itemStack)) InteractionResult.SUCCESS else null
-        }
-
         val aetherPortalBlock = blockRegistry.registerUsingTemplate("aether_portal", PortalBlockTemplate {
             ambient {
                 sound {
@@ -647,7 +653,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             identifierOf("aether"),
             Blocks.GLOWSTONE,
             aetherPortalBlock,
-            Items.WATER_BUCKET,
+            PortalIgnitionSource.item(Items.WATER_BUCKET),
             Level.OVERWORLD,
             ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )

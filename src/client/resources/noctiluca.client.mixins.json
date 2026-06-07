@@ -3,7 +3,9 @@
     "package": "io.github.takenoko4096.noctiluca.mixin.client",
     "compatibilityLevel": "JAVA_25",
     "client": [
-        "DialogScreenMixin"
+        "DialogScreenMixin",
+        "GuiMixin",
+        "LevelLoadingScreenMixin"
     ],
     "injectors": {
         "defaultRequire": 1

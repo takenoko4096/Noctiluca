@@ -19,7 +19,12 @@ class PortalFinder internal constructor(val type: PortalType) {
     }
 
     private fun isObstacle(blockState: BlockState): Boolean {
-        return !blockState.`is`(type.frameBlock) && !blockState.isAir && !blockState.`is`(type.portalBlock)
+        if (type.ignitionSource is PortalIgnitionSource.SourceBlock && blockState.block == type.ignitionSource.source) {
+            return false
+        }
+        return !blockState.`is`(type.frameBlock)
+            && !blockState.isAir
+            && !blockState.`is`(type.portalBlock)
     }
 
     private fun findInnerBottomLeft(level: BlockGetter, position: Position3i, axis: PortalAxis): Position3i? {

@@ -3,18 +3,10 @@ package io.github.takenoko4096.noctiluca.portal
 import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.math.Vector3d
-import net.minecraft.core.HolderLookup
-import net.minecraft.core.MappedRegistry
-import net.minecraft.core.registries.Registries
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.NetherPortalBlock
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.dimension.LevelStem
-import net.minecraft.world.level.portal.PortalForcer
 import net.minecraft.world.level.portal.TeleportTransition
 
 class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
@@ -165,8 +157,8 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
             .associateWith { it.position.toVector3d().apply { this.y = 0.0 } distanceBetween searchBasePos.copy().apply { this.y = 0.0 } }
             .entries.minByOrNull { it.value }
             ?.takeIf {
-                Noctiluca.logger.info("nearest access: ${it.key} with distance ${it.value}, compared with ${(16 * coordinateScaleRatio)}")
-                it.value < (16 * coordinateScaleRatio)
+                Noctiluca.logger.info("nearest access: ${it.key} with distance ${it.value}, compared with ${(PORTAL_SEARCH_DISTANCE * coordinateScaleRatio)}")
+                it.value < (PORTAL_SEARCH_DISTANCE * coordinateScaleRatio)
             }
             ?.key
 
@@ -211,35 +203,48 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         axis
     )
 
+    fun ignite(level: Level) {
+        if (isCompletePortal()) return
+
+        val axisProperty = type.portalBlock.getPortalAxisProperty()
+
+        for (portalBlockPos in portalBlockPositions) {
+            level.setBlockAndUpdate(
+                portalBlockPos.toBlockPos(),
+                type.portalBlock.defaultBlockState()
+                    .setValue(axisProperty, axis)
+            )
+        }
+
+        updatePortalAccessStorage(level) {
+            it.add(toAccess())
+        }
+    }
+
     companion object {
-        fun tryIgnite(level: Level, position: Position3i, blockState: BlockState, itemStack: ItemStack): Boolean {
-            val portalType = PortalType.getByFrameBlock(blockState.block)
+        const val PORTAL_SEARCH_DISTANCE = 24
 
-            val portal: CustomPortal = portalType
-                ?.portalFinder?.findPortal(level, position) { isIgnitable() } ?: return false
+        fun ignitePortal(level: Level, position: Position3i, frameBlockState: BlockState, source: PortalIgnitionSource<*>): Boolean {
+            val portalType = PortalType.getByFrameBlock(frameBlockState.block) ?: return false
 
-            if (!itemStack.`is`(portal.type.ignitionSource)) {
+            val currentLevelResourceKey = level.dimension()
+            if (!(currentLevelResourceKey == portalType.dimension1 || currentLevelResourceKey == portalType.dimension2)) {
                 return false
             }
 
-            val axisProperty = portalType.portalBlock.getPortalAxisProperty()
+            val portal: CustomPortal = portalType.portalFinder.findPortal(level, position) { isIgnitable() }
+                ?: return false
 
-            for (portalBlockPos in portal.portalBlockPositions) {
-                level.setBlockAndUpdate(
-                    portalBlockPos.toBlockPos(),
-                    portalType.portalBlock.defaultBlockState()
-                        .setValue(axisProperty, portal.axis)
-                )
+            if (source != portalType.ignitionSource) {
+                return false
             }
 
-            usePortalAccessStorage(level) {
-                it.add(portal.toAccess())
-            }
+            portal.ignite(level)
 
             return true
         }
 
-        internal fun usePortalAccessStorage(level: Level, callback: (MutableList<PortalAccess>) -> Unit) {
+        internal fun updatePortalAccessStorage(level: Level, callback: (MutableList<PortalAccess>) -> Unit) {
             val attachments = level.globalAttachments()
             val attached = attachments.getAttachedOrElse(Noctiluca.PORTAL_ACCESSES, mapOf()).toMutableMap()
 

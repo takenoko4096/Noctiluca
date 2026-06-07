@@ -237,7 +237,7 @@ class PortalPlacer internal constructor(private val type: PortalType) {
             3,
             type
         ).also { portal ->
-            CustomPortal.usePortalAccessStorage(level) {
+            CustomPortal.updatePortalAccessStorage(level) {
                 it.add(portal.toAccess())
             }
         }

@@ -1,18 +1,16 @@
 package io.github.takenoko4096.noctiluca.portal
 
+import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.registry.block.CustomPortalBlock
-import io.github.takenoko4096.noctiluca.text.ArgbColor
-import net.minecraft.core.particles.ParticleOptions
+import net.minecraft.core.BlockPos
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
-import net.minecraft.sounds.SoundEvent
-import net.minecraft.world.item.Item
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import java.util.Objects
-import kotlin.math.min
 
-class PortalType private constructor(val identifier: Identifier, val frameBlock: Block, val portalBlock: CustomPortalBlock, val ignitionSource: Item, val dimension1: ResourceKey<Level>, val dimension2: ResourceKey<Level>, val maxWidth: Int, val maxHeight: Int) {
+class PortalType private constructor(val identifier: Identifier, val frameBlock: Block, val portalBlock: CustomPortalBlock, val ignitionSource: PortalIgnitionSource<*>, val dimension1: ResourceKey<Level>, val dimension2: ResourceKey<Level>, val maxWidth: Int, val maxHeight: Int) {
     val portalFinder: PortalFinder = PortalFinder(this)
 
     val portalPlacer: PortalPlacer = PortalPlacer(this)
@@ -29,7 +27,7 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
     companion object {
         private var types = mutableMapOf<Identifier, PortalType>()
 
-        fun register(identifier: Identifier, frameBlock: Block, portalBlock: CustomPortalBlock, ignitionSource: Item, dimension1: ResourceKey<Level>, dimension2: ResourceKey<Level>, maxWidth: Int = 21, maxHeight: Int = 21) {
+        fun register(identifier: Identifier, frameBlock: Block, portalBlock: CustomPortalBlock, ignitionSource: PortalIgnitionSource<*>, dimension1: ResourceKey<Level>, dimension2: ResourceKey<Level>, maxWidth: Int = 21, maxHeight: Int = 21) {
             if (identifier in types) {
                 throw IllegalArgumentException("IDが重複しています: $identifier")
             }
@@ -46,7 +44,15 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
                 throw IllegalArgumentException("ポータルブロックに使用できないブロックです: 既に使用されています")
             }
 
-            types[identifier] = PortalType(identifier, frameBlock, portalBlock, ignitionSource, dimension1, dimension2, maxWidth, maxHeight)
+            types[identifier] = PortalType(
+                identifier,
+                frameBlock,
+                portalBlock,
+                ignitionSource,
+                dimension1,
+                dimension2,
+                maxWidth,
+                maxHeight)
         }
 
         fun get(identifier: Identifier): PortalType? {
@@ -59,6 +65,13 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
 
         fun getByPortalBlock(block: Block): PortalType? {
             return types.values.find { it.portalBlock == block }
+        }
+
+        fun getCandidatesByIgnitionSourceBlock(block: Block): Set<PortalType> {
+            return types.values.mapNotNull {
+                if (it.ignitionSource is PortalIgnitionSource.SourceBlock) it
+                else null
+            }.toSet()
         }
     }
 }
