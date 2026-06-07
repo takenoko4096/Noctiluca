@@ -11,15 +11,19 @@ import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.block.Portal
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.Property
+import net.minecraft.world.level.gamerules.GameRules
 import net.minecraft.world.level.portal.TeleportTransition
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.VoxelShape
+import kotlin.math.max
+
 
 abstract class CustomPortalBlock(
     behaviourProperties: BlockBehaviour.Properties,
@@ -50,5 +54,27 @@ abstract class CustomPortalBlock(
 
         return portal.getOrCreateLinkablePortal(currentLevel, portalEntryPos.toPosition3i())
             ?.getTeleportTransition(currentLevel)
+    }
+
+    override fun getPortalTransitionTime(level: ServerLevel, entity: Entity): Int {
+        return if (entity is Player) {
+            val rule = if (entity.abilities.invulnerable) {
+                GameRules.PLAYERS_NETHER_PORTAL_CREATIVE_DELAY
+            }
+            else {
+                GameRules.PLAYERS_NETHER_PORTAL_DEFAULT_DELAY
+            }
+
+            val delay = level.gameRules.get(rule)
+
+            max(1, delay)
+        }
+        else {
+            super.getPortalTransitionTime(level, entity)
+        }
+    }
+
+    override fun getLocalTransition(): Portal.Transition {
+        return Portal.Transition.CONFUSION
     }
 }
