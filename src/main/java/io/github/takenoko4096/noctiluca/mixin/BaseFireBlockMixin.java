@@ -23,4 +23,6 @@ public class BaseFireBlockMixin {
         portal.ignite(level, PortalIgnitionSource.Companion.block(state.getBlock()));
         ci.cancel();
     }
+
+    // @Inject(method = "canBePlacedAt")
 }
