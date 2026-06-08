@@ -19,6 +19,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class BlockItemMixin {
     @Inject(method = "place", at = @At("TAIL"))
     public void place(BlockPlaceContext placeContext, CallbackInfoReturnable<InteractionResult> cir, @Local(name = "pos") BlockPos pos) {
+        if (placeContext.getLevel().isClientSide()) {
+            return;
+        }
+
         final BlockState state = placeContext.getLevel().getBlockState(pos);
         Noctiluca.INSTANCE.getLogger().info("placed at: {}, {}", pos, state);
 

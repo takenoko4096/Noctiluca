@@ -28,6 +28,10 @@ public class BucketItemMixin {
 
     @Inject(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/BucketItem;checkExtraContent(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/BlockPos;)V"))
     public void use(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir, @Local(name = "placePos") BlockPos placePos) {
+        if (level.isClientSide()) {
+            return;
+        }
+
         final BlockState state = level.getBlockState(placePos);
 
         Noctiluca.INSTANCE.getLogger().info("fluid placed at: {}, {}", placePos, state);
