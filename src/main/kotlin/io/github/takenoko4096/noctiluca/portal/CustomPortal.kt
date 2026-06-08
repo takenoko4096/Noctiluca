@@ -125,7 +125,9 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         return isFilledWith { it.`is`(type.portalBlock) } && !isFrameBroken()
     }
 
-    fun isIgnitable(): Boolean = isFilledWith { it.isAir }
+    fun isIgnitable(): Boolean = isFilledWith {
+        it.isAir || (type.ignitionSource is PortalIgnitionSource.SourceBlock && it.`is`(type.ignitionSource.source))
+    }
 
     fun getOrCreateLinkablePortal(from: ServerLevel, at: Position3i): CustomPortal? {
         val server = from.server!!

@@ -5,8 +5,8 @@
     "mixins": [
         "ServerCommonPacketListenerImplMixin",
         "ServerGamePacketListenerImplMixin",
-        "BlockItemMixin",
-        "BucketItemMixin"
+        "LiquidBlockMixin",
+        "BaseFireBlockMixin"
     ],
     "injectors": {
         "defaultRequire": 1

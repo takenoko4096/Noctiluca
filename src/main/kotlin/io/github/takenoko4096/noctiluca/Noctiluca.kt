@@ -653,7 +653,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             identifierOf("aether"),
             Blocks.GLOWSTONE,
             aetherPortalBlock,
-            PortalIgnitionSource.item(Items.WATER_BUCKET),
+            PortalIgnitionSource.block(Blocks.WATER),
             Level.OVERWORLD,
             ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )

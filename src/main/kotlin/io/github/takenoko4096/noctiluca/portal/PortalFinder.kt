@@ -1,5 +1,6 @@
 package io.github.takenoko4096.noctiluca.portal
 
+import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.block.state.BlockState
