@@ -203,8 +203,14 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         axis
     )
 
-    fun ignite(level: Level) {
+    fun ignite(level: Level, source: PortalIgnitionSource<*>) {
         if (isCompletePortal()) return
+        if (source != type.ignitionSource) return
+
+        val currentLevelResourceKey = level.dimension()
+        if (!(currentLevelResourceKey == type.dimension1 || currentLevelResourceKey == type.dimension2)) {
+            return
+        }
 
         val axisProperty = type.portalBlock.getPortalAxisProperty()
 
@@ -227,19 +233,10 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         fun ignitePortal(level: Level, position: Position3i, frameBlockState: BlockState, source: PortalIgnitionSource<*>): Boolean {
             val portalType = PortalType.getByFrameBlock(frameBlockState.block) ?: return false
 
-            val currentLevelResourceKey = level.dimension()
-            if (!(currentLevelResourceKey == portalType.dimension1 || currentLevelResourceKey == portalType.dimension2)) {
-                return false
-            }
-
-            val portal: CustomPortal = portalType.portalFinder.findPortal(level, position) { isIgnitable() }
+            val portal: CustomPortal = portalType.portalFinder.findPortal(level, position, CustomPortal::isIgnitable)
                 ?: return false
 
-            if (source != portalType.ignitionSource) {
-                return false
-            }
-
-            portal.ignite(level)
+            portal.ignite(level, source)
 
             return true
         }

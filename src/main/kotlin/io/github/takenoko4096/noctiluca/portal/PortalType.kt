@@ -69,9 +69,25 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
 
         fun getCandidatesByIgnitionSourceBlock(block: Block): Set<PortalType> {
             return types.values.mapNotNull {
-                if (it.ignitionSource is PortalIgnitionSource.SourceBlock) it
+                if (it.ignitionSource is PortalIgnitionSource.SourceBlock && it.ignitionSource.source == block) it
                 else null
             }.toSet()
+        }
+
+        fun getIgnitablePortal(level: BlockGetter, pos: BlockPos): CustomPortal? {
+            val block = level.getBlockState(pos).block
+
+            for (candidate in getCandidatesByIgnitionSourceBlock(block)) {
+                val portal = candidate.portalFinder.findPortal(
+                    level,
+                    pos.toPosition3i(),
+                    CustomPortal::isIgnitable)
+                if (portal != null) {
+                    return portal
+                }
+            }
+
+            return null
         }
     }
 }
