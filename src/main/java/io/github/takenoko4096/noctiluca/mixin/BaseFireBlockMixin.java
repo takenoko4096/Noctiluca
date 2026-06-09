@@ -1,17 +1,22 @@
 package io.github.takenoko4096.noctiluca.mixin;
 
-import io.github.takenoko4096.noctiluca.Noctiluca;
+import io.github.takenoko4096.noctiluca.math.Position3i;
 import io.github.takenoko4096.noctiluca.portal.CustomPortal;
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource;
 import io.github.takenoko4096.noctiluca.portal.PortalType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Set;
 
 @Mixin(BaseFireBlock.class)
 public class BaseFireBlockMixin {
@@ -24,5 +29,23 @@ public class BaseFireBlockMixin {
         ci.cancel();
     }
 
-    // @Inject(method = "canBePlacedAt")
+    @Inject(method = "isPortal", at = @At("TAIL"), cancellable = true)
+    private static void isPortal(Level level, BlockPos pos, Direction forwardDirection, CallbackInfoReturnable<Boolean> cir) {
+        final Set<PortalType> types = PortalType.Companion.getCandidatesByIgnitionSourceBlock(s -> {
+            return s.getSource() instanceof BaseFireBlock;
+        });
+
+        for (final PortalType type : types) {
+            final CustomPortal portal = type.getPortalFinder().findPortal(
+                level,
+                Position3i.Companion.from(pos),
+                CustomPortal::isIgnitable
+            );
+
+            if (portal != null) {
+                cir.setReturnValue(true);
+                break;
+            }
+        }
+    }
 }
