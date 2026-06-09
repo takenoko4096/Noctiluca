@@ -25,11 +25,14 @@ public class BaseFireBlockMixin {
         if (level.isClientSide()) return;
         final CustomPortal portal = PortalType.Companion.getIgnitablePortal(level, pos);
         if (portal == null) return;
+        if (!state.canSurvive(level, pos)) {
+            level.removeBlock(pos, false);
+        }
         portal.ignite(level, PortalIgnitionSource.Companion.block(state.getBlock()));
         ci.cancel();
     }
 
-    @Inject(method = "isPortal", at = @At("TAIL"), cancellable = true)
+    @Inject(method = "isPortal", at = @At("HEAD"), cancellable = true)
     private static void isPortal(Level level, BlockPos pos, Direction forwardDirection, CallbackInfoReturnable<Boolean> cir) {
         final Set<PortalType> types = PortalType.Companion.getCandidatesByIgnitionSourceBlock(s -> {
             return s.getSource() instanceof BaseFireBlock;

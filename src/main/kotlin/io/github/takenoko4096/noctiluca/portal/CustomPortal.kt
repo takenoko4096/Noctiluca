@@ -126,7 +126,7 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
     }
 
     fun isIgnitable(): Boolean = isFilledWith {
-        it.isAir || (type.ignitionSource is PortalIgnitionSource.SourceBlock && it.`is`(type.ignitionSource.source))
+        it.isAir || type.ignitionSources.any { ignitionSource -> ignitionSource is PortalIgnitionSource.SourceBlock && it.`is`(ignitionSource.source) }
     }
 
     fun getOrCreateLinkablePortal(from: ServerLevel, at: Position3i): CustomPortal? {
@@ -205,13 +205,13 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         axis
     )
 
-    fun ignite(level: Level, source: PortalIgnitionSource<*>) {
-        if (isCompletePortal()) return
-        if (source != type.ignitionSource) return
+    fun ignite(level: Level, source: PortalIgnitionSource<*>): Boolean {
+        if (isCompletePortal()) return false
+        if (source !in type.ignitionSources) return false
 
         val currentLevelResourceKey = level.dimension()
         if (!(currentLevelResourceKey == type.dimension1 || currentLevelResourceKey == type.dimension2)) {
-            return
+            return false
         }
 
         val axisProperty = type.portalBlock.getPortalAxisProperty()
@@ -227,6 +227,8 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
         updatePortalAccessStorage(level) {
             it.add(toAccess())
         }
+
+        return true
     }
 
     companion object {
@@ -238,9 +240,7 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
             val portal: CustomPortal = portalType.portalFinder.findPortal(level, position, CustomPortal::isIgnitable)
                 ?: return false
 
-            portal.ignite(level, source)
-
-            return true
+            return portal.ignite(level, source)
         }
 
         internal fun updatePortalAccessStorage(level: Level, callback: (MutableList<PortalAccess>) -> Unit) {

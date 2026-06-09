@@ -11,7 +11,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import java.util.Objects
 
-class PortalType private constructor(val identifier: Identifier, val frameBlock: Block, val portalBlock: CustomPortalBlock, val ignitionSource: PortalIgnitionSource<*>, val dimension1: ResourceKey<Level>, val dimension2: ResourceKey<Level>, val maxWidth: Int, val maxHeight: Int) {
+class PortalType private constructor(val identifier: Identifier, val frameBlock: Block, val portalBlock: CustomPortalBlock, val ignitionSources: Set<PortalIgnitionSource<*>>, val dimension1: ResourceKey<Level>, val dimension2: ResourceKey<Level>, val maxWidth: Int, val maxHeight: Int) {
     val portalFinder: PortalFinder = PortalFinder(this)
 
     val portalPlacer: PortalPlacer = PortalPlacer(this)
@@ -28,7 +28,7 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
     companion object {
         private var types = mutableMapOf<Identifier, PortalType>()
 
-        fun register(identifier: Identifier, frameBlock: Block, portalBlock: CustomPortalBlock, ignitionSource: PortalIgnitionSource<*>, dimension1: ResourceKey<Level>, dimension2: ResourceKey<Level>, maxWidth: Int = 21, maxHeight: Int = 21) {
+        fun register(identifier: Identifier, frameBlock: Block, portalBlock: CustomPortalBlock, ignitionSources: Set<PortalIgnitionSource<*>>, dimension1: ResourceKey<Level>, dimension2: ResourceKey<Level>, maxWidth: Int = 21, maxHeight: Int = 21) {
             if (identifier in types) {
                 throw IllegalArgumentException("IDが重複しています: $identifier")
             }
@@ -49,7 +49,7 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
                 identifier,
                 frameBlock,
                 portalBlock,
-                ignitionSource,
+                ignitionSources,
                 dimension1,
                 dimension2,
                 maxWidth,
@@ -70,7 +70,7 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
 
         fun getCandidatesByIgnitionSourceBlock(predicate: PortalIgnitionSource.SourceBlock.() -> Boolean): Set<PortalType> {
             return types.values.mapNotNull {
-                if (it.ignitionSource is PortalIgnitionSource.SourceBlock && it.ignitionSource.predicate()) it
+                if (it.ignitionSources.any { ignitionSource -> ignitionSource is PortalIgnitionSource.SourceBlock && ignitionSource.predicate() }) it
                 else null
             }.toSet()
         }

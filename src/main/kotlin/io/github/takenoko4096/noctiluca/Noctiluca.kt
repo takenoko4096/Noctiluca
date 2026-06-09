@@ -13,7 +13,6 @@ import io.github.takenoko4096.noctiluca.portal.CustomPortal
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
-import io.github.takenoko4096.noctiluca.schedule.ServerTickScheduler
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
 import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
@@ -31,11 +30,12 @@ import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.FireChargeItem
+import net.minecraft.world.item.FlintAndSteelItem
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.BaseFireBlock
-import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.material.Fluids
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -54,11 +54,15 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
 
-        BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, _, _, result ->
+        BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, _, result ->
             val position = blockPos.toPosition3i().withDirection(result.direction)
             val item = itemStack.item
-            CustomPortal.ignitePortal(level, position, blockState, PortalIgnitionSource.item(item))
-            null
+            val successful = CustomPortal.ignitePortal(level, position, blockState, PortalIgnitionSource.item(item))
+            if (successful) {
+                itemStack.consume(1, player)
+                return@register InteractionResult.SUCCESS
+            }
+            else return@register null
         }
     }
 
@@ -649,11 +653,14 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
+        //FireChargeItem
+        //FlintAndSteelItem
+
         PortalType.register(
             identifierOf("aether"),
             Blocks.GLOWSTONE,
             aetherPortalBlock,
-            PortalIgnitionSource.block(Blocks.WATER),
+            setOf(PortalIgnitionSource.block(Blocks.WATER)),
             Level.OVERWORLD,
             ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )
