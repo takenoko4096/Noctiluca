@@ -28,7 +28,7 @@ public class BaseFireBlockMixin {
         if (!state.canSurvive(level, pos)) {
             level.removeBlock(pos, false);
         }
-        portal.ignite(level, PortalIgnitionSource.Companion.block(state.getBlock()));
+        portal.ignite(level, PortalIgnitionSource.Companion.block$Noctiluca(state.getBlock()));
         ci.cancel();
     }
 

@@ -78,6 +78,7 @@ class Vector3d(var x: Double, var y: Double, var z: Double) : IVector<Vector3d, 
         return calculate { component -> component * scalar }
     }
 
+    @Destructive
     override infix fun divide(scalar: Double): Vector3d {
         if (scalar == 0.0) {
             throw IllegalArgumentException("0 で割ることはできません")
@@ -150,7 +151,7 @@ class Vector3d(var x: Double, var y: Double, var z: Double) : IVector<Vector3d, 
     }
 
     infix fun reflect(normal: Vector3d): Vector3d {
-        return this.copy().calculate(normal) { a, b -> a - 2 * dot(normal) * b }
+        return copy().calculate(normal) { a, b -> a - 2 * dot(normal) * b }
     }
 
     fun lerp(end: Vector3d, t: Float): Vector3d {
@@ -229,10 +230,10 @@ class Vector3d(var x: Double, var y: Double, var z: Double) : IVector<Vector3d, 
 
     fun toPosition3i(floor: Boolean): Position3i {
         return if (floor) {
-            Position3i(x.toInt(), y.toInt(), z.toInt())
+            Position3i(floor(x).toInt(), floor(y).toInt(), floor(z).toInt())
         }
         else {
-            Position3i(floor(x).toInt(), floor(y).toInt(), floor(z).toInt())
+            Position3i(x.toInt(), y.toInt(), z.toInt())
         }
     }
 

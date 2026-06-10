@@ -1,7 +1,13 @@
 package io.github.takenoko4096.noctiluca.portal
 
 import net.minecraft.world.item.Item
+import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.FireBlock
+import net.minecraft.world.level.block.LiquidBlock
+import net.minecraft.world.level.block.SoulFireBlock
+import net.minecraft.world.level.material.Fluids
 import java.util.Objects
 
 sealed class PortalIgnitionSource<T : Any>(val source: T) {
@@ -19,7 +25,19 @@ sealed class PortalIgnitionSource<T : Any>(val source: T) {
     }
 
     companion object {
-        fun block(block: Block): SourceBlock = SourceBlock(block)
+        internal fun block(block: Block): SourceBlock = SourceBlock(block)
+
+        fun <T : BaseFireBlock> fire(fire: T): SourceBlock = block(fire)
+
+        fun <T : LiquidBlock> liquid(liquid: LiquidBlock) = block(liquid)
+
+        val WATER = block(Blocks.WATER)
+
+        val LAVA = block(Blocks.LAVA)
+
+        val FIRE = block(Blocks.FIRE)
+
+        val SOUL_FIRE = block(Blocks.SOUL_FIRE)
 
         fun item(item: Item): SourceItem = SourceItem(item)
     }

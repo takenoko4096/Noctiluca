@@ -1,6 +1,5 @@
 package io.github.takenoko4096.noctiluca.portal
 
-import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.registry.block.CustomPortalBlock
 import net.minecraft.core.BlockPos
@@ -75,16 +74,10 @@ class PortalType private constructor(val identifier: Identifier, val frameBlock:
             }.toSet()
         }
 
-        private fun getCandidatesByIgnitionSourceBlock(block: Block): Set<PortalType> {
-            return getCandidatesByIgnitionSourceBlock { source == block }
-        }
-
         fun getIgnitablePortal(level: BlockGetter, blockPos: BlockPos): CustomPortal? {
             val block = level.getBlockState(blockPos).block
 
-            Noctiluca.logger.info("{}", getCandidatesByIgnitionSourceBlock(block))
-
-            for (candidate in getCandidatesByIgnitionSourceBlock(block)) {
+            for (candidate in getCandidatesByIgnitionSourceBlock { source == block }) {
                 val portal = candidate.portalFinder.findPortal(level, blockPos.toPosition3i(), CustomPortal::isIgnitable)
                 if (portal != null) return portal
             }

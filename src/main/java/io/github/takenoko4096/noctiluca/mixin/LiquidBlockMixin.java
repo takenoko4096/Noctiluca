@@ -1,6 +1,5 @@
 package io.github.takenoko4096.noctiluca.mixin;
 
-import io.github.takenoko4096.noctiluca.Noctiluca;
 import io.github.takenoko4096.noctiluca.portal.CustomPortal;
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource;
 import io.github.takenoko4096.noctiluca.portal.PortalType;
@@ -21,8 +20,7 @@ public abstract class LiquidBlockMixin {
         if (!state.getFluidState().isSource()) return;
         final CustomPortal portal = PortalType.Companion.getIgnitablePortal(level, pos);
         if (portal == null) return;
-        portal.ignite(level, PortalIgnitionSource.Companion.block(state.getBlock()));
+        portal.ignite(level, PortalIgnitionSource.Companion.block$Noctiluca(state.getBlock()));
         ci.cancel();
     }
 }
-// levelchunk?

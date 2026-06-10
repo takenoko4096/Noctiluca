@@ -69,6 +69,7 @@ class Rotation2f(var yaw: Float, var pitch: Float) : IVector<Rotation2f, Float> 
         return calculate { component -> component * scalar }
     }
 
+    @Destructive
     override infix fun divide(scalar: Float): Rotation2f {
         if (scalar == 0f) {
             throw IllegalArgumentException("0 で割ることはできません")

@@ -1,6 +1,8 @@
 package io.github.takenoko4096.noctiluca.portal
 
 import io.github.takenoko4096.noctiluca.math.Position3i
+import io.github.takenoko4096.noctiluca.math.toOffset
+import net.minecraft.core.Direction
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.block.state.BlockState
 import kotlin.math.max
@@ -11,6 +13,10 @@ class PortalFinder internal constructor(val type: PortalType) {
     }
 
     fun findPortalWithAxis(level: BlockGetter, position: Position3i, axis: PortalAxis, predicate: CustomPortal.() -> Boolean): CustomPortal? {
+        if (!lightweightCheck(level, position)) {
+            return null
+        }
+
         val innerBottomLeftPos = findInnerBottomLeft(level, position, axis) ?: return null
         val innerWidth = measureInnerWidthWithFloorValidation(level, innerBottomLeftPos, axis) ?: return null
         val innerHeight = measureInnerHeightWithWallsAndCeilValidation(level, innerBottomLeftPos, innerWidth, axis) ?: return null
@@ -18,10 +24,25 @@ class PortalFinder internal constructor(val type: PortalType) {
         return if (portal.predicate()) portal else null
     }
 
+    private fun lightweightCheck(level: BlockGetter, position: Position3i): Boolean {
+        val mutable = Position3i(0, 0, 0)
+        for (direction in Direction.entries) {
+            mutable.set(position).add(direction.toOffset())
+            val blockState = level.getBlockState(mutable.toBlockPos())
+
+            if (blockState.`is`(type.frameBlock)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     private fun isObstacle(blockState: BlockState): Boolean {
         if (type.ignitionSources.any { it is PortalIgnitionSource.SourceBlock && blockState.block == it.source }) {
             return false
         }
+
         return !blockState.`is`(type.frameBlock)
             && !blockState.isAir
             && !blockState.`is`(type.portalBlock)

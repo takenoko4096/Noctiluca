@@ -3,6 +3,7 @@ package io.github.takenoko4096.noctiluca.math
 import com.mojang.serialization.Codec
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+import net.minecraft.core.Vec3i
 import java.util.Objects
 import java.util.stream.IntStream
 import kotlin.math.max
@@ -28,6 +29,7 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return x == other.x && y == other.y && z == other.z
     }
 
+    @Destructive
     override fun calculate(operator: (Int) -> Int): Position3i {
         x = operator(x)
         y = operator(y)
@@ -35,6 +37,7 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return this
     }
 
+    @Destructive
     override fun calculate(other: Position3i, operator: (Int, Int) -> Int): Position3i {
         x = operator(x, other.x)
         y = operator(y, other.y)
@@ -42,6 +45,7 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return this
     }
 
+    @Destructive
     override fun calculate(other1: Position3i, other2: Position3i, operator: (Int, Int, Int) -> Int): Position3i {
         x = operator(x, other1.x, other2.x)
         y = operator(y, other1.y, other2.y)
@@ -49,22 +53,27 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return this
     }
 
+    @Destructive
     override infix fun set(other: Position3i): Position3i {
         return calculate(other) { _, b -> b }
     }
 
+    @Destructive
     override infix fun add(other: Position3i): Position3i {
         return calculate(other) { a, b -> a + b }
     }
 
+    @Destructive
     override infix fun subtract(other: Position3i): Position3i {
         return calculate(other) { a, b -> a - b }
     }
 
+    @Destructive
     override infix fun scale(scalar: Int): Position3i {
         return calculate { component -> component * scalar }
     }
 
+    @Destructive
     override infix fun divide(scalar: Int): Position3i {
         if (scalar == 0) {
             throw IllegalArgumentException("0 で割ることはできません")
@@ -73,10 +82,12 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return calculate { component -> component / scalar }
     }
 
+    @Destructive
     override fun invert(): Position3i {
         return scale(-1)
     }
 
+    @Destructive
     override fun clamp(min: Position3i, max: Position3i): Position3i {
         return calculate(min, max) { value, minValue, maxValue ->
             max(minValue, min(value, maxValue))
@@ -116,10 +127,6 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
         return toVector3d() + Vector3d(0.5, 0.0, 0.5)
     }
 
-    fun withDirection(direction: Direction, step: Int = 1): Position3i {
-        return this + (direction.unitVec3.toVector3d().toPosition3i(false) * step)
-    }
-
     fun toBlockPos(): BlockPos {
         return BlockPos(x, y, z)
     }
@@ -127,6 +134,14 @@ class Position3i(var x: Int, var y: Int, var z: Int) : IVector<Position3i, Int> 
     companion object {
         fun from(blockPos: BlockPos): Position3i {
             return Position3i(blockPos.x, blockPos.y, blockPos.z)
+        }
+
+        fun from(vec3i: Vec3i): Position3i {
+            return Position3i(vec3i.x, vec3i.y, vec3i.z)
+        }
+
+        fun getOffset(direction: Direction): Position3i {
+            return from(direction.unitVec3i)
         }
 
         val CODEC: Codec<Position3i> = Codec.INT_STREAM.xmap(

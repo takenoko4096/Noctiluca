@@ -2,6 +2,7 @@ package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
 import io.github.takenoko4096.noctiluca.container.PackSavable
+import io.github.takenoko4096.noctiluca.math.toOffset
 import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
@@ -30,12 +31,9 @@ import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.item.FireChargeItem
-import net.minecraft.world.item.FlintAndSteelItem
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.material.Fluids
 
 object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
@@ -55,7 +53,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
 
         BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, _, result ->
-            val position = blockPos.toPosition3i().withDirection(result.direction)
+            val position = blockPos.toPosition3i() + result.direction.toOffset()
             val item = itemStack.item
             val successful = CustomPortal.ignitePortal(level, position, blockState, PortalIgnitionSource.item(item))
             if (successful) {
@@ -653,14 +651,11 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
-        //FireChargeItem
-        //FlintAndSteelItem
-
         PortalType.register(
             identifierOf("aether"),
             Blocks.GLOWSTONE,
             aetherPortalBlock,
-            setOf(PortalIgnitionSource.block(Blocks.WATER)),
+            setOf(PortalIgnitionSource.WATER),
             Level.OVERWORLD,
             ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )
