@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType
 class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
     private val configurations = mutableSetOf<ModTagConfiguration<*>>()
 
-    private val tags = mutableMapOf<TagKey<*>, Tag<*>>()
+    private val tags = mutableMapOf<TagKey<*>, ModTag<*>>()
 
     fun registerOfItem(tag: TagKey<Item>, configuration: ModTagConfiguration<Item>.() -> Unit) {
         val configuration = ModTagConfiguration(Registries.ITEM, tag, configuration)
@@ -23,13 +23,13 @@ class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : Starli
         val built = configuration.build()
 
         if (tag in tags) {
-            val previous = tags[tag] as Tag<Item>
+            val previous = tags[tag] as ModTag<Item>
 
             if (previous.replace != built.replace) {
                 throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
             }
 
-            tags[tag] = Tag(
+            tags[tag] = ModTag(
                 Registries.ITEM,
                 tag,
                 previous.entries + built.entries,
@@ -48,13 +48,13 @@ class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : Starli
         val built = configuration.build()
 
         if (tag in tags) {
-            val previous = tags[tag] as Tag<Block>
+            val previous = tags[tag] as ModTag<Block>
 
             if (previous.replace != built.replace) {
                 throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
             }
 
-            tags[tag] = Tag(
+            tags[tag] = ModTag(
                 Registries.BLOCK,
                 tag,
                 previous.entries + built.entries,
@@ -73,13 +73,13 @@ class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : Starli
         val built = configuration.build()
 
         if (tag in tags) {
-            val previous = tags[tag] as Tag<EntityType<*>>
+            val previous = tags[tag] as ModTag<EntityType<*>>
 
             if (previous.replace != built.replace) {
                 throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
             }
 
-            tags[tag] = Tag(
+            tags[tag] = ModTag(
                 Registries.ENTITY_TYPE,
                 tag,
                 previous.entries + built.entries,
@@ -98,13 +98,13 @@ class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : Starli
         val built = configuration.build()
 
         if (tag in tags) {
-            val previous = tags[tag] as Tag<BlockEntityType<*>>
+            val previous = tags[tag] as ModTag<BlockEntityType<*>>
 
             if (previous.replace != built.replace) {
                 throw IllegalStateException("タグ '${tag.location}' の定義で 'replace' の設定が競合しています")
             }
 
-            tags[tag] = Tag(
+            tags[tag] = ModTag(
                 Registries.BLOCK_ENTITY_TYPE,
                 tag,
                 previous.entries + built.entries,
@@ -120,7 +120,7 @@ class ModTagRegistry internal constructor(mod: NoctilucaModInitializer) : Starli
         return configurations.filter { it.target == target }.map { it as ModTagConfiguration<T> }.toSet()
     }
 
-    fun <T : Any> getTag(tag: TagKey<T>): Tag<T> {
-        return tags[tag] as Tag<T>? ?: throw IllegalArgumentException("タグ '$tag' がレジストリに見つかりませんでした")
+    fun <T : Any> getTag(tag: TagKey<T>): ModTag<T> {
+        return tags[tag] as ModTag<T>? ?: throw IllegalArgumentException("タグ '$tag' がレジストリに見つかりませんでした")
     }
 }

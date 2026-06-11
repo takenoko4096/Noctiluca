@@ -11,6 +11,7 @@ import io.github.takenoko4096.noctiluca.datagen.providers.NoctilucaWorldGenProvi
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput
+import net.minecraft.client.data.models.model.ModelTemplates
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.RegistrySetBuilder
 import net.minecraft.core.registries.Registries

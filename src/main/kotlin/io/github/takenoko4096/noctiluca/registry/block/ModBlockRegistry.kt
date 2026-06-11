@@ -1,28 +1,10 @@
 package io.github.takenoko4096.noctiluca.registry.block
 
-import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
-import io.github.takenoko4096.noctiluca.math.Position3i
-import io.github.takenoko4096.noctiluca.math.Vector3d
-import io.github.takenoko4096.noctiluca.portal.PortalAxis
-import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.registry.StarlightRegistry
 import io.github.takenoko4096.noctiluca.registry.block.templates.ModBlockTemplate
-import io.github.takenoko4096.noctiluca.render.TexturePath
-import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
-import io.github.takenoko4096.noctiluca.text.ArgbColor
-import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.resources.ResourceKey
-import net.minecraft.sounds.SoundEvent
-import net.minecraft.sounds.SoundSource
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.Rotation
-import net.minecraft.world.level.block.SoundType
-import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.block.state.StateDefinition
-import net.minecraft.world.level.material.PushReaction
-import kotlin.math.min
 
 class ModBlockRegistry(mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
     private val configurations = mutableSetOf<ModBlockConfiguration>()
@@ -41,7 +23,7 @@ class ModBlockRegistry(mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
     }
 
     fun registerUsingTemplate(identifier: String, template: ModBlockTemplate): CustomPortalBlock {
-        return register(identifier, template.getConfiguration(mod.identifierOf(identifier))) as CustomPortalBlock
+        return register(identifier, template.getConfigurator(mod.identifierOf(identifier))) as CustomPortalBlock
     }
 
     fun getPropertiesOf(block: Block): Properties {

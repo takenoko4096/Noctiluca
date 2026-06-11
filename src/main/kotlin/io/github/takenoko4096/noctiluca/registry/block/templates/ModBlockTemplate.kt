@@ -4,5 +4,5 @@ import io.github.takenoko4096.noctiluca.registry.block.ModBlockConfiguration
 import net.minecraft.resources.Identifier
 
 abstract class ModBlockTemplate {
-    internal abstract fun getConfiguration(identifier: Identifier): ModBlockConfiguration.() -> Unit
+    abstract fun getConfigurator(identifier: Identifier): ModBlockConfiguration.() -> Unit
 }

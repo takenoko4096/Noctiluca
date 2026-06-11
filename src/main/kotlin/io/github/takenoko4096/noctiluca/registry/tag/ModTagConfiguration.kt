@@ -17,7 +17,7 @@ class ModTagConfiguration<T : Any> internal constructor(internal val target: Res
         entries.add(t)
     }
 
-    internal fun build(): Tag<T> {
-        return Tag(target, key, entries.toSet(), replace)
+    internal fun build(): ModTag<T> {
+        return ModTag(target, key, entries.toSet(), replace)
     }
 }

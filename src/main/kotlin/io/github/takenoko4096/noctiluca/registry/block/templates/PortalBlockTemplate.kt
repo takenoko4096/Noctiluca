@@ -47,7 +47,7 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
         callback()
     }
 
-    override fun getConfiguration(identifier: Identifier): ModBlockConfiguration.() -> Unit = {
+    override fun getConfigurator(identifier: Identifier): ModBlockConfiguration.() -> Unit = {
         constructor { properties, definitions, dispatcher, function1, function2 ->
             object : CustomPortalBlock(
                 properties,
