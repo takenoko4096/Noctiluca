@@ -3,25 +3,34 @@ package io.github.takenoko4096.noctiluca.datagen.model
 import io.github.takenoko4096.noctiluca.datagen.model.builder.ClientItemModelHandle
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientBlockModelVariant
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants
+import io.github.takenoko4096.noctiluca.render.model.block.PropertyDispatching
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants0
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants1
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants2
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.CombinedPropertyCondition
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.ConditionTerm
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.MultiParts
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.PropertyMultiPart
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
 import net.minecraft.client.data.models.MultiVariant
+import net.minecraft.client.data.models.blockstates.ConditionBuilder
+import net.minecraft.client.data.models.blockstates.MultiPartGenerator
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator
 import net.minecraft.client.data.models.blockstates.PropertyDispatch
 import net.minecraft.client.renderer.block.dispatch.VariantMutator
+import net.minecraft.client.renderer.block.dispatch.multipart.Condition
+import net.minecraft.client.renderer.block.dispatch.multipart.KeyValueCondition
 import net.minecraft.data.BlockFamily
 import net.minecraft.world.level.block.Block
+import java.util.Arrays
 
 class BlockModelVariantsRegistrar internal constructor(
     internal val blockModelGenerators: BlockModelGenerators,
     internal val block: Block,
     internal val itemModelHandle: ItemModelHandle?,
-    internal val variants: PropertyVariants?,
+    internal val variants: PropertyDispatching?,
     internal val family: BlockFamily?
 ) {
     private fun toClientMutator(nonClientMutator: NonClientVariantMutator): VariantMutator {
@@ -81,6 +90,42 @@ class BlockModelVariantsRegistrar internal constructor(
         }
 
         return empty.with(dispatch)
+    }
+
+    private fun <T : Comparable<T>> toClientTerm(term: ConditionTerm<T>): ConditionBuilder {
+        return ConditionBuilder().term(
+            term.property,
+            term.cases.first(),
+            *term.firstExclusive
+        )
+    }
+
+    private fun multiPart(multiParts: MultiParts) {
+        val empty = MultiPartGenerator.multiPart(block)
+
+        for (part in multiParts.multiParts) {
+            if (part.`when` == null) {
+                for (variant in part.apply.map(::toClient)) {
+                    empty.with(variant)
+                }
+            }
+            else {
+                val terms = part.`when`!!.terms
+                for (condition in terms) {
+                    val builder = when (condition) {
+                        is CombinedPropertyCondition.And -> {
+
+                        }
+                        is CombinedPropertyCondition.Or -> {
+
+                        }
+                        is ConditionTerm<*> -> {
+                            toClientTerm(condition)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     internal fun register() {

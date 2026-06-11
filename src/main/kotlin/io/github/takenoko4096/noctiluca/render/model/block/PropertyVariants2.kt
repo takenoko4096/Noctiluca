@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.state.properties.Property
 class PropertyVariants2<T : Comparable<T>, U : Comparable<U>>(
     val property1: Property<T>,
     val property2: Property<U>
-) : PropertyVariants() {
+) : PropertyDispatching() {
     val selects = mutableSetOf<NonClientBlockSelect2<T, U>>()
 
     fun case(value1: T, value2: U, variant: NonClientBlockModelVariant) {

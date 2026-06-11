@@ -2,35 +2,41 @@ package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientBlockModelVariant
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants
+import io.github.takenoko4096.noctiluca.render.model.block.PropertyDispatching
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants0
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants1
 import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants2
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.MultiParts
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.PropertyMultiPart
 import net.minecraft.world.level.block.state.properties.Property
 import org.jetbrains.annotations.ApiStatus
 
 @NoctilucaDsl
 class BlockModelConfiguration internal constructor(internal val configuration: ModBlockConfiguration, callback: BlockModelConfiguration.() -> Unit) {
-    internal var variants: PropertyVariants? = null
+    internal var dispatching: PropertyDispatching? = null
 
     init {
         callback()
     }
 
     fun always(variant: NonClientBlockModelVariant) {
-        variants = PropertyVariants0(variant)
+        dispatching = PropertyVariants0(variant)
     }
 
     fun <T : Comparable<T>> variants(property: Property<T>, callback: PropertyVariants1<T>.() -> Unit) {
         val vp1 = PropertyVariants1(property)
         vp1.callback()
-        variants = vp1
+        dispatching = vp1
     }
 
     fun <T: Comparable<T>, U : Comparable<U>> variants(property1: Property<T>, property2: Property<U>, callback: PropertyVariants2<T, U>.() -> Unit) {
         val vp2 = PropertyVariants2(property1, property2)
         vp2.callback()
-        variants = vp2
+        dispatching = vp2
+    }
+
+    fun multiPart(vararg callbacks: PropertyMultiPart.Builder.() -> Unit) {
+        dispatching = MultiParts(callbacks.map(PropertyMultiPart::Builder).map(PropertyMultiPart.Builder::build))
     }
 
     /**

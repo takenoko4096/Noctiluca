@@ -3,7 +3,7 @@ package io.github.takenoko4096.noctiluca.registry.block
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.registry.translation.ModTranslationConfiguration
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants
+import io.github.takenoko4096.noctiluca.render.model.block.PropertyDispatching
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Registry
@@ -276,8 +276,8 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
             return configuration.familyBuilder?.family
         }
 
-        fun blockModelVariants(): PropertyVariants? {
-            return configuration.modelConfig?.blockModelConfig?.variants
+        fun blockModelVariants(): PropertyDispatching? {
+            return configuration.modelConfig?.blockModelConfig?.dispatching
         }
 
         fun blockItemModel(): ItemModelHandle? {
