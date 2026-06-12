@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.level.block.state.properties.Property
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 class Properties internal constructor(private val definitions: Set<BlockStatesConfiguration.PropertyDefinition<*>>) {
     private fun getProperty(name: String): Property<*> {

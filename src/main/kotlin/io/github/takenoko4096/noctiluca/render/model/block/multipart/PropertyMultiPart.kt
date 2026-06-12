@@ -1,12 +1,14 @@
 package io.github.takenoko4096.noctiluca.render.model.block.multipart
 
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
+import io.github.takenoko4096.noctiluca.render.model.block.AbstractBlockVariant
+import io.github.takenoko4096.noctiluca.render.model.block.NonClientBlockModelMultiVariant
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientBlockModelVariant
 
-data class PropertyMultiPart(val `when`: NonClientCombinedCondition?, val apply: List<NonClientBlockModelVariant>) {
+data class PropertyMultiPart(val `when`: AbstractNonClientCondition?, val apply: List<NonClientBlockModelVariant>) {
     @NoctilucaDsl
     class Builder internal constructor(callback: Builder.() -> Unit) {
-        private var `when`: NonClientCombinedCondition? = null
+        private var `when`: AbstractNonClientCondition? = null
 
         private var variants: List<NonClientBlockModelVariant> = listOf()
 
@@ -14,13 +16,13 @@ data class PropertyMultiPart(val `when`: NonClientCombinedCondition?, val apply:
             callback()
         }
 
-        fun `when`(callback: NonClientCombinedCondition.Provider.() -> NonClientCombinedCondition) {
-            val provider = NonClientCombinedCondition.Provider()
+        fun `when`(callback: MultiPartConditionProvider.() -> AbstractNonClientCondition) {
+            val provider = MultiPartConditionProvider()
             `when` = provider.callback()
         }
 
-        fun apply(vararg variants: NonClientBlockModelVariant) {
-            this.variants = variants.toList()
+        fun apply(vararg variants: AbstractBlockVariant) {
+            this.variants = NonClientBlockModelMultiVariant.flat(variants.toList())
         }
 
         internal fun build(): PropertyMultiPart {

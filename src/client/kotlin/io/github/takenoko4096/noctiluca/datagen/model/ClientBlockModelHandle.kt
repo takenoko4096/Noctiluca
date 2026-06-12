@@ -9,24 +9,22 @@ import io.github.takenoko4096.noctiluca.render.model.block.multipart.NonClientMu
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
-import net.minecraft.client.data.models.MultiVariant
 import net.minecraft.client.data.models.blockstates.ConditionBuilder
 import net.minecraft.client.data.models.blockstates.MultiPartGenerator
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator
 import net.minecraft.client.data.models.blockstates.PropertyDispatch
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher
+import net.minecraft.client.renderer.block.dispatch.Variant
 import net.minecraft.client.renderer.block.dispatch.VariantMutator
 import net.minecraft.client.renderer.block.dispatch.multipart.CombinedCondition
 import net.minecraft.client.renderer.block.dispatch.multipart.Condition
 import net.minecraft.data.BlockFamily
-import net.minecraft.util.random.WeightedList
 import net.minecraft.world.level.block.Block
 
-class BlockModelVariantsRegistrar internal constructor(
+class ClientBlockModelHandle internal constructor(
     internal val blockModelGenerators: BlockModelGenerators,
     internal val block: Block,
     internal val itemModelHandle: ItemModelHandle?,
-    internal val variants: PropertyDispatching?,
+    internal val dispatching: PropertyDispatching?,
     internal val family: BlockFamily?
 ) {
     private fun toClientMutator(nonClientMutator: NonClientVariantMutator): VariantMutator {
@@ -41,9 +39,9 @@ class BlockModelVariantsRegistrar internal constructor(
         }
     }
 
-    private fun toClient(nonClient: NonClientBlockModelVariant): MultiVariant {
+    private fun toClient(nonClient: NonClientBlockModelVariant): Variant {
         val clientModel = ClientModel.getOrCreate(block, nonClient.model, blockModelGenerators)
-        var clientModelVariant = BlockModelGenerators.plainVariant(clientModel.identifier)
+        var clientModelVariant = BlockModelGenerators.plainModel(clientModel.identifier)
         for (mutator in nonClient.mutators) {
             clientModelVariant = clientModelVariant.with(toClientMutator(mutator))
         }
@@ -53,7 +51,7 @@ class BlockModelVariantsRegistrar internal constructor(
     private fun variants0(variants0: PropertyVariants0): MultiVariantGenerator {
         return MultiVariantGenerator.dispatch(
             block,
-            toClient(PropertyVariants0.getVariant(variants0))
+            BlockModelGenerators.variant(toClient(PropertyVariants0.getVariant(variants0)))
         )
     }
 
@@ -65,7 +63,7 @@ class BlockModelVariantsRegistrar internal constructor(
         for (select in variants1.selects) {
             dispatch.select(
                 select.value1,
-                toClient(select.variant)
+                BlockModelGenerators.variant(toClient(select.variant))
             )
         }
 
@@ -81,7 +79,7 @@ class BlockModelVariantsRegistrar internal constructor(
             dispatch.select(
                 select.value1,
                 select.value2,
-                toClient(select.variant)
+                BlockModelGenerators.variant(toClient(select.variant))
             )
         }
 
@@ -122,7 +120,7 @@ class BlockModelVariantsRegistrar internal constructor(
         val empty = MultiPartGenerator.multiPart(block)
 
         for ((`when`, apply) in multiParts.multiParts) {
-            val variant = MultiVariant(WeightedList.of(apply.flatMap { toClient(it).variants.unwrap() }))
+            val variant = BlockModelGenerators.variants(*apply.map(::toClient).toTypedArray())
 
             if (`when` == null) {
                 empty.with(variant)
@@ -146,11 +144,11 @@ class BlockModelVariantsRegistrar internal constructor(
             blockModelGenerators.itemModelOutput.accept(block.asItem(), client.convert())
         }
 
-        val generator = when (variants) {
-            is PropertyVariants0 -> variants0(variants)
-            is PropertyVariants1<*> -> variants1(variants)
-            is PropertyVariants2<*, *> -> variants2(variants)
-            is NonClientMultiParts -> multiPart(variants)
+        val generator = when (dispatching) {
+            is PropertyVariants0 -> variants0(dispatching)
+            is PropertyVariants1<*> -> variants1(dispatching)
+            is PropertyVariants2<*, *> -> variants2(dispatching)
+            is NonClientMultiParts -> multiPart(dispatching)
             null -> {
                 if (family == null) {
                     throw IllegalStateException("cannot generate block family: maybe this is caused by both of models.block and withXX() is unset. please use one or the other")

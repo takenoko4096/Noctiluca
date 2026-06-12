@@ -1,7 +1,7 @@
 package io.github.takenoko4096.noctiluca.datagen.providers
 
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
-import io.github.takenoko4096.noctiluca.datagen.model.BlockModelVariantsRegistrar
+import io.github.takenoko4096.noctiluca.datagen.model.ClientBlockModelHandle
 import io.github.takenoko4096.noctiluca.datagen.model.builder.ClientItemModelHandle
 import io.github.takenoko4096.noctiluca.registry.block.ModBlockConfiguration
 import io.github.takenoko4096.noctiluca.registry.block.SingleArgBlockModel
@@ -80,16 +80,16 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
                 null -> {}
             }
 
-            val variants = accessor.blockModel()
+            val dispatching = accessor.blockModel()
 
-            val registrar = BlockModelVariantsRegistrar(
+            val blockModelHandle = ClientBlockModelHandle(
                 blockModelGenerators,
                 block,
                 accessor.blockItemModel(),
-                variants,
+                dispatching,
                 accessor.family()
             )
-            registrar.register()
+            blockModelHandle.register()
         }
     }
 
@@ -98,9 +98,9 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
 
         for (configuration in itemRegistry.getConfigurations()) {
             val item = itemRegistry.getItem(configuration.itemResourceKey)
-            val accessor = ModItemConfiguration.Companion.getAccessor(configuration)
+            val accessor = ModItemConfiguration.getAccessor(configuration)
 
-            ClientItemModelHandle.Companion.registerModel(itemModelGenerators, item, accessor.getModelHandle())
+            ClientItemModelHandle.registerModel(itemModelGenerators, item, accessor.getModelHandle())
         }
     }
 

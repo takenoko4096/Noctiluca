@@ -32,7 +32,7 @@ abstract class CustomBlock internal constructor(
     properties: BlockBehaviour.Properties,
     propertyDefinitions: Set<BlockStatesConfiguration.PropertyDefinition<*>>,
     private val eventDispatcher: BlockEventsConfiguration.BlockEventDispatcher,
-    private val voxelShapeProvider: ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)?,
+    private val voxelShapeBuilder: ((BlockState, BlockGetter, BlockPos, CollisionContext) -> VoxelShape)?,
     private val rotator: ((BlockState, Rotation) -> BlockState)?
 ) : Block(properties) {
     init {
@@ -48,7 +48,7 @@ abstract class CustomBlock internal constructor(
     abstract override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>)
 
     override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
-        return voxelShapeProvider?.invoke(state, level, pos, context) ?: super.getShape(state, level, pos, context)
+        return voxelShapeBuilder?.invoke(state, level, pos, context) ?: super.getShape(state, level, pos, context)
     }
 
     override fun rotate(state: BlockState, rotation: Rotation): BlockState {

@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.world.level.block.Block
 
 class BlockModelProvider internal constructor(resourceKey: ResourceKey<Block>) : ModelProvider<Block>(resourceKey) {
-    fun cube(particle: TexturePath, north: TexturePath, south: TexturePath, east: TexturePath, west: TexturePath, up: TexturePath, down: TexturePath, callback: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
+    fun cube(particle: TexturePath, north: TexturePath, south: TexturePath, east: TexturePath, west: TexturePath, up: TexturePath, down: TexturePath, options: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
         return NonClientBuiltinModel(
             resourceKey,
             NonClientBuiltinModelTemplate.CUBE,
@@ -25,11 +25,11 @@ class BlockModelProvider internal constructor(resourceKey: ResourceKey<Block>) :
                 NonClientBuiltinTextureSlot.UP to up,
                 NonClientBuiltinTextureSlot.DOWN to down
             ),
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 
-    fun cubeColumn(side: TexturePath, end: TexturePath, callback: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
+    fun cubeColumn(side: TexturePath, end: TexturePath, options: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
         return NonClientBuiltinModel(
             resourceKey,
             NonClientBuiltinModelTemplate.CUBE_COLUMN,
@@ -37,33 +37,33 @@ class BlockModelProvider internal constructor(resourceKey: ResourceKey<Block>) :
                 NonClientBuiltinTextureSlot.SIDE to side,
                 NonClientBuiltinTextureSlot.END to end
             ),
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 
-    fun cubeAll(all: TexturePath, callback: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
+    fun cubeAll(all: TexturePath, options: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
         return NonClientBuiltinModel(
             resourceKey,
             NonClientBuiltinModelTemplate.CUBE_ALL,
             mapOf(
                 NonClientBuiltinTextureSlot.ALL to all
             ),
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 
-    fun crop(crop: TexturePath, callback: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
+    fun crop(crop: TexturePath, options: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
         return NonClientBuiltinModel(
             resourceKey,
             NonClientBuiltinModelTemplate.CROP,
             mapOf(
                 NonClientBuiltinTextureSlot.CROP to crop
             ),
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 
-    fun slabTop(top: TexturePath, side: TexturePath, bottom: TexturePath, callback: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
+    fun slabTop(top: TexturePath, side: TexturePath, bottom: TexturePath, options: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
         return NonClientBuiltinModel(
             resourceKey,
             NonClientBuiltinModelTemplate.SLAB_TOP,
@@ -72,11 +72,11 @@ class BlockModelProvider internal constructor(resourceKey: ResourceKey<Block>) :
                 NonClientBuiltinTextureSlot.SIDE to side,
                 NonClientBuiltinTextureSlot.BOTTOM to bottom
             ),
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 
-    fun slabBottom(top: TexturePath, side: TexturePath, bottom: TexturePath, callback: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
+    fun slabBottom(top: TexturePath, side: TexturePath, bottom: TexturePath, options: ModelOptions.() -> Unit = {}): NonClientBuiltinModel {
         return NonClientBuiltinModel(
             resourceKey,
             NonClientBuiltinModelTemplate.SLAB_BOTTOM,
@@ -85,16 +85,16 @@ class BlockModelProvider internal constructor(resourceKey: ResourceKey<Block>) :
                 NonClientBuiltinTextureSlot.SIDE to side,
                 NonClientBuiltinTextureSlot.BOTTOM to bottom
             ),
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 
-    fun fromParent(modelTemplate: Identifier, textureMapping: Map<String, TexturePath>, callback: ModelOptions.() -> Unit = {}): NonClientParentExtensionModel {
+    fun fromParent(modelTemplate: Identifier, textureMapping: Map<String, TexturePath>, options: ModelOptions.() -> Unit = {}): NonClientParentExtensionModel {
         return NonClientParentExtensionModel(
             resourceKey,
             modelTemplate,
             textureMapping,
-            ModelOptions(callback)
+            ModelOptions(options)
         )
     }
 }

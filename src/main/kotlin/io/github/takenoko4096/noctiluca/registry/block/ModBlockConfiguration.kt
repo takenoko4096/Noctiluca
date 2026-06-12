@@ -44,8 +44,8 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
 
     internal var itemProperties: Item.Properties? = null
 
-    private var constructor: CustomBlockConstructor = { behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeProvider, rotator ->
-        object : CustomBlock(behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeProvider, rotator) {
+    private var constructor: CustomBlockConstructor = { behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeBuilder, rotator ->
+        object : CustomBlock(behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeBuilder, rotator) {
             override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
                 initializeProperties(builder, blockStateProperties)
             }
