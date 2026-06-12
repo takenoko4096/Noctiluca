@@ -1,12 +1,5 @@
 package io.github.takenoko4096.noctiluca.datagen.providers
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
-import com.mojang.serialization.JsonOps
-import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.datagen.model.BlockModelVariantsRegistrar
 import io.github.takenoko4096.noctiluca.datagen.model.builder.ClientItemModelHandle
@@ -18,11 +11,7 @@ import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
-import net.minecraft.client.data.models.model.TextureSlot
 import net.minecraft.client.data.models.model.TexturedModel
-import net.minecraft.client.resources.model.sprite.Material
-import net.minecraft.resources.Identifier
-import java.util.function.Consumer
 
 class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: FabricPackOutput) : FabricModelProvider(output) {
     override fun generateBlockStateModels(blockModelGenerators: BlockModelGenerators) {
@@ -91,7 +80,7 @@ class NoctilucaModelProvider(private val mod: NoctilucaModInitializer, output: F
                 null -> {}
             }
 
-            val variants = accessor.blockModelVariants()
+            val variants = accessor.blockModel()
 
             val registrar = BlockModelVariantsRegistrar(
                 blockModelGenerators,

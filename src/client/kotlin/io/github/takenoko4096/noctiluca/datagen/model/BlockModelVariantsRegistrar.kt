@@ -1,16 +1,11 @@
 package io.github.takenoko4096.noctiluca.datagen.model
 
 import io.github.takenoko4096.noctiluca.datagen.model.builder.ClientItemModelHandle
-import io.github.takenoko4096.noctiluca.render.model.block.NonClientBlockModelVariant
-import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyDispatching
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants0
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants1
-import io.github.takenoko4096.noctiluca.render.model.block.PropertyVariants2
-import io.github.takenoko4096.noctiluca.render.model.block.multipart.CombinedPropertyCondition
-import io.github.takenoko4096.noctiluca.render.model.block.multipart.ConditionTerm
-import io.github.takenoko4096.noctiluca.render.model.block.multipart.MultiParts
-import io.github.takenoko4096.noctiluca.render.model.block.multipart.PropertyMultiPart
+import io.github.takenoko4096.noctiluca.render.model.block.*
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.NonClientCombinedCondition
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.NonClientSingleCondition
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.AbstractNonClientCondition
+import io.github.takenoko4096.noctiluca.render.model.block.multipart.NonClientMultiParts
 import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandle
 import net.minecraft.client.data.models.BlockModelGenerators
 import net.minecraft.client.data.models.ItemModelGenerators
@@ -19,12 +14,13 @@ import net.minecraft.client.data.models.blockstates.ConditionBuilder
 import net.minecraft.client.data.models.blockstates.MultiPartGenerator
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator
 import net.minecraft.client.data.models.blockstates.PropertyDispatch
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher
 import net.minecraft.client.renderer.block.dispatch.VariantMutator
+import net.minecraft.client.renderer.block.dispatch.multipart.CombinedCondition
 import net.minecraft.client.renderer.block.dispatch.multipart.Condition
-import net.minecraft.client.renderer.block.dispatch.multipart.KeyValueCondition
 import net.minecraft.data.BlockFamily
+import net.minecraft.util.random.WeightedList
 import net.minecraft.world.level.block.Block
-import java.util.Arrays
 
 class BlockModelVariantsRegistrar internal constructor(
     internal val blockModelGenerators: BlockModelGenerators,
@@ -92,40 +88,52 @@ class BlockModelVariantsRegistrar internal constructor(
         return empty.with(dispatch)
     }
 
-    private fun <T : Comparable<T>> toClientTerm(term: ConditionTerm<T>): ConditionBuilder {
-        return ConditionBuilder().term(
-            term.property,
-            term.cases.first(),
-            *term.firstExclusive
+    private fun toClient(condition: AbstractNonClientCondition): Condition = when (condition) {
+        is NonClientSingleCondition<*> -> toClientSingle(condition)
+        is NonClientCombinedCondition.And -> toClientAnd(condition)
+        is NonClientCombinedCondition.Or -> toClientOr(condition)
+    }
+
+    private fun <T : Comparable<T>> toClientSingle(term: NonClientSingleCondition<T>): Condition {
+        return ConditionBuilder()
+            .term(
+                term.property,
+                term.cases.first(),
+                *term.firstExclusive
+            )
+            .build()
+    }
+
+    private fun toClientAnd(and: NonClientCombinedCondition.And): Condition {
+        return CombinedCondition(
+            CombinedCondition.Operation.AND,
+            and.terms.map(::toClient)
         )
     }
 
-    private fun multiPart(multiParts: MultiParts) {
+    private fun toClientOr(or: NonClientCombinedCondition.Or): Condition {
+        return CombinedCondition(
+            CombinedCondition.Operation.OR,
+            or.terms.map(::toClient)
+        )
+    }
+
+    private fun multiPart(multiParts: NonClientMultiParts): MultiPartGenerator {
         val empty = MultiPartGenerator.multiPart(block)
 
-        for (part in multiParts.multiParts) {
-            if (part.`when` == null) {
-                for (variant in part.apply.map(::toClient)) {
-                    empty.with(variant)
-                }
+        for ((`when`, apply) in multiParts.multiParts) {
+            val variant = MultiVariant(WeightedList.of(apply.flatMap { toClient(it).variants.unwrap() }))
+
+            if (`when` == null) {
+                empty.with(variant)
             }
             else {
-                val terms = part.`when`!!.terms
-                for (condition in terms) {
-                    val builder = when (condition) {
-                        is CombinedPropertyCondition.And -> {
-
-                        }
-                        is CombinedPropertyCondition.Or -> {
-
-                        }
-                        is ConditionTerm<*> -> {
-                            toClientTerm(condition)
-                        }
-                    }
-                }
+                val condition = toClient(`when`)
+                empty.with(condition, variant)
             }
         }
+
+        return empty
     }
 
     internal fun register() {
@@ -142,6 +150,7 @@ class BlockModelVariantsRegistrar internal constructor(
             is PropertyVariants0 -> variants0(variants)
             is PropertyVariants1<*> -> variants1(variants)
             is PropertyVariants2<*, *> -> variants2(variants)
+            is NonClientMultiParts -> multiPart(variants)
             null -> {
                 if (family == null) {
                     throw IllegalStateException("cannot generate block family: maybe this is caused by both of models.block and withXX() is unset. please use one or the other")

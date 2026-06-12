@@ -651,6 +651,24 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
+        /*blockRegistry.register("fire_test") {
+            model {
+                block {
+                    multiPart(
+                        {
+                            apply()
+                        },
+                        {
+                            apply()
+                        },
+                        {
+                            apply()
+                        }
+                    )
+                }
+            }
+        }*/
+
         PortalType.register(
             identifierOf("aether"),
             Blocks.GLOWSTONE,

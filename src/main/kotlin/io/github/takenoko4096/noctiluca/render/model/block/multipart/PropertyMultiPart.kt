@@ -3,10 +3,10 @@ package io.github.takenoko4096.noctiluca.render.model.block.multipart
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientBlockModelVariant
 
-class PropertyMultiPart(val `when`: CombinedPropertyCondition?, val apply: List<NonClientBlockModelVariant>) {
+data class PropertyMultiPart(val `when`: NonClientCombinedCondition?, val apply: List<NonClientBlockModelVariant>) {
     @NoctilucaDsl
     class Builder internal constructor(callback: Builder.() -> Unit) {
-        private var `when`: CombinedPropertyCondition? = null
+        private var `when`: NonClientCombinedCondition? = null
 
         private var variants: List<NonClientBlockModelVariant> = listOf()
 
@@ -14,8 +14,8 @@ class PropertyMultiPart(val `when`: CombinedPropertyCondition?, val apply: List<
             callback()
         }
 
-        fun `when`(callback: CombinedPropertyCondition.Provider.() -> CombinedPropertyCondition) {
-            val provider = CombinedPropertyCondition.Provider()
+        fun `when`(callback: NonClientCombinedCondition.Provider.() -> NonClientCombinedCondition) {
+            val provider = NonClientCombinedCondition.Provider()
             `when` = provider.callback()
         }
 

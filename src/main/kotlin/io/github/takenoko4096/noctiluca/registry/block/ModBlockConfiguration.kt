@@ -276,7 +276,7 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
             return configuration.familyBuilder?.family
         }
 
-        fun blockModelVariants(): PropertyDispatching? {
+        fun blockModel(): PropertyDispatching? {
             return configuration.modelConfig?.blockModelConfig?.dispatching
         }
 

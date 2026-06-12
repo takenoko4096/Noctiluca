@@ -2,7 +2,7 @@ package io.github.takenoko4096.noctiluca.render.model.block.multipart
 
 import net.minecraft.world.level.block.state.properties.Property
 
-open class ConditionTerm<T : Comparable<T>>(val property: Property<T>, val cases: Array<T>, val not: Boolean) : ICondition {
+class NonClientSingleCondition<T : Comparable<T>>(val property: Property<T>, val cases: Array<T>, val not: Boolean) : AbstractNonClientCondition() {
     val firstExclusive: Array<T> = cases.copyOfRange(1, cases.size)
 
     init {
@@ -11,7 +11,7 @@ open class ConditionTerm<T : Comparable<T>>(val property: Property<T>, val cases
         }
     }
 
-    fun not(): ConditionTerm<T> {
-        return ConditionTerm(property, cases, !not)
+    fun not(): NonClientSingleCondition<T> {
+        return NonClientSingleCondition(property, cases, !not)
     }
 }
