@@ -1,7 +1,7 @@
 {
     "textures": {
-        "particle": "noctiluca:block/custom_portal",
-        "portal": "noctiluca:block/custom_portal"
+        "particle": "#portal",
+        "portal": "#portal"
     },
     "elements": [
         {

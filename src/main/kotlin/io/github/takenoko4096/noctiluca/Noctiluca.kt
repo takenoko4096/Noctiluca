@@ -653,7 +653,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
-        blockRegistry.registerUsingTemplate("fire", FireBlockTemplate {
+        blockRegistry.registerUsingTemplate("purple_fire", FireBlockTemplate {
             ambient { 
                 sound {
                     soundEvent = SoundEvents.FIRE_AMBIENT
@@ -665,6 +665,11 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             flammability {
                 setByUsingVanilla()
             }
+
+            texturePath0 = customFireTexturePath0
+            texturePath1 = customFireTexturePath1
+
+            color = RgbColor.LIGHT_PURPLE.withAlpha(255)
         })
 
         PortalType.register(

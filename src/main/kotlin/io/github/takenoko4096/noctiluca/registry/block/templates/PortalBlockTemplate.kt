@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.material.PushReaction
 
 @NoctilucaDsl
-class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTemplate() {
+class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTemplate<CustomPortalBlock>() {
     var color: ArgbColor = RgbColor.WHITE.withAlpha(255)
 
     var texturePath: TexturePath? = null
@@ -200,5 +200,4 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
             }
         }
     }
-
 }

@@ -22,8 +22,8 @@ class ModBlockRegistry(mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
         return block
     }
 
-    fun registerUsingTemplate(identifier: String, template: ModBlockTemplate): CustomPortalBlock {
-        return register(identifier, template.getConfigurator(mod.identifierOf(identifier))) as CustomPortalBlock
+    inline fun <reified T : Block> registerUsingTemplate(identifier: String, template: ModBlockTemplate<T>): T {
+        return register(identifier, template.getConfigurator(mod.identifierOf(identifier))) as T
     }
 
     fun getPropertiesOf(block: Block): Properties {

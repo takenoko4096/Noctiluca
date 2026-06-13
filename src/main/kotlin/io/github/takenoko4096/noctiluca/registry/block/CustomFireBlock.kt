@@ -10,11 +10,13 @@ import net.minecraft.core.Direction
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.util.RandomSource
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.LevelEvent
 import net.minecraft.world.level.block.TntBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty
 import net.minecraft.world.level.block.state.properties.IntegerProperty
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.VoxelShape
+import kotlin.math.max
 import kotlin.math.min
 
 abstract class CustomFireBlock(
@@ -60,6 +63,15 @@ abstract class CustomFireBlock(
         return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) || isValidFireLocation(level, pos)
     }
 
+    override fun spawnDestroyParticles(level: Level, player: Player, pos: BlockPos, state: BlockState) {}
+
+    override fun playerWillDestroy(level: Level, pos: BlockPos, state: BlockState, player: Player): BlockState {
+        if (!level.isClientSide) {
+            level.levelEvent(null, LevelEvent.SOUND_EXTINGUISH_FIRE, pos, 0)
+        }
+        return super.playerWillDestroy(level, pos, state, player)
+    }
+
     override fun onPlace(state: BlockState, level: Level, pos: BlockPos, oldState: BlockState, movedByPiston: Boolean) {
         run {
             if (level.isClientSide) return@run
@@ -93,6 +105,18 @@ abstract class CustomFireBlock(
         }
 
         return igniteOdds.getInt(state.block)
+    }
+
+    fun getIgniteOdds(level: LevelReader, pos: BlockPos): Int {
+        if (!level.isEmptyBlock(pos)) {
+            return 0
+        }
+        var odds = 0
+        for (direction in Direction.entries) {
+            val blockState = level.getBlockState(pos.relative(direction))
+            odds = max(getIgniteOdds(blockState), odds)
+        }
+        return odds
     }
 
     private fun getBurnOdds(state: BlockState): Int {

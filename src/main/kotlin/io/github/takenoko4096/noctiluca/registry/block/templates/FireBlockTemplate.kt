@@ -9,6 +9,8 @@ import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.render.model.NonClientModel
 import io.github.takenoko4096.noctiluca.render.model.block.BlockModelProvider
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
+import io.github.takenoko4096.noctiluca.text.ArgbColor
+import io.github.takenoko4096.noctiluca.text.RgbColor
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.resources.Identifier
@@ -25,11 +27,13 @@ import net.minecraft.world.phys.shapes.Shapes
 import kotlin.math.min
 
 @NoctilucaDsl
-class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTemplate() {
+class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTemplate<CustomFireBlock>() {
     var texturePath0: TexturePath? = null
     var texturePath1: TexturePath? = null
 
     var damage: Float = 1.0f
+
+    var color: ArgbColor = RgbColor.WHITE.withAlpha(255)
 
     private var ambient: AmbientConfiguration = AmbientConfiguration {}
 
@@ -50,42 +54,43 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
         callback()
     }
 
-    private fun getTexturePath(isZero: Boolean): TexturePath {
-        return if (isZero) (texturePath0 ?: customFireTexturePath0) else (texturePath1 ?: customFireTexturePath1)
+    private fun getTexturePath(defaultTexturePath: TexturePath, isZero: Boolean): TexturePath {
+        return if (isZero) (texturePath0 ?: (defaultTexturePath underscore 0.toString()))
+        else (texturePath1 ?: (defaultTexturePath underscore 1.toString()))
     }
 
-    private fun getSuffix(isZero: Boolean): String {
-        return if (isZero) 0.toString() else 1.toString()
+    private fun getSuffix(location: String, isZero: Boolean): String {
+        return location + '_' + if (isZero) 0.toString() else 1.toString()
     }
 
-    private fun model(location: String, models: BlockModelProvider, isZero: Boolean): NonClientModel {
+    private fun model(location: String, models: BlockModelProvider, defaultTexturePath: TexturePath, isZero: Boolean): NonClientModel {
         return models.fromParent(
             Noctiluca.identifierOf("block/custom_fire/$location"),
             mapOf(
-                "fire" to getTexturePath(isZero)
+                "fire" to getTexturePath(defaultTexturePath, isZero)
             ),
-            options = { suffix = this@FireBlockTemplate.getSuffix(isZero) }
+            options = { suffix = this@FireBlockTemplate.getSuffix(location, isZero) }
         )
     }
 
-    private fun floorModel(models: BlockModelProvider, isZero: Boolean): NonClientModel {
-        return model("floor", models, isZero)
+    private fun floorModel(models: BlockModelProvider, defaultTexturePath: TexturePath, isZero: Boolean): NonClientModel {
+        return model("floor", models, defaultTexturePath,  isZero)
     }
 
-    private fun sideModel(models: BlockModelProvider, isZero: Boolean): NonClientModel {
-        return model("side", models, isZero)
+    private fun sideModel(models: BlockModelProvider, defaultTexturePath: TexturePath, isZero: Boolean): NonClientModel {
+        return model("side", models, defaultTexturePath, isZero)
     }
 
-    private fun sideAltModel(models: BlockModelProvider, isZero: Boolean): NonClientModel {
-        return model("side_alt", models, isZero)
+    private fun sideAltModel(models: BlockModelProvider, defaultTexturePath: TexturePath, isZero: Boolean): NonClientModel {
+        return model("side_alt", models, defaultTexturePath, isZero)
     }
 
-    private fun upModel(models: BlockModelProvider, isZero: Boolean): NonClientModel {
-        return model("top", models, isZero)
+    private fun upModel(models: BlockModelProvider, defaultTexturePath: TexturePath, isZero: Boolean): NonClientModel {
+        return model("up", models, defaultTexturePath, isZero)
     }
 
-    private fun upAltModel(models: BlockModelProvider, isZero: Boolean): NonClientModel {
-        return model("top_alt", models, isZero)
+    private fun upAltModel(models: BlockModelProvider, defaultTexturePath: TexturePath, isZero: Boolean): NonClientModel {
+        return model("up_alt", models, defaultTexturePath, isZero)
     }
 
     private fun onAnimateTick(event: BlockEventsConfiguration.AnimateTickEvent) {
@@ -126,6 +131,8 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
                 }
                 return@block
             }
+
+            if (fireBlock.particleOptions == null) return@block
 
             if (fireBlock.canBurn(event.level.getBlockState(event.position.toBlockPos().west()))) {
                 i = 0
@@ -240,7 +247,7 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
                         rate += (yy - 1) * 100
                     }
                     testPos.setWithOffset(position.toBlockPos(), xx, yy, zz)
-                    val igniteOdds = fireBlock.getIgniteOdds(level.getBlockState(testPos))
+                    val igniteOdds = fireBlock.getIgniteOdds(level, testPos)
                     if (igniteOdds <= 0) continue
                     var odds = (igniteOdds + 40 + level.difficulty.id * 7) / (age + 30)
                     if (increasedBurnout) {
@@ -283,17 +290,22 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
         val west = properties.boolean("west")
         val up = properties.boolean("up")
 
+        val color = this@FireBlockTemplate.color
+        color {
+            default { color }
+        }
+
         model {
-            val floor0 = this@FireBlockTemplate.floorModel(blockModels, true).toVariant()
-            val floor1 = this@FireBlockTemplate.floorModel(blockModels, false).toVariant()
-            val side0 = this@FireBlockTemplate.sideModel(blockModels, true).toVariant()
-            val side1 = this@FireBlockTemplate.sideModel(blockModels, false).toVariant()
-            val sideAlt0 = this@FireBlockTemplate.sideAltModel(blockModels, true).toVariant()
-            val sideAlt1 = this@FireBlockTemplate.sideAltModel(blockModels, false).toVariant()
-            val up0 = this@FireBlockTemplate.upModel(blockModels, true).toVariant()
-            val up1 = this@FireBlockTemplate.upModel(blockModels, false).toVariant()
-            val upAlt0 = this@FireBlockTemplate.upAltModel(blockModels, true).toVariant()
-            val upAlt1 = this@FireBlockTemplate.upAltModel(blockModels, false).toVariant()
+            val floor0 = this@FireBlockTemplate.floorModel(blockModels, blockDefaultTexturePath, true).toVariant()
+            val floor1 = this@FireBlockTemplate.floorModel(blockModels, blockDefaultTexturePath, false).toVariant()
+            val side0 = this@FireBlockTemplate.sideModel(blockModels, blockDefaultTexturePath, true).toVariant()
+            val side1 = this@FireBlockTemplate.sideModel(blockModels, blockDefaultTexturePath, false).toVariant()
+            val sideAlt0 = this@FireBlockTemplate.sideAltModel(blockModels, blockDefaultTexturePath, true).toVariant()
+            val sideAlt1 = this@FireBlockTemplate.sideAltModel(blockModels, blockDefaultTexturePath, false).toVariant()
+            val up0 = this@FireBlockTemplate.upModel(blockModels, blockDefaultTexturePath, true).toVariant()
+            val up1 = this@FireBlockTemplate.upModel(blockModels, blockDefaultTexturePath, false).toVariant()
+            val upAlt0 = this@FireBlockTemplate.upAltModel(blockModels, blockDefaultTexturePath, true).toVariant()
+            val upAlt1 = this@FireBlockTemplate.upAltModel(blockModels, blockDefaultTexturePath, false).toVariant()
 
             block {
                 val noSides = multiPartConditions.and(
@@ -371,7 +383,7 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
             var shape = Shapes.empty()
             for ((direction, property) in fireBlock.directionalProperties) {
                 if (!blockState.getValue(property)) continue
-                shape = Shapes.or(shape, shapes[direction])
+                shape = Shapes.or(shape, shapes[direction]!!)
             }
 
             if (shape.isEmpty) xzSizedBox(16.0, 0.0..1.0, 16.0) else shape
@@ -433,11 +445,11 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
         }
 
         fun setByUsingVanilla() {
-            set(Blocks.OAK_PLANKS, 5, 20);
-            set(Blocks.SPRUCE_PLANKS, 5, 20);
-            set(Blocks.BIRCH_PLANKS, 5, 20);
-            set(Blocks.JUNGLE_PLANKS, 5, 20);
-            set(Blocks.ACACIA_PLANKS, 5, 20);
+            set(Blocks.OAK_PLANKS, 5, 20)
+            set(Blocks.SPRUCE_PLANKS, 5, 20)
+            set(Blocks.BIRCH_PLANKS, 5, 20)
+            set(Blocks.JUNGLE_PLANKS, 5, 20)
+            set(Blocks.ACACIA_PLANKS, 5, 20)
             set(Blocks.CHERRY_PLANKS, 5, 20)
             set(Blocks.DARK_OAK_PLANKS, 5, 20)
             set(Blocks.PALE_OAK_PLANKS, 5, 20)

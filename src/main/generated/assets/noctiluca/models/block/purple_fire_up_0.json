@@ -1,0 +1,6 @@
+{
+  "parent": "noctiluca:block/custom_fire/up",
+  "textures": {
+    "fire": "noctiluca:block/custom_fire_0"
+  }
+}

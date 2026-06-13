@@ -3,10 +3,11 @@ package io.github.takenoko4096.noctiluca.registry.block.templates
 import io.github.takenoko4096.noctiluca.registry.block.BlockPropertiesConfiguration
 import io.github.takenoko4096.noctiluca.registry.block.ModBlockConfiguration
 import net.minecraft.resources.Identifier
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.material.MapColor
 
-abstract class ModBlockTemplate {
+abstract class ModBlockTemplate<T : Block> {
     private var mapColor: ((BlockState) -> MapColor)? = null
 
     fun mapColor(callback: (BlockState) -> MapColor) {

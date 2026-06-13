@@ -13,7 +13,9 @@ class NonClientBlockModelMultiVariant(val variants: List<NonClientBlockModelVari
             return list.flatMap {
                 when (it) {
                     is NonClientBlockModelVariant -> listOf(it)
-                    is NonClientBlockModelMultiVariant -> it.variants
+                    is NonClientBlockModelMultiVariant -> it.variants.map { variant ->
+                        NonClientBlockModelVariant(variant.model, variant.mutators + it.mutators)
+                    }
                 }
             }
         }
