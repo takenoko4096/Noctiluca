@@ -1,5 +1,6 @@
 package io.github.takenoko4096.noctiluca.portal
 
+import io.github.takenoko4096.noctiluca.registry.block.CustomFireBlock
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.BaseFireBlock
 import net.minecraft.world.level.block.Block
@@ -28,6 +29,8 @@ sealed class PortalIgnitionSource<T : Any>(val source: T) {
         internal fun block(block: Block): SourceBlock = SourceBlock(block)
 
         fun <T : BaseFireBlock> fire(fire: T): SourceBlock = block(fire)
+
+        fun <T : CustomFireBlock> fire(fire: T): SourceBlock = block(fire)
 
         fun <T : LiquidBlock> liquid(liquid: LiquidBlock) = block(liquid)
 

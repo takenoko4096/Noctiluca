@@ -72,6 +72,13 @@ class BlockEventsConfiguration internal constructor() {
         ))
     }
 
+    fun tick(callback: TickEvent.() -> Unit) {
+        handlers.add(BlockEventHandler(
+            TickEvent::class,
+            callback
+        ))
+    }
+
     abstract class BlockEvent internal constructor() {}
 
     class BlockEventHandler<T : BlockEvent> internal constructor(
@@ -156,6 +163,13 @@ class BlockEventsConfiguration internal constructor() {
         val entity: Entity,
         val insideBlockEffectApplier: InsideBlockEffectApplier,
         val isPrecise: Boolean
+    ) : BlockEvent()
+
+    class TickEvent internal constructor(
+        val level: ServerLevel,
+        val position: Position3i,
+        val blockState: BlockState,
+        val randomSource: RandomSource
     ) : BlockEvent()
 
     internal fun build(): BlockEventDispatcher {

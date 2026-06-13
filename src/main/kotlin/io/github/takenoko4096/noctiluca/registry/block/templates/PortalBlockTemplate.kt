@@ -14,13 +14,8 @@ import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.render.model.block.NonClientVariantMutator
 import io.github.takenoko4096.noctiluca.text.ArgbColor
 import io.github.takenoko4096.noctiluca.text.RgbColor
-import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.resources.Identifier
-import net.minecraft.sounds.SoundEvent
-import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
-import net.minecraft.util.RandomSource
-import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.Rotation
@@ -56,9 +51,9 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
                 function1,
                 function2,
                 this@PortalBlockTemplate.color,
-                this@PortalBlockTemplate.ambient.soundEvent,
-                this@PortalBlockTemplate.ambient.sound.volume,
-                this@PortalBlockTemplate.ambient.sound.pitch,
+                this@PortalBlockTemplate.ambient.sound.soundEvent,
+                this@PortalBlockTemplate.ambient.sound.volume ?: { 0.5f },
+                this@PortalBlockTemplate.ambient.sound.pitch ?: { randomSource.nextFloat() * 0.4f + 0.8f },
                 this@PortalBlockTemplate.ambient.particle
             ) {
                 override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
@@ -206,46 +201,4 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
         }
     }
 
-    @NoctilucaDsl
-    class AmbientConfiguration internal constructor(callback: AmbientConfiguration.() -> Unit) {
-        internal var soundEvent = SoundEvents.EMPTY
-
-        internal var sound: SoundConfiguration = SoundConfiguration {}
-
-        var particle: ParticleOptions? = null
-
-        init {
-            callback()
-        }
-
-        fun sound(callback: SoundConfiguration.() -> Unit) {
-            sound = SoundConfiguration(callback)
-        }
-
-        @NoctilucaDsl
-        class SoundConfiguration internal constructor(callback: SoundConfiguration.() -> Unit) {
-            var soundEvent: SoundEvent = SoundEvents.EMPTY
-
-            internal var volume: SoundValueProvider.() -> Float = { 0.5f }
-
-            internal var pitch: SoundValueProvider.() -> Float = { randomSource.nextFloat() * 0.4f + 0.8f }
-
-            init {
-                callback()
-            }
-
-            fun volume(callback: SoundValueProvider.() -> Float) {
-                volume = callback
-            }
-
-            fun pitch(callback: SoundValueProvider.() -> Float) {
-                pitch = callback
-            }
-        }
-
-        @NoctilucaDsl
-        class SoundValueProvider internal constructor(val level: Level, val position: Position3i, val randomSource: RandomSource, callback: SoundValueProvider.() -> Float) {
-            internal val value = callback()
-        }
-    }
 }

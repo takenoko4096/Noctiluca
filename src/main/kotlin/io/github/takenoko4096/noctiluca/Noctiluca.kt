@@ -12,6 +12,7 @@ import io.github.takenoko4096.noctiluca.portal.PortalAccess
 import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.portal.CustomPortal
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource
+import io.github.takenoko4096.noctiluca.registry.block.templates.FireBlockTemplate
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
@@ -26,6 +27,7 @@ import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.core.particles.DustParticleOptions
+import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
@@ -651,23 +653,19 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
-        /*blockRegistry.register("fire_test") {
-            model {
-                block {
-                    multiPart(
-                        {
-                            apply()
-                        },
-                        {
-                            apply()
-                        },
-                        {
-                            apply()
-                        }
-                    )
+        blockRegistry.registerUsingTemplate("fire", FireBlockTemplate {
+            ambient { 
+                sound {
+                    soundEvent = SoundEvents.FIRE_AMBIENT
                 }
+
+                particle = ParticleTypes.LARGE_SMOKE
             }
-        }*/
+
+            flammability {
+                setByUsingVanilla()
+            }
+        })
 
         PortalType.register(
             identifierOf("aether"),

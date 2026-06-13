@@ -107,6 +107,13 @@ abstract class CustomBlock internal constructor(
         eventDispatcher.dispatch(BlockEventsConfiguration.AnimateTickEvent::class, event)
     }
 
+    override fun tick(state: BlockState, level: ServerLevel, pos: BlockPos, random: RandomSource) {
+        super.tick(state, level, pos, random)
+
+        val event = BlockEventsConfiguration.TickEvent(level, pos.toPosition3i(), state, random)
+        eventDispatcher.dispatch(BlockEventsConfiguration.TickEvent::class, event)
+    }
+
     override fun useItemOn(itemStack: ItemStack, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, interactionHand: InteractionHand, blockHitResult: BlockHitResult): InteractionResult {
         val event = BlockEventsConfiguration.InteractEvent(level, blockState, blockPos, player, blockHitResult, interactionHand, itemStack, InteractionResult.SUCCESS)
 

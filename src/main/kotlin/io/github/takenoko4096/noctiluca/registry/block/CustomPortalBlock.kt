@@ -4,8 +4,7 @@ import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
 import io.github.takenoko4096.noctiluca.portal.PortalType
-import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
-import io.github.takenoko4096.noctiluca.render.TexturePath
+import io.github.takenoko4096.noctiluca.registry.block.templates.AmbientConfiguration
 import io.github.takenoko4096.noctiluca.text.ArgbColor
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.ParticleOptions
@@ -34,8 +33,8 @@ abstract class CustomPortalBlock(
     rotator: ((BlockState, Rotation) -> BlockState)?,
     val color: ArgbColor,
     val ambientSoundEvent: SoundEvent,
-    val ambientVolumeProvider: PortalBlockTemplate.AmbientConfiguration.SoundValueProvider.() -> Float,
-    val ambientPitchProvider: PortalBlockTemplate.AmbientConfiguration.SoundValueProvider.() -> Float,
+    val ambientVolumeProvider: AmbientConfiguration.SoundValueProvider.() -> Float,
+    val ambientPitchProvider: AmbientConfiguration.SoundValueProvider.() -> Float,
     val particleOptions: ParticleOptions?
 ) : CustomBlock(behaviourProperties, blockStateProperties, blockEventDispatcher, voxelShapeProvider, rotator), Portal {
     fun getPortalAxisProperty(): Property<PortalAxis> {
