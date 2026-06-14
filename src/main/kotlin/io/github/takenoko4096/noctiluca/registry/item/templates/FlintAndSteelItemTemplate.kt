@@ -31,18 +31,12 @@ import net.minecraft.world.level.gameevent.GameEvent
 class FlintAndSteelItemTemplate(callback: FlintAndSteelItemTemplate.() -> Unit) : ModItemTemplate<CustomItem>() {
     var durability: Int? = null
 
-    private var model: (ModItemConfiguration.ItemModelConfiguration.() -> Unit)? = null
-
     private var fire: Block = Blocks.FIRE
 
     private var sound: ModBlockTemplate.AmbientConfiguration.SoundConfiguration = ModBlockTemplate.AmbientConfiguration.SoundConfiguration {}
 
     init {
         callback()
-    }
-
-    fun model(callback: ModItemConfiguration.ItemModelConfiguration.() -> Unit) {
-        model = callback
     }
 
     fun fire(block: Block) {
@@ -161,6 +155,8 @@ class FlintAndSteelItemTemplate(callback: FlintAndSteelItemTemplate.() -> Unit) 
         events {
             onUseOn(this@FlintAndSteelItemTemplate::useOn)
         }
+
+        translation(this@FlintAndSteelItemTemplate.translation)
     }
 
     interface FireBlockStateGettable {

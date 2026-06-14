@@ -20,10 +20,6 @@ abstract class CustomItem(properties: Properties, private val eventDispatcher: I
     }
 
     override fun useOn(context: UseOnContext): InteractionResult {
-        if (context.level.isClientSide) {
-            return InteractionResult.PASS
-        }
-
         val event = ItemEventsConfiguration.InteractBlockEvent(context, null)
         eventDispatcher.dispatch(ItemEventsConfiguration.InteractBlockEvent::class, event)
 

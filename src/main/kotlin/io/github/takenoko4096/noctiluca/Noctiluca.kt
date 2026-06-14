@@ -745,6 +745,10 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             sound {
                 soundEvent = SoundEvents.FIRECHARGE_USE
             }
+
+            translation {
+                enUs = "Purple Flint And Steel"
+            }
         })
     }
 }
