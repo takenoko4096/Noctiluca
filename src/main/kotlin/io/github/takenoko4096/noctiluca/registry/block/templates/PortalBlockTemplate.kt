@@ -69,6 +69,7 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
             collision = false
             pushReaction = PushReaction.DESTROY
             isReplaceable = true
+            lightLevel { 15 }
         }
 
         val properties = blockStates {

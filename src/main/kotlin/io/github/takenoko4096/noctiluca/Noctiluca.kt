@@ -14,6 +14,7 @@ import io.github.takenoko4096.noctiluca.portal.CustomPortal
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource
 import io.github.takenoko4096.noctiluca.registry.block.templates.FireBlockTemplate
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
+import io.github.takenoko4096.noctiluca.registry.item.templates.FlintAndSteelItemTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import io.github.takenoko4096.noctiluca.text.component
@@ -727,5 +728,23 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                 }
             }
         }
+
+        itemRegistry.registerUsingTemplate("purple_flint_and_steel", FlintAndSteelItemTemplate {
+            durability = 64
+
+            model {
+                val model = itemModels.generated(TexturePath.minecraft("item/flint_and_steel"))
+
+                handling {
+                    use(model, RgbColor.DARK_PURPLE.withAlpha(255))
+                }
+            }
+
+            fire(purpleFireBlock)
+
+            sound {
+                soundEvent = SoundEvents.FIRECHARGE_USE
+            }
+        })
     }
 }

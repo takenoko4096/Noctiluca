@@ -2,6 +2,7 @@ package io.github.takenoko4096.noctiluca.registry.item
 
 import io.github.takenoko4096.noctiluca.NoctilucaModInitializer
 import io.github.takenoko4096.noctiluca.registry.StarlightRegistry
+import io.github.takenoko4096.noctiluca.registry.item.templates.ModItemTemplate
 import net.minecraft.resources.ResourceKey
 import net.minecraft.world.item.Item
 import kotlin.collections.set
@@ -18,6 +19,10 @@ class ModItemRegistry(mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
         configurations.add(o)
         items[o.itemResourceKey] = item
         return item
+    }
+
+    inline fun <reified T : CustomItem> registerUsingTemplate(identifier: String, template: ModItemTemplate<T>): T {
+        return register(identifier, template.getConfigurator(mod.identifierOf(identifier))) as T
     }
 
     fun getItem(resourceKey: ResourceKey<Item>): Item {

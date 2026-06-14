@@ -7,6 +7,7 @@ import io.github.takenoko4096.noctiluca.render.model.item.builder.rangedispatch.
 import io.github.takenoko4096.noctiluca.render.model.item.builder.rangedispatch.RangeDispatchEntry
 import io.github.takenoko4096.noctiluca.render.model.item.builder.select.Select
 import io.github.takenoko4096.noctiluca.render.model.item.builder.select.SelectCase
+import io.github.takenoko4096.noctiluca.text.ArgbColor
 
 @NoctilucaDsl
 class ItemModelBuilder internal constructor(callback: ItemModelBuilder.() -> Unit) {
@@ -31,8 +32,8 @@ class ItemModelBuilder internal constructor(callback: ItemModelBuilder.() -> Uni
         handle = rangeDispatch
     }
 
-    fun use(model: NonClientModel) {
-        handle = End(model)
+    fun use(model: NonClientModel, vararg colors: ArgbColor) {
+        handle = End(model, colors.toList())
     }
 
     fun build(): ItemModelHandle {

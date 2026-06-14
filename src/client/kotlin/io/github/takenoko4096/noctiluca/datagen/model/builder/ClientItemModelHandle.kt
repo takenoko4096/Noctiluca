@@ -9,6 +9,8 @@ import io.github.takenoko4096.noctiluca.render.model.item.builder.ItemModelHandl
 import io.github.takenoko4096.noctiluca.render.model.item.builder.condition.Condition
 import io.github.takenoko4096.noctiluca.render.model.item.builder.rangedispatch.RangeDispatch
 import io.github.takenoko4096.noctiluca.render.model.item.builder.select.Select
+import io.github.takenoko4096.noctiluca.text.ArgbColor
+import net.minecraft.client.color.item.Constant
 import net.minecraft.client.data.models.ItemModelGenerators
 import net.minecraft.client.data.models.model.ItemModelUtils
 import net.minecraft.client.renderer.item.ItemModel
@@ -24,7 +26,7 @@ abstract class ClientItemModelHandle internal constructor(
     class ClientEnd(itemModelGenerators: ItemModelGenerators, item: Item, private val end: End) : ClientItemModelHandle(itemModelGenerators, item, end) {
         override fun convert(): ItemModel.Unbaked {
             val model = ClientModel.getOrCreate(item, end.model, itemModelGenerators)
-            return ItemModelUtils.plainModel(model.identifier)
+            return ItemModelUtils.tintedModel(model.identifier, *end.staticColors.map { Constant(it.argbValue) }.toTypedArray())
         }
     }
 
@@ -34,7 +36,7 @@ abstract class ClientItemModelHandle internal constructor(
             is Select<*> -> ClientSelect.toClientSelect(itemModelGenerators, item, handle)
             is Condition<*> -> ClientCondition.toClientCondition(itemModelGenerators, item, handle)
             is RangeDispatch<*> -> ClientRangeDispatch.toClientRangeDispatch(itemModelGenerators, item, handle)
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException("NEVER HAPPENS")
         }
 
         fun registerModel(itemModelGenerators: ItemModelGenerators, item: Item, handle: ItemModelHandle) {

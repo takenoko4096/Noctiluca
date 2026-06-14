@@ -2,7 +2,9 @@ package io.github.takenoko4096.noctiluca.registry.item
 
 import io.github.takenoko4096.noctiluca.NoctilucaDsl
 import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.Level
 import kotlin.reflect.KClass
 
@@ -13,6 +15,13 @@ class ItemEventsConfiguration internal constructor() {
     fun onUse(callback: InteractEvent.() -> Unit) {
         handlers.add(ItemEventHandler(
             InteractEvent::class,
+            callback
+        ))
+    }
+
+    fun onUseOn(callback: InteractBlockEvent.() -> Unit) {
+        handlers.add(ItemEventHandler(
+            InteractBlockEvent::class,
             callback
         ))
     }
@@ -34,10 +43,14 @@ class ItemEventsConfiguration internal constructor() {
     class InteractEvent internal constructor(
         val level: Level,
         val player: Player,
-        val hand: InteractionHand
-    ) : ItemEvent() {
+        val hand: InteractionHand,
+        var interactionResult: InteractionResult?
+    ) : ItemEvent()
 
-    }
+    class InteractBlockEvent internal constructor(
+        val useOnContext: UseOnContext,
+        var interactionResult: InteractionResult?
+    ) : ItemEvent()
 
     internal fun build(): ItemEventDispatcher {
         return ItemEventDispatcher(handlers.toSet())

@@ -2,7 +2,7 @@ package io.github.takenoko4096.noctiluca.registry.block
 
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource.Companion.block
 import io.github.takenoko4096.noctiluca.portal.PortalType.Companion.getIgnitablePortal
-import io.github.takenoko4096.noctiluca.registry.block.templates.AmbientConfiguration
+import io.github.takenoko4096.noctiluca.registry.block.templates.ModBlockTemplate.AmbientConfiguration
 import it.unimi.dsi.fastutil.objects.Object2IntMap
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import net.minecraft.core.BlockPos
@@ -16,7 +16,6 @@ import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.FireBlock
 import net.minecraft.world.level.block.LevelEvent
 import net.minecraft.world.level.block.TntBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
@@ -132,7 +131,7 @@ abstract class CustomFireBlock(
         return getBlockStateAt(context.level, context.clickedPos)
     }
 
-    private fun getBlockStateAt(level: BlockGetter, pos: BlockPos): BlockState {
+    internal fun getBlockStateAt(level: BlockGetter, pos: BlockPos): BlockState {
         val below = pos.below()
         val belowState = level.getBlockState(below)
         if (canBurn(belowState) || belowState.isFaceSturdy(level, below, Direction.UP)) {

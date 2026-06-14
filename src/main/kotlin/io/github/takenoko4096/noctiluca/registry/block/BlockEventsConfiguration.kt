@@ -131,10 +131,8 @@ class BlockEventsConfiguration internal constructor() {
         val blockHitResult: BlockHitResult,
         val interactionHand: InteractionHand,
         val itemStack: ItemStack?,
-        internal var interactionResult: InteractionResult
-    ) : BlockEvent() {
-
-    }
+        var interactionResult: InteractionResult
+    ) : BlockEvent()
 
     class UpdateEvent internal constructor(
         val level: Level,

@@ -6,7 +6,8 @@
         "ServerCommonPacketListenerImplMixin",
         "ServerGamePacketListenerImplMixin",
         "LiquidBlockMixin",
-        "BaseFireBlockMixin"
+        "BaseFireBlockMixin",
+        "LevelMixin"
     ],
     "injectors": {
         "defaultRequire": 1

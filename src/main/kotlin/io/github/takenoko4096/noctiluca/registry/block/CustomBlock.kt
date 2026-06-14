@@ -115,7 +115,7 @@ abstract class CustomBlock internal constructor(
     }
 
     override fun useItemOn(itemStack: ItemStack, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, interactionHand: InteractionHand, blockHitResult: BlockHitResult): InteractionResult {
-        val event = BlockEventsConfiguration.InteractEvent(level, blockState, blockPos, player, blockHitResult, interactionHand, itemStack, InteractionResult.SUCCESS)
+        val event = BlockEventsConfiguration.InteractEvent(level, blockState, blockPos, player, blockHitResult, interactionHand, itemStack, InteractionResult.TRY_WITH_EMPTY_HAND)
 
         eventDispatcher.dispatch(BlockEventsConfiguration.InteractEvent::class, event)
 
@@ -123,7 +123,7 @@ abstract class CustomBlock internal constructor(
     }
 
     override fun useWithoutItem(blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, blockHitResult: BlockHitResult): InteractionResult {
-        val event = BlockEventsConfiguration.InteractEvent(level, blockState, blockPos, player, blockHitResult, InteractionHand.MAIN_HAND, null, InteractionResult.SUCCESS)
+        val event = BlockEventsConfiguration.InteractEvent(level, blockState, blockPos, player, blockHitResult, InteractionHand.MAIN_HAND, null, InteractionResult.PASS)
 
         eventDispatcher.dispatch(BlockEventsConfiguration.InteractEvent::class, event)
 

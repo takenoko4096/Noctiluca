@@ -4,7 +4,7 @@ import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.toPosition3i
 import io.github.takenoko4096.noctiluca.portal.PortalAxis
 import io.github.takenoko4096.noctiluca.portal.PortalType
-import io.github.takenoko4096.noctiluca.registry.block.templates.AmbientConfiguration
+import io.github.takenoko4096.noctiluca.registry.block.templates.ModBlockTemplate.AmbientConfiguration
 import io.github.takenoko4096.noctiluca.text.ArgbColor
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.ParticleOptions
