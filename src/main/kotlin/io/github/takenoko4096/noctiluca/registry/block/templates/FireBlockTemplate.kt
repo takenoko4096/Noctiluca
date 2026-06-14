@@ -396,7 +396,9 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
                 finalBlockState = if (fireBlock.canSurvive(blockState, level, blockPos)) {
                     fireBlock.getStateWithAge(level, blockPos, blockState.getValue(fireBlock.getAgeProperty()))
                 }
-                else Blocks.AIR.defaultBlockState()
+                else {
+                    Blocks.AIR.defaultBlockState()
+                }
             }
 
             onEntityInsideBlock {

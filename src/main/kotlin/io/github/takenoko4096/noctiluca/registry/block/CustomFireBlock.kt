@@ -16,6 +16,7 @@ import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.FireBlock
 import net.minecraft.world.level.block.LevelEvent
 import net.minecraft.world.level.block.TntBlock
 import net.minecraft.world.level.block.state.BlockBehaviour
@@ -87,7 +88,7 @@ abstract class CustomFireBlock(
         level.scheduleTick(pos, this, 30 + level.random.nextInt(10))
     }
 
-    fun isValidFireLocation(level: BlockGetter, pos: BlockPos): Boolean {
+    internal fun isValidFireLocation(level: BlockGetter, pos: BlockPos): Boolean {
         for (direction in Direction.entries) {
             if (!canBurn(level.getBlockState(pos.relative(direction)))) continue
             return true
@@ -95,11 +96,11 @@ abstract class CustomFireBlock(
         return false
     }
 
-    fun canBurn(blockState: BlockState): Boolean {
+    internal fun canBurn(blockState: BlockState): Boolean {
         return getIgniteOdds(blockState) > 0
     }
 
-    fun getIgniteOdds(state: BlockState): Int {
+    private fun getIgniteOdds(state: BlockState): Int {
         if (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)) {
             return 0
         }
@@ -107,7 +108,7 @@ abstract class CustomFireBlock(
         return igniteOdds.getInt(state.block)
     }
 
-    fun getIgniteOdds(level: LevelReader, pos: BlockPos): Int {
+    internal fun getIgniteOdds(level: LevelReader, pos: BlockPos): Int {
         if (!level.isEmptyBlock(pos)) {
             return 0
         }
@@ -131,7 +132,7 @@ abstract class CustomFireBlock(
         return getBlockStateAt(context.level, context.clickedPos)
     }
 
-    fun getBlockStateAt(level: BlockGetter, pos: BlockPos): BlockState {
+    private fun getBlockStateAt(level: BlockGetter, pos: BlockPos): BlockState {
         val below = pos.below()
         val belowState = level.getBlockState(below)
         if (canBurn(belowState) || belowState.isFaceSturdy(level, below, Direction.UP)) {
@@ -146,13 +147,13 @@ abstract class CustomFireBlock(
         return result
     }
 
-    fun getStateWithAge(level: LevelReader, pos: BlockPos, age: Int): BlockState {
+    internal fun getStateWithAge(level: LevelReader, pos: BlockPos, age: Int): BlockState {
         val state = getBlockStateAt(level, pos)
         state.setValue(getAgeProperty(), age)
         return state
     }
 
-    fun isNearRain(level: Level, testPos: BlockPos): Boolean {
+    internal fun isNearRain(level: Level, testPos: BlockPos): Boolean {
         return level.isRainingAt(testPos)
             || level.isRainingAt(testPos.west())
             || level.isRainingAt(testPos.east())
@@ -160,7 +161,7 @@ abstract class CustomFireBlock(
             || level.isRainingAt(testPos.south())
     }
 
-    fun checkBurnOut(level: Level, pos: BlockPos, chance: Int, random: RandomSource, age: Int) {
+    internal fun checkBurnOut(level: Level, pos: BlockPos, chance: Int, random: RandomSource, age: Int) {
         val odds = getBurnOdds(level.getBlockState(pos))
         if (random.nextInt(chance) < odds) {
             val oldState = level.getBlockState(pos)

@@ -653,7 +653,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
-        blockRegistry.registerUsingTemplate("purple_fire", FireBlockTemplate {
+        val purpleFireBlock = blockRegistry.registerUsingTemplate("purple_fire", FireBlockTemplate {
             ambient { 
                 sound {
                     soundEvent = SoundEvents.FIRE_AMBIENT
@@ -677,6 +677,29 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             Blocks.GLOWSTONE,
             aetherPortalBlock,
             setOf(PortalIgnitionSource.WATER),
+            Level.OVERWORLD,
+            ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
+        )
+
+        val purplePortalBlock = blockRegistry.registerUsingTemplate("purple_portal", PortalBlockTemplate {
+            ambient {
+                sound {
+                    soundEvent = SoundEvents.PORTAL_AMBIENT
+                }
+
+                particle = DustParticleOptions(RgbColor.LIGHT_PURPLE.withAlpha(255).argbValue, 0.5f)
+            }
+
+            color = RgbColor.LIGHT_PURPLE.withAlpha(255)
+
+            texturePath = customPortalTexturePath
+        })
+
+        PortalType.register(
+            identifierOf("purple"),
+            Blocks.AMETHYST_BLOCK,
+            purplePortalBlock,
+            setOf(PortalIgnitionSource.fire(purpleFireBlock)),
             Level.OVERWORLD,
             ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )
