@@ -3,11 +3,19 @@ package io.github.takenoko4096.noctiluca.portal
 import io.github.takenoko4096.noctiluca.Noctiluca
 import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.math.Vector3d
+import io.github.takenoko4096.noctiluca.math.toOffset
+import io.github.takenoko4096.noctiluca.math.toPosition3i
+import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.portal.TeleportTransition
+import net.minecraft.world.phys.BlockHitResult
 
 class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, val axis: PortalAxis, val innerWidth: Int, val innerHeight: Int, val type: PortalType) {
     val frameInclusiveWidth = innerWidth + 2
@@ -224,7 +232,7 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
             )
         }
 
-        updatePortalAccessStorage(level) {
+        updatePortalStorage(level) {
             it.add(toAccess())
         }
 
@@ -234,7 +242,18 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
     companion object {
         const val PORTAL_SEARCH_DISTANCE = 24
 
-        fun ignitePortal(level: Level, position: Position3i, frameBlockState: BlockState, source: PortalIgnitionSource<*>): Boolean {
+        internal fun onUseItemOnBlock(itemStack: ItemStack, blockState: BlockState, level: Level, blockPos: BlockPos, player: Player, hand: InteractionHand, blockHitResult: BlockHitResult): InteractionResult? {
+            val position = blockPos.toPosition3i() + blockHitResult.direction.toOffset()
+            val item = itemStack.item
+            val successful = ignitePortal(level, position, blockState, PortalIgnitionSource.item(item))
+            if (successful) {
+                itemStack.consume(1, player)
+                return InteractionResult.SUCCESS
+            }
+            else return null
+        }
+
+        private fun ignitePortal(level: Level, position: Position3i, frameBlockState: BlockState, source: PortalIgnitionSource<*>): Boolean {
             val portalType = PortalType.getByFrameBlock(frameBlockState.block) ?: return false
 
             val portal: CustomPortal = portalType.portalFinder.findPortal(level, position, CustomPortal::isIgnitable)
@@ -243,7 +262,7 @@ class CustomPortal(val level: BlockGetter, val innerBottomLeftPos: Position3i, v
             return portal.ignite(level, source)
         }
 
-        internal fun updatePortalAccessStorage(level: Level, callback: (MutableList<PortalAccess>) -> Unit) {
+        internal fun updatePortalStorage(level: Level, callback: (MutableList<PortalAccess>) -> Unit) {
             val attachments = level.globalAttachments()
             val attached = attachments.getAttachedOrElse(Noctiluca.PORTAL_ACCESSES, mapOf()).toMutableMap()
 

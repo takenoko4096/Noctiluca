@@ -97,7 +97,7 @@ class PortalBlockTemplate(callback: PortalBlockTemplate.() -> Unit) : ModBlockTe
 
                     val targetPos = blockPos.toPosition3i()
 
-                    CustomPortal.updatePortalAccessStorage(level) {
+                    CustomPortal.updatePortalStorage(level) {
                         val cpy = it.toList()
 
                         for (access in cpy) {

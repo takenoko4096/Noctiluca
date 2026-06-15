@@ -1,10 +1,6 @@
 package io.github.takenoko4096.noctiluca
 
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
-import io.github.takenoko4096.noctiluca.container.PackSavable
-import io.github.takenoko4096.noctiluca.math.toOffset
-import io.github.takenoko4096.noctiluca.math.toPosition3i
-import io.github.takenoko4096.noctiluca.nbt.NbtSerializer
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
@@ -17,10 +13,6 @@ import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemp
 import io.github.takenoko4096.noctiluca.registry.item.templates.FlintAndSteelItemTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
-import io.github.takenoko4096.noctiluca.text.component
-import io.github.takenoko4096.noctiluca.ui.container.ContainerInteraction
-import io.github.takenoko4096.noctiluca.ui.container.ItemButton
-import io.github.takenoko4096.noctiluca.ui.dialog.DynamicDialogHolder
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -33,8 +25,6 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 
@@ -42,29 +32,10 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
     private fun initializeSystem() {
         PayloadTypeRegistry.serverboundPlay().register(ServerboundDialogEscapePayload.TYPE, ServerboundDialogEscapePayload.CODEC)
         PayloadTypeRegistry.serverboundPlay().register(ServerboundDialogClosePayload.TYPE, ServerboundDialogClosePayload.CODEC)
-
-        ServerPlayNetworking.registerGlobalReceiver(
-            ServerboundDialogEscapePayload.TYPE,
-            ServerboundCustomPacketPayloadReceiver::escapeDialogPayload
-        )
-
-        ServerPlayNetworking.registerGlobalReceiver(
-            ServerboundDialogClosePayload.TYPE,
-            ServerboundCustomPacketPayloadReceiver::closeDialogPayload
-        )
-
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundDialogEscapePayload.TYPE, ServerboundCustomPacketPayloadReceiver::escapeDialogPayload)
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundDialogClosePayload.TYPE, ServerboundCustomPacketPayloadReceiver::closeDialogPayload)
         ServerPlayerEvents.LEAVE.register(CustomContainerMenu::remove)
-
-        BlockEvents.USE_ITEM_ON.register { itemStack, blockState, level, blockPos, player, _, result ->
-            val position = blockPos.toPosition3i() + result.direction.toOffset()
-            val item = itemStack.item
-            val successful = CustomPortal.ignitePortal(level, position, blockState, PortalIgnitionSource.item(item))
-            if (successful) {
-                itemStack.consume(1, player)
-                return@register InteractionResult.SUCCESS
-            }
-            else return@register null
-        }
+        BlockEvents.USE_ITEM_ON.register(CustomPortal::onUseItemOnBlock)
     }
 
     val PORTAL_ACCESSES: AttachmentType<Map<Identifier, List<PortalAccess>>> = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.DIMENSIONS_CODEC)
@@ -251,391 +222,19 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             }
         }
 
-        val interaction = ContainerInteraction {
-            title {
-                text("container interaction test")
-            }
+        debugger("custom_portals") {
+            val attachments = context.source.level.globalAttachments()
+            val dimensions = attachments.getAttachedOrElse(PORTAL_ACCESSES, mapOf())
 
-            onClose {
-                player.sendSystemMessage(component {
-                    text("container interaction closed")
-                })
-            }
-
-            contents(6) {
-                val decoration = ItemButton.of(Items.BLUE_STAINED_GLASS_PANE) {
-                    components {
-                        tooltipDisplay {
-                            hideTooltip = true
-                        }
-
-                        enchantmentGlintOverride(true)
-                    }
-                }
-
-                fillHorizontally(0, decoration)
-                fillHorizontally(lastRowIndex(), decoration)
-                fillVertically(0, decoration)
-                fillVertically(lastColumnIndex(), decoration)
-
-                put(indexAt(horizontalCenterIndex(), 1), ItemButton.of(Items.BOOK) {
-                    components {
-                        itemName {
-                            text("test")
-                        }
-
-                        enchantmentGlintOverride(true)
-                    }
-
-                    onClick {
-                        player.sendSystemMessage(component {
-                            text("test message")
-                        })
-                    }
-                })
-            }
-        }
-
-        debugger("container_interaction") {
-            context.source.player?.run {
-                interaction.open(this)
-            }
-        }
-
-        debugger("custom_container_menu_count") {
             context.successful {
-                text(CustomContainerMenu.menus.size.toString())
-            }
-        }
-
-        val c = DynamicDialogHolder.confirmation {
-            body {
-                message {
-                    contents {
-                        text("confirmation test")
-                    }
+                for ((dimensionId, accessList) in dimensions) {
+                    text(dimensionId.toString())
+                    text(':')
+                    space()
+                    text(accessList.joinToString(", ") { it.toString() })
+                    linebreak()
                 }
-
-                item(Items.STONE, 16) {
-                    description {
-                        contents {
-                            text("stone")
-                        }
-                    }
-
-                    components {
-                        enchantmentGlintOverride(true)
-                    }
-                }
-            }
-
-            yes {
-                label {
-                    text("yes")
-                }
-
-                onClick {
-                    player.sendSystemMessage(component {
-                        text("pressed: yes")
-                    })
-
-                    response.run {
-                        player.sendSystemMessage(component {
-                            text(this@run.toString())
-                        })
-                    }
-                }
-            }
-
-            no {
-                label {
-                    text("no")
-                }
-
-                onClick {
-                    player.sendSystemMessage(component {
-                        text("pressed: no")
-                    })
-
-                    response.run {
-                        player.sendSystemMessage(component {
-                            text(this@run.toString())
-                        })
-                    }
-                }
-            }
-
-            onEscape {
-                player.sendSystemMessage(component {
-                    text("escape")
-                })
-            }
-
-            onClose {
-                player.sendSystemMessage(component {
-                    text("close")
-                })
-            }
-
-            inputs {
-                checkBox("foo") {
-                    label {
-                        text("check box foo")
-                    }
-
-                    initial = false
-                }
-
-                option("bar") {
-                    initial = "a"
-
-                    label {
-                        text("a or b")
-                    }
-
-                    entries {
-                        entry("a") {
-                            text("A!")
-                        }
-
-                        entry("b") {
-                            text("B!")
-                        }
-                    }
-                }
-            }
-        }
-
-        val n = DynamicDialogHolder.notice {
-            body {
-                message {
-                    contents {
-                        text("notice test")
-                    }
-                }
-            }
-
-            action {
-                label {
-                    text("action")
-                }
-
-                tooltip {
-                    text("tooltip")
-                }
-
-                onClick {
-                    player.sendSystemMessage(component {
-                        text("action clicked")
-                    })
-                }
-            }
-
-            onEscape {
-                player.sendSystemMessage(component {
-                    text("escape")
-                })
-            }
-
-            onClose {
-                player.sendSystemMessage(component {
-                    text("close")
-                })
-            }
-        }
-
-        val m = DynamicDialogHolder.multiAction {
-            name {
-                text("multi action dialog test")
-            }
-
-            body {
-                message {
-                    contents {
-                        text("plain message test")
-                    }
-                }
-
-                item(Items.DIAMOND) {
-                    description {
-                        contents {
-                            text("item icon test")
-                        }
-                    }
-
-                    components {
-                        enchantmentGlintOverride(true)
-                    }
-                }
-            }
-
-            inputs {
-                checkBox("check_box") {
-                    label {
-                        text("check box test")
-                    }
-
-                    initial = false
-                }
-
-                option("option") {
-                    label {
-                        text("option test")
-                    }
-
-                    initial = "apple"
-
-                    entries {
-                        entry("apple") {
-                            text("apple")
-                        }
-
-                        entry("banana") {
-                            text("banana")
-                        }
-
-                        entry("grape") {
-                            text("grape")
-                        }
-                    }
-                }
-
-                slider("slider") {
-                    label {
-                        text("slider test")
-                    }
-
-                    initial = 0f
-
-                    range = -50f..50f
-
-                    step = 1f
-
-                    format = "$labelTemplate is: $valueTemplate"
-                }
-
-                textField("text_field") {
-                    label {
-                        text("text field test")
-                    }
-
-                    initial = "initial text"
-
-                    maxLength = 128
-
-                    multilines(maxLines = 6, height = null)
-                }
-            }
-
-            actions {
-                action {
-                    label {
-                        text("action test 1")
-                    }
-
-                    tooltip {
-                        text("tooltip test 1")
-                    }
-
-                    onClick {
-                        player.sendSystemMessage(component { text("1") })
-                        player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
-                    }
-                }
-
-                action {
-                    label {
-                        text("action test 2")
-                    }
-
-                    tooltip {
-                        text("tooltip test 2")
-                    }
-
-                    onClick {
-                        player.sendSystemMessage(component { text("2") })
-                        player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
-                    }
-                }
-
-                action {
-                    label {
-                        text("action test 3")
-                    }
-
-                    tooltip {
-                        text("tooltip test 3")
-                    }
-
-                    onClick {
-                        player.sendSystemMessage(component { text("3") })
-                        player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
-                    }
-                }
-            }
-
-            exitAction {
-                label {
-                    text("exit action test")
-                }
-
-                tooltip {
-                    text("exit action tooltip test")
-                }
-
-                onClick {
-                    player.sendSystemMessage(component { text("exit") })
-                    player.sendSystemMessage(NbtSerializer.serialize(response.toCompound()))
-                }
-            }
-
-            onEscape {
-                player.sendSystemMessage(component {
-                    text("escape: ")
-                    response.string("a")
-                    component(NbtSerializer.serialize(response.toCompound()))
-                })
-            }
-
-            onClose {
-                player.sendSystemMessage(component {
-                    text("close: ")
-                    component(NbtSerializer.serialize(response.toCompound()))
-                })
-            }
-        }
-
-        val packSavable = PackSavable(
-            component {
-                text("pack savable")
-            },
-            3,
-            onUpdate = {
-                getSerializedContents()
-            }
-        )
-
-        debugger("pack_savable") {
-            context.source.player?.run {
-                packSavable.openPack(this)
-            }
-        }
-
-        debugger("confirmation_dialog") {
-            context.source.player?.run {
-                c.buildOpen(this)
-            }
-        }
-
-        debugger("notice_dialog") {
-            context.source.player?.run {
-                n.buildOpen(this)
-            }
-        }
-
-        debugger("multi_action_dialog") {
-            context.source.player?.run {
-                m.buildOpen(this)
+                text("found ${dimensions.flatMap { it.value }.size} entries")
             }
         }
 
@@ -654,25 +253,6 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             texturePath = TexturePath.minecraft("block/water_flow")
         })
 
-        val purpleFireBlock = blockRegistry.registerUsingTemplate("purple_fire", FireBlockTemplate {
-            ambient { 
-                sound {
-                    soundEvent = SoundEvents.FIRE_AMBIENT
-                }
-
-                particle = ParticleTypes.LARGE_SMOKE
-            }
-
-            flammability {
-                setByUsingVanilla()
-            }
-
-            texturePath0 = customFireTexturePath0
-            texturePath1 = customFireTexturePath1
-
-            color = RgbColor.LIGHT_PURPLE.withAlpha(255)
-        })
-
         PortalType.register(
             identifierOf("aether"),
             Blocks.GLOWSTONE,
@@ -681,74 +261,5 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
             Level.OVERWORLD,
             ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
         )
-
-        val purplePortalBlock = blockRegistry.registerUsingTemplate("purple_portal", PortalBlockTemplate {
-            ambient {
-                sound {
-                    soundEvent = SoundEvents.PORTAL_AMBIENT
-                }
-
-                particle = DustParticleOptions(RgbColor.LIGHT_PURPLE.withAlpha(255).argbValue, 0.5f)
-            }
-
-            color = RgbColor.LIGHT_PURPLE.withAlpha(255)
-
-            texturePath = customPortalTexturePath
-        })
-
-        PortalType.register(
-            identifierOf("purple"),
-            Blocks.AMETHYST_BLOCK,
-            purplePortalBlock,
-            setOf(PortalIgnitionSource.fire(purpleFireBlock)),
-            Level.OVERWORLD,
-            ResourceKey.create(Registries.DIMENSION, identifierOf("the_aether"))
-        )
-
-        commandRegistry.register("custom-portal") {
-            "list" {
-                executes {
-                    val attachments = context.source.level.globalAttachments()
-                    val dimensions = attachments.getAttachedOrElse(PORTAL_ACCESSES, mapOf())
-
-                    context.successful {
-                        for ((dimensionId, accessList) in dimensions) {
-                            text(dimensionId.toString())
-                            text(':')
-                            space()
-                            text(accessList.joinToString(", ") { it.toString() })
-                            linebreak()
-                        }
-                        text("found ${dimensions.flatMap { it.value }.size} entries")
-                    }
-                }
-
-                catches {
-                    logger.warn("error on command /custom-portal: ", error)
-                }
-            }
-        }
-
-        itemRegistry.registerUsingTemplate("purple_flint_and_steel", FlintAndSteelItemTemplate {
-            durability = 64
-
-            model {
-                val model = itemModels.generated(TexturePath.minecraft("item/flint_and_steel"))
-
-                handling {
-                    use(model, RgbColor.DARK_PURPLE.withAlpha(255))
-                }
-            }
-
-            fire(purpleFireBlock)
-
-            sound {
-                soundEvent = SoundEvents.FIRECHARGE_USE
-            }
-
-            translation {
-                enUs = "Purple Flint And Steel"
-            }
-        })
     }
 }
