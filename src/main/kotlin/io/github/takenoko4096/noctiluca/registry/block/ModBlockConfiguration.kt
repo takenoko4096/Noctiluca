@@ -243,7 +243,7 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         return block
     }
 
-    private fun <T : Block> registerFamilyMember(parent: Block, suffix: String, familyAppender: BlockFamily.Builder.(T) -> BlockFamily.Builder, constructor: (Block, BlockBehaviour.Properties) -> T): T {
+    private fun <T : Block> registerFamilyMember(parent: Block, suffix: String, familyAppender: BlockFamily.Builder.(T) -> BlockFamily.Builder, constructor: (Block, BlockBehaviour.Properties) -> T): ResourceKey<Block> {
         val identifier = registry.mod.identifierOf(blockResourceKey.identifier().path + '_' + suffix)
         val blockKey = ResourceKey.create(Registries.BLOCK, identifier)
         val itemKey = ResourceKey.create(Registries.ITEM, identifier)
@@ -264,7 +264,7 @@ class ModBlockConfiguration(internal val registry: ModBlockRegistry, internal va
         if (familyBuilder == null) familyBuilder = BlockFamily.Builder(parent)
         familyBuilder!!.familyAppender(block)
         registry.blocks[blockKey] = block
-        return block
+        return blockKey
     }
 
     class AccessorForClient internal constructor(private val configuration: ModBlockConfiguration) {

@@ -13,9 +13,9 @@ class NoctilucaBlockEntityTypeTagsProvider internal constructor(val mod: Noctilu
         for (configuration in registry.getConfigurations(Registries.BLOCK_ENTITY_TYPE)) {
             val tag = registry.getTag(configuration.key)
 
-            valueLookupBuilder(tag.tag)
-                .add(*tag.entries.toTypedArray())
-                .setReplace(tag.replace)
+            val tagAppender = tag(tag.tagKey)
+            tagAppender.add(*tag.entries.toTypedArray())
+            tagAppender.setReplace(tag.replace)
         }
     }
 }

@@ -19,6 +19,7 @@ import net.minecraft.world.attribute.EnvironmentAttributes
 import net.minecraft.world.entity.InsideBlockEffectType
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.ColorCollection
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
@@ -446,6 +447,12 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
             odds[block] = igniteOdds to burnOdds
         }
 
+        fun set(blocks: ColorCollection<Block>, igniteOdds: Int, burnOdds: Int) {
+            blocks.forEach {
+                odds[it] = igniteOdds to burnOdds
+            }
+        }
+
         fun setByUsingVanilla() {
             set(Blocks.OAK_PLANKS, 5, 20)
             set(Blocks.SPRUCE_PLANKS, 5, 20)
@@ -583,42 +590,12 @@ class FireBlockTemplate(callback: FireBlockTemplate.() -> Unit) : ModBlockTempla
             set(Blocks.WILDFLOWERS, 60, 100)
             set(Blocks.LEAF_LITTER, 60, 100)
             set(Blocks.CACTUS_FLOWER, 60, 100)
-            set(Blocks.WHITE_WOOL, 30, 60)
-            set(Blocks.ORANGE_WOOL, 30, 60)
-            set(Blocks.MAGENTA_WOOL, 30, 60)
-            set(Blocks.LIGHT_BLUE_WOOL, 30, 60)
-            set(Blocks.YELLOW_WOOL, 30, 60)
-            set(Blocks.LIME_WOOL, 30, 60)
-            set(Blocks.PINK_WOOL, 30, 60)
-            set(Blocks.GRAY_WOOL, 30, 60)
-            set(Blocks.LIGHT_GRAY_WOOL, 30, 60)
-            set(Blocks.CYAN_WOOL, 30, 60)
-            set(Blocks.PURPLE_WOOL, 30, 60)
-            set(Blocks.BLUE_WOOL, 30, 60)
-            set(Blocks.BROWN_WOOL, 30, 60)
-            set(Blocks.GREEN_WOOL, 30, 60)
-            set(Blocks.RED_WOOL, 30, 60)
-            set(Blocks.BLACK_WOOL, 30, 60)
+            set(Blocks.WOOL, 30, 60)
             set(Blocks.VINE, 15, 100)
             set(Blocks.COAL_BLOCK, 5, 5)
             set(Blocks.HAY_BLOCK, 60, 20)
             set(Blocks.TARGET, 15, 20)
-            set(Blocks.WHITE_CARPET, 60, 20)
-            set(Blocks.ORANGE_CARPET, 60, 20)
-            set(Blocks.MAGENTA_CARPET, 60, 20)
-            set(Blocks.LIGHT_BLUE_CARPET, 60, 20)
-            set(Blocks.YELLOW_CARPET, 60, 20)
-            set(Blocks.LIME_CARPET, 60, 20)
-            set(Blocks.PINK_CARPET, 60, 20)
-            set(Blocks.GRAY_CARPET, 60, 20)
-            set(Blocks.LIGHT_GRAY_CARPET, 60, 20)
-            set(Blocks.CYAN_CARPET, 60, 20)
-            set(Blocks.PURPLE_CARPET, 60, 20)
-            set(Blocks.BLUE_CARPET, 60, 20)
-            set(Blocks.BROWN_CARPET, 60, 20)
-            set(Blocks.GREEN_CARPET, 60, 20)
-            set(Blocks.RED_CARPET, 60, 20)
-            set(Blocks.BLACK_CARPET, 60, 20)
+            set(Blocks.CARPET, 60, 20)
             set(Blocks.PALE_MOSS_BLOCK, 5, 100)
             set(Blocks.PALE_MOSS_CARPET, 5, 100)
             set(Blocks.PALE_HANGING_MOSS, 5, 100)

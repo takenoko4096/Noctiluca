@@ -20,7 +20,7 @@ public abstract class LiquidBlockMixin {
         if (!state.getFluidState().isSource()) return;
         final CustomPortal portal = PortalType.Companion.getIgnitablePortal(level, pos);
         if (portal == null) return;
-        portal.ignite(level, PortalIgnitionSource.Companion.block$Noctiluca(state.getBlock()));
+        portal.ignite(level, PortalIgnitionSource.Companion.block$io_github_takenoko4096_noctiluca(state.getBlock()));
         ci.cancel();
     }
 }

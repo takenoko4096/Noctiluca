@@ -7,11 +7,10 @@ import io.github.takenoko4096.noctiluca.registry.block.templates.ModBlockTemplat
 import io.github.takenoko4096.noctiluca.registry.item.CustomItem
 import io.github.takenoko4096.noctiluca.registry.item.ItemEventsConfiguration
 import io.github.takenoko4096.noctiluca.registry.item.ModItemConfiguration
-import net.minecraft.advancements.CriteriaTriggers
+import net.minecraft.advancements.triggers.CriteriaTriggers
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player

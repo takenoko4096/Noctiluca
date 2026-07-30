@@ -13,7 +13,7 @@ class NoctilucaItemTagsProvider internal constructor(val mod: NoctilucaModInitia
         for (configuration in registry.getConfigurations(Registries.ITEM)) {
             val tag = registry.getTag(configuration.key)
 
-            valueLookupBuilder(tag.tag)
+            tag(tag.tagKey)
                 .add(*tag.entries.toTypedArray())
                 .setReplace(tag.replace)
         }

@@ -8,7 +8,7 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
-import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.EquipmentSlotGroup
 import net.minecraft.world.entity.ai.attributes.Attribute
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
@@ -317,7 +317,7 @@ class AttributeModifiersConfiguration internal constructor(mod: NoctilucaModInit
             }
 
             fun builtin() {
-                val defaults = DefaultAttributes.getSupplier(EntityType.PLAYER)
+                val defaults = DefaultAttributes.getSupplier(EntityTypes.PLAYER)
                 var output = value
 
                 if (attribute == Attributes.ATTACK_DAMAGE.value()) {

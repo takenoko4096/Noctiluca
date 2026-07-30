@@ -6,7 +6,7 @@ import net.minecraft.tags.TagKey
 
 class ModTag<T : Any> internal constructor(
     val target: ResourceKey<Registry<T>>,
-    val tag: TagKey<T>,
-    val entries: Set<T>,
+    val tagKey: TagKey<T>,
+    val entries: Set<ResourceKey<T>>,
     val replace: Boolean
 )

@@ -1,10 +1,9 @@
 package io.github.takenoko4096.noctiluca.mixin.client;
 
-import com.llamalad7.mixinextras.sugar.Local;
 import io.github.takenoko4096.noctiluca.registry.block.CustomPortalBlock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ARGB;
@@ -18,8 +17,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(Gui.class)
-public abstract class GuiMixin {
+@Mixin(Hud.class)
+public abstract class HudMixin {
     @Shadow @Final private Minecraft minecraft;
 
     @Unique

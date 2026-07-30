@@ -2,16 +2,19 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.3.20"
+    kotlin("jvm") version "2.4.10"
     id("net.fabricmc.fabric-loom")
     id("com.github.gmazzo.buildconfig") version "6.0.9"
     `maven-publish`
 }
 
-version = "1.0-SNAPSHOT"
+version = "0.1.0"
 group = "io.github.takenoko4096"
 
 val modName = "${project.property("mod_name")}"
+val upperCamelModName = modName.split('_')
+    .filterNot { it.isEmpty() }
+    .joinToString("") { it.replaceFirstChar(Char::uppercaseChar) }
 
 base {
     archivesName.set(modName)
@@ -82,6 +85,7 @@ buildConfig {
     sourceSets {
         getByName("main") {
             packageName("${project.group}.${modName.lowercase()}")
+            className("${upperCamelModName}Metadata")
 
             buildConfigField("${modName.uppercase()}_VERSION", "${project.version}")
             buildConfigField("MINECRAFT_VERSION", "${project.property("minecraft_version")}")

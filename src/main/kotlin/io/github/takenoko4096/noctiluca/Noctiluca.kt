@@ -8,9 +8,7 @@ import io.github.takenoko4096.noctiluca.portal.PortalAccess
 import io.github.takenoko4096.noctiluca.portal.PortalType
 import io.github.takenoko4096.noctiluca.portal.CustomPortal
 import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource
-import io.github.takenoko4096.noctiluca.registry.block.templates.FireBlockTemplate
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
-import io.github.takenoko4096.noctiluca.registry.item.templates.FlintAndSteelItemTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry
@@ -20,7 +18,6 @@ import net.fabricmc.fabric.api.event.player.BlockEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.core.particles.DustParticleOptions
-import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
@@ -154,7 +151,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("noctiluca version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.NOCTILUCA_VERSION)
+                            text(NoctilucaMetadata.NOCTILUCA_VERSION)
                         }
 
                         linebreak()
@@ -162,7 +159,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("minecraft version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.MINECRAFT_VERSION)
+                            text(NoctilucaMetadata.MINECRAFT_VERSION)
                         }
 
                         linebreak()
@@ -170,7 +167,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("java version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.JAVA_VERSION.toString())
+                            text(NoctilucaMetadata.JAVA_VERSION.toString())
                         }
 
                         linebreak()
@@ -178,7 +175,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("fabric loader version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.FABRIC_LOADER_VERSION)
+                            text(NoctilucaMetadata.FABRIC_LOADER_VERSION)
                         }
 
                         linebreak()
@@ -186,7 +183,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("fabric api version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.FABRIC_API_VERSION)
+                            text(NoctilucaMetadata.FABRIC_API_VERSION)
                         }
 
                         linebreak()
@@ -194,7 +191,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("fabric loom version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.FABRIC_LOOM_VERSION)
+                            text(NoctilucaMetadata.FABRIC_LOOM_VERSION)
                         }
 
                         linebreak()
@@ -202,7 +199,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
                         text("kotlin loader version:")
                         space()
                         section(textColor = RgbColor.GREEN) {
-                            text(BuildConfig.KOTLIN_LOADER_VERSION)
+                            text(NoctilucaMetadata.KOTLIN_LOADER_VERSION)
                         }
 
                         gradient(RgbColor.YELLOW, RgbColor.GOLD, RgbColor.YELLOW) {

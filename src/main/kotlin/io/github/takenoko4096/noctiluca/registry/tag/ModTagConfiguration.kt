@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.tags.TagKey
 
 class ModTagConfiguration<T : Any> internal constructor(internal val target: ResourceKey<Registry<T>>, val key: TagKey<T>, callback: ModTagConfiguration<T>.() -> Unit) {
-    private val entries = mutableSetOf<T>()
+    private val entries = mutableSetOf<ResourceKey<T>>()
 
     var replace: Boolean = false
 
@@ -13,7 +13,7 @@ class ModTagConfiguration<T : Any> internal constructor(internal val target: Res
         callback()
     }
 
-    fun entry(t: T) {
+    fun entry(t: ResourceKey<T>) {
         entries.add(t)
     }
 

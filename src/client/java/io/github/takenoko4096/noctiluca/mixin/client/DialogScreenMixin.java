@@ -43,7 +43,7 @@ public abstract class DialogScreenMixin extends Screen {
             final var onCloseEvent = onCloseEventOptional.get();
             if (onCloseEvent instanceof ClickEvent.Custom(Identifier id, Optional<Tag> payload) && id.getNamespace().equals(Noctiluca.INSTANCE.getIdentifier())) {
                 info.cancel();
-                minecraft.setScreen(previousScreen);
+                minecraft.gui.setScreen(previousScreen);
                 ClientPlayNetworking.send(new ServerboundDialogEscapePayload(payload));
             }
         }

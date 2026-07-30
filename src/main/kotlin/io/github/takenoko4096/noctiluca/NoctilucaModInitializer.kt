@@ -30,7 +30,7 @@ abstract class NoctilucaModInitializer(val identifier: String) : ModInitializer 
     val creativeModeTabRegistry: ModCreativeModeTabRegistry = ModCreativeModeTabRegistry(this)
 
     init {
-        logger.info("$identifier is powered by noctiluca v. ${BuildConfig.NOCTILUCA_VERSION}")
+        logger.info("$identifier is powered by noctiluca v. ${NoctilucaMetadata.NOCTILUCA_VERSION}")
 
         ServerLifecycleEvents.SERVER_STARTED.register {
             val data = ServerContainer(this, it)

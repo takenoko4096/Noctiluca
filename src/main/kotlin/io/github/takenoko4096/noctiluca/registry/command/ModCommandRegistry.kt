@@ -11,7 +11,7 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.synchronization.SingletonArgumentInfo
 import net.minecraft.util.StringRepresentable
 
-class ModCommandRegistry(public override val mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
+class ModCommandRegistry(override val mod: NoctilucaModInitializer) : StarlightRegistry(mod) {
     private val commands = mutableSetOf<(CommandBuildContext) -> LiteralArgumentBuilder<CommandSourceStack>>()
 
     private val argumentTypes = mutableMapOf<String, ModCommandArgumentType<*>>()
