@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 
-class PackSavable(title: Component, columnCount: Int, private val compound: MojangsonCompound = MojangsonCompound(), private val onUpdate: PackSavable.() -> Unit = {}) {
+class PackSavable(title: Component, columnCount: Int, private val compound: MojangsonCompound = MojangsonCompound(), private val onUpdate: PackSavable.(MojangsonCompound) -> Unit = {}) {
     private val provider = Provider(title, columnCount, this)
 
     private val menus = mutableMapOf<Player, CustomContainerMenu>()
@@ -35,15 +35,11 @@ class PackSavable(title: Component, columnCount: Int, private val compound: Moja
             menu.setItem(index, menu.incrementStateId(), itemStack)
             menu.broadcastChanges()
         }
-        onUpdate()
+        onUpdate(compound)
     }
 
     private fun onRemove(player: Player, menu: CustomContainerMenu) {
         menus.remove(player)
-    }
-
-    fun getSerializedContents(): MojangsonCompound {
-        return compound.copy() as MojangsonCompound
     }
 
     fun openPack(player: Player) {

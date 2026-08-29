@@ -1,11 +1,15 @@
 package io.github.takenoko4096.noctiluca.portal
 
 import io.github.takenoko4096.noctiluca.Noctiluca
+import io.github.takenoko4096.noctiluca.Noctiluca.PORTAL_ACCESSES
 import io.github.takenoko4096.noctiluca.math.Position3i
 import io.github.takenoko4096.noctiluca.math.Vector3d
 import io.github.takenoko4096.noctiluca.math.toOffset
 import io.github.takenoko4096.noctiluca.math.toPosition3i
+import net.fabricmc.fabric.api.attachment.v1.GlobalAttachmentsProvider
 import net.minecraft.core.BlockPos
+import net.minecraft.resources.ResourceKey
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult

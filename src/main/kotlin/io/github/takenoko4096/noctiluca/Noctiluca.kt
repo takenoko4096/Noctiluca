@@ -1,6 +1,8 @@
 package io.github.takenoko4096.noctiluca
 
+import io.github.takenoko4096.mojangson.values.MojangsonCompound
 import io.github.takenoko4096.noctiluca.container.CustomContainerMenu
+import io.github.takenoko4096.noctiluca.container.PackSavable
 import io.github.takenoko4096.noctiluca.network.ServerboundCustomPacketPayloadReceiver
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogClosePayload
 import io.github.takenoko4096.noctiluca.network.ServerboundDialogEscapePayload
@@ -11,6 +13,7 @@ import io.github.takenoko4096.noctiluca.portal.PortalIgnitionSource
 import io.github.takenoko4096.noctiluca.registry.block.templates.PortalBlockTemplate
 import io.github.takenoko4096.noctiluca.render.TexturePath
 import io.github.takenoko4096.noctiluca.text.RgbColor
+import io.github.takenoko4096.noctiluca.text.component
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
@@ -35,7 +38,7 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
         BlockEvents.USE_ITEM_ON.register(CustomPortal::onUseItemOnBlock)
     }
 
-    val PORTAL_ACCESSES: AttachmentType<Map<Identifier, List<PortalAccess>>> = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.DIMENSIONS_CODEC)
+    internal val PORTAL_ACCESSES: AttachmentType<Map<Identifier, List<PortalAccess>>> = AttachmentRegistry.createPersistent(identifierOf("portal_accesses"), PortalAccess.DIMENSIONS_CODEC)
 
     override fun onInitialize() {
         initializeSystem()
@@ -221,17 +224,17 @@ object Noctiluca : NoctilucaModInitializer("noctiluca") {
 
         debugger("custom_portals") {
             val attachments = context.source.level.globalAttachments()
-            val dimensions = attachments.getAttachedOrElse(PORTAL_ACCESSES, mapOf())
+            val map = attachments.getAttachedOrElse(PORTAL_ACCESSES, mapOf())
 
             context.successful {
-                for ((dimensionId, accessList) in dimensions) {
+                for ((dimensionId, accessList) in map) {
                     text(dimensionId.toString())
                     text(':')
                     space()
                     text(accessList.joinToString(", ") { it.toString() })
                     linebreak()
                 }
-                text("found ${dimensions.flatMap { it.value }.size} entries")
+                text("found ${map.flatMap { it.value }.size} entries")
             }
         }
 

@@ -77,7 +77,7 @@ class SelectorArguments(private val arguments: Set<SelectorArgument>) {
             arguments.add(SelectorArgument.Sort(sortOrder))
         }
 
-        fun type(type: EntityType<*>): SelectorArgument.Type {
+        fun <T : Entity> type(type: EntityType<T>): SelectorArgument.Type {
             return SelectorArgument.Type(type).also { arguments.add(it) }
         }
 
